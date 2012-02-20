@@ -13,6 +13,12 @@ All thanks to:
 
 -------------------------------------------
 
+
+v1.2:
+
+- automatic chinese->english translation of all chinese comments in the source.
+
+
 v1.1:
 
 - Updated with marcosin 1.8 release

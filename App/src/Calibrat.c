@@ -21,7 +21,7 @@ void Balance(void)
 {
   u16 i;
   
-  __Set(STANDBY, DN);                          // 退出省电状态
+  __Set(STANDBY, DN);                          // exit the power saving state
   __Set(ADC_CTRL, EN );       
   __Set(T_BASE_PSC, X_Attr[_2uS].PSC);         // T_BASE = 2uS
   __Set(T_BASE_ARR, X_Attr[_2uS].ARR);
@@ -30,10 +30,10 @@ void Balance(void)
   __Set(CH_A_OFFSET, 100);
   __Set(CH_B_OFFSET, 100);
   __Set(CH_A_RANGE,  G_Attr[0].Yp_Max);        // 10V/Div
-  __Set(CH_B_RANGE,  G_Attr[0].Yp_Max+1);      // B通道合并到A通道
+  __Set(CH_B_RANGE,  G_Attr[0].Yp_Max+1);      // B channel incorporated into the A channel
   __Set(ADC_MODE, INTERLACE);                  // Set Interlace mode
   Update_Trig();
-  __Set(TRIGG_MODE, UNCONDITION);              // 设任意触发
+  __Set(TRIGG_MODE, UNCONDITION);              // set any trigger
   Delayms(2000); 
   
   __Set(FIFO_CLR, W_PTR); 
@@ -41,8 +41,8 @@ void Balance(void)
   a_Avg = 2048;               
   b_Avg = 2048;            
   for(i=0; i <4096; i++){
-    DataBuf[i] = __Read_FIFO();         // 读入32位FIFO数据, 读后指针+1
-    a_Avg += (DataBuf[i] & 0xFF );      // 累计直流平均值                
+    DataBuf[i] = __Read_FIFO();         // read into the 32-bit FIFO data reading pointer +1
+    a_Avg += (DataBuf[i] & 0xFF );      // cumulative DC average                
     b_Avg += ((DataBuf[i]>>8) & 0xFF );              
   }
   Kab = (a_Avg - b_Avg)/4096;
@@ -59,17 +59,17 @@ void Calibrat(u8 Channel)
   char n[10];
   
   Key_Buffer = 0; 
-  __Set(STANDBY, DN);                                   // 退出省电状态
+  __Set(STANDBY, DN);                                   // exit the power saving state
   __Set(BACKLIGHT, 10*(Title[BK_LIGHT][CLASS].Value+1));
-  __Clear_Screen(BLACK);                                // 清屏幕
+  __Clear_Screen(BLACK);                                //  clear the screen
   
   Interlace = 0;
   __Set(ADC_MODE, SEPARATE);                            // Set Separate mode
   __Set(ADC_CTRL, EN);       
-  __Set(TRIGG_MODE, UNCONDITION);                       // 设任意触发
+  __Set(TRIGG_MODE, UNCONDITION);                       // set any trigger
   _Status = RUN;
   __Set(BEEP_VOLUME, 5*(Title[VOLUME][CLASS].Value-1)); // Reload volume
-  Beep_mS = 500;                                        // 蜂鸣器响500mS
+  Beep_mS = 500;                                        // 500mS buzzer ring 
   Range = 0;
   Step  = 0;
   m     = 0;
@@ -80,7 +80,7 @@ void Calibrat(u8 Channel)
   __Set(CH_A_COUPLE, DC);
   __Set(CH_B_COUPLE, DC);
   
-  for(j=0; j<220; j+=20){                               // 画表格  
+  for(j=0; j<220; j+=20){                               // draw table  
     for(i=0; i<399; i++){
       __Point_SCR(i, j);
       __LCD_SetPixl(WHT);
@@ -109,7 +109,7 @@ void Calibrat(u8 Channel)
   __Point_SCR(398, 0);
   for(j= 0; j<239; j++)  __LCD_SetPixl(WHT); 
  
-  Print_Str(  6, 185, 0x0005, PRN, "CH_A");              // 显示表格标题栏
+  Print_Str(  6, 185, 0x0005, PRN, "CH_A");              // display the form title bar
   Print_Str( 49, 185, 0x0005, PRN, "ZERO");
   Print_Str( 93, 185, 0x0005, PRN, "DIFF");
   Print_Str(137, 185, 0x0005, PRN, "VOLTAGE");
@@ -119,16 +119,16 @@ void Calibrat(u8 Channel)
   Print_Str(338, 185, 0x0105, PRN, "VOLTAGE");
     
   for(i=0; i<=G_Attr[0].Yp_Max; i++){
-    Print_Str(  6, 166-(i*20), 0x0005, PRN, Y_Attr[i].STR); // 显示量程
+    Print_Str(  6, 166-(i*20), 0x0005, PRN, Y_Attr[i].STR); // display range
     Print_Str(206, 166-(i*20), 0x0105, PRN, Y_Attr[i].STR);
-    Ma1[i] = Ka1[i];  Ma2[i] = Ka2[i];  Ma3[i] = Ka3[i];    // 备份校准前的参数
+    Ma1[i] = Ka1[i];  Ma2[i] = Ka2[i];  Ma3[i] = Ka3[i];    // backup before calibration parameters
     Mb1[i] = Kb1[i];  Mb2[i] = Kb2[i];  Mb3[i] = Kb3[i];
   }
 
   while (1){
     if(PD_Cnt == 0){
-      __Set(BACKLIGHT, 0);                               // 关闭背光
-      __Set(STANDBY, EN);                                // 进入省电状态
+      __Set(BACKLIGHT, 0);                               // turn off the backlight
+      __Set(STANDBY, EN);                                // enter low power states
       return;
     }
     __Set(CH_A_RANGE, Range);  __Set(CH_B_RANGE, Range);
@@ -137,8 +137,8 @@ void Calibrat(u8 Channel)
     Delayms(20); 
     a_Avg = 2048;  b_Avg = 2048;               
     for(i=0; i <4096; i++){
-      DataBuf[i] = __Read_FIFO();         // 读入32位FIFO数据
-      a_Avg += (DataBuf[i] & 0xFF );      // 累计直流平均值                
+      DataBuf[i] = __Read_FIFO();         // read into the 32-bit FIFO data
+      a_Avg += (DataBuf[i] & 0xFF );      // cumulative DC average               
       b_Avg += ((DataBuf[i]>>8) & 0xFF );              
     }
     TmpA  = Ka1[Range] +(Ka2[Range]*(a_Avg/4096)+ 512)/1024;
@@ -159,13 +159,13 @@ void Calibrat(u8 Channel)
         if(Channel == TRACK1){
           Print_Str( 23*8, 216, 0x0005, PRN, " CH_A ");
           for(i=0; i<=G_Attr[0].Yp_Max; i++){
-            Ka1[i] = 0; Ka2[i] = 1024; Ka3[i] = 0;         // 设置校准参数初值
+            Ka1[i] = 0; Ka2[i] = 1024; Ka3[i] = 0;         // set the calibration parameters of the initial value
           }
         }
         if(Channel == TRACK2){
           Print_Str( 23*8, 216, 0x0105, PRN, " CH_B ");
           for(i=0; i<=G_Attr[0].Yp_Max; i++){
-            Kb1[i] = 0; Kb2[i] = 1024; Kb3[i] = 0;         // 设置校准参数初值
+            Kb1[i] = 0; Kb2[i] = 1024; Kb3[i] = 0;         // set the calibration parameters of the initial value
           }
         }
         break;
@@ -344,7 +344,7 @@ void Calibrat(u8 Channel)
       }
     }
     if(Key_Buffer){ 
-      PD_Cnt = 600;                               // 重新设定等待时间600秒
+      PD_Cnt = 600;                               // reset the waiting time of 600 seconds
       if((Range <= G_Attr[0].Yp_Max)&&(Step == 7)){
         if(Channel == TRACK1){
           Print_Str(134, 166-(Range*20), 0x0005, PRN, n);
@@ -378,19 +378,19 @@ void Calibrat(u8 Channel)
               Ka1[i] = Ma1[i];  Ka2[i] = Ma2[i];  Ka3[i] = Ma3[i];
               Kb1[i] = Mb1[i];  Kb2[i] = Mb2[i];  Kb3[i] = Mb3[i];
             }
-            Save_Param();                         // 不保存校正后的参数
+            Save_Param();                         // do not save the calibration parameters
             Print_Str( 8, 216, 0x0405, PRN, "                                                ");
           } 
           if(Step == 11){
-            Save_Param();                         // 保存校正后的参数
+            Save_Param();                         // save parameters after correction
             Print_Str( 8, 216, 0x0405, PRN, "          SAVING THE CALIBRATION DATA           ");
           }  
           if(Step == 12){ 
             for(i=0; i<=G_Attr[0].Yp_Max; i++){
-              Ka1[i] = 0; Ka2[i] = 1024; Ka3[i] = 0;         // 设置校准参数初值
+              Ka1[i] = 0; Ka2[i] = 1024; Ka3[i] = 0;         // set the calibration parameters of the initial value
               Kb1[i] = 0; Kb2[i] = 1024; Kb3[i] = 0;
             }
-            Save_Param();  // 清除校准参数，保存缺省值 
+            Save_Param();  // clear the calibration parameters, save the default values
             Print_Str( 8, 216, 0x0405, PRN, "       RESTORE DEFAULTS CALIBRATION DATA        ");
           }
           Delayms(1000);                                      
@@ -432,3 +432,4 @@ void Calibrat(u8 Channel)
   }
 }
 /*********************************  END OF FILE  ******************************/
+

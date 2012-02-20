@@ -14,7 +14,7 @@
 #define A_                2
 #define B_                3
 
-//================== 结构变量宏定义 ==================
+//================== Structure variables, macro definitions ==================
 #define _1_source  Title[TRACK1][SOURCE].Value
 #define _2_source  Title[TRACK2][SOURCE].Value
 #define _3_source  Title[TRACK3][SOURCE].Value
@@ -42,9 +42,9 @@
 #define _A_Range   Title[TRACK1][RANGE].Value
 #define _B_Range   Title[TRACK2][RANGE].Value
 
-#define _Kp1       X_Attr[Title[T_BASE][BASE].Value].KP   // 普通采样档位的X插值系数
-#define _Kp2       X_Attr[Title[T_BASE][BASE].Value+5].KP // 交替采样档位的X插值系数
-#define _INSERT    G_Attr[0].INSERT                       // 开始应用插值的档位
+#define _Kp1       X_Attr[Title[T_BASE][BASE].Value].KP   // common sampling gear X interpolation coefficients
+#define _Kp2       X_Attr[Title[T_BASE][BASE].Value+5].KP // X interpolation coefficients alternately sampling stalls
+#define _INSERT    G_Attr[0].INSERT                       // Start using the interpolated stalls
 
 #define _State     Title[RUNNING][STATE]
 #define _Status    Title[RUNNING][STATE].Value
@@ -63,34 +63,34 @@
 #define _Vt1       V_Trigg[TRACK1].Value
 #define _Vt2       V_Trigg[TRACK2].Value
 
-typedef struct  // 模拟波形输出驱动表 
+typedef struct  // analog waveform output driver table
 {
-  uc8  STR[8];   // 档位标识字符串
-  uc16 PSC;      // 预分频系数
-  uc16 ARR;      // 分频系数
+  uc8  STR[8];   // stall identification string
+  uc16 PSC;      // prescaler coefficient
+  uc16 ARR;      // frequency coefficient
 } A_tab ; 
 
-typedef struct  // 脉冲波形输出驱动表 
+typedef struct  // pulse waveform output driver table
 {
-  uc8  STR[8];  // 档位标识字符串
-  uc16 PSC;     // 预分频系数
-  uc16 ARR;     // 分频系数
-  u16  Duty;    // 占空比系数
+  uc8  STR[8];  // stall identification string
+  uc16 PSC;     // prescaler coefficient
+  uc16 ARR;     // frequency coefficient
+  u16  Duty;    // duty cycle coefficient
 } D_tab ; 
 
 extern u8  Interlace;
-extern u8  TrackBuff [X_SIZE * 4];          // i+0~3,分别存放1～4号轨迹数据
+extern u8  TrackBuff [X_SIZE * 4];          // i +0 ~ 3, a 4 track data were stored
 extern u32 a_Avg, b_Avg, a_Ssq, b_Ssq;
 //extern u8  a_Vpp, b_Vpp;           
 //extern s16 a_Vdc, b_Vdc;            
-extern u8  a_Max, b_Max, a_Min, b_Min;                // 统计用中间变量
+extern u8  a_Max, b_Max, a_Min, b_Min;                // statistics of intermediate variables
 
 extern u16 Tcs, Tcnt;
 
-extern u16 TaS, TbS, TcS, TdS;            // 周期累计
-extern u16 PaS, PbS, PcS, PdS;            // 脉宽累计
-//extern u16 b_Pcnt, c_Pcnt, d_Pcnt;           // 脉冲计数
-extern u16 TaN, TbN, TcN, TdN;           // 周期计数
+extern u16 TaS, TbS, TcS, TdS;            // cycles accumulated
+extern u16 PaS, PbS, PcS, PdS;            // pulse width of the cumulative
+//extern u16 b_Pcnt, c_Pcnt, d_Pcnt;           // pulse counting
+extern u16 TaN, TbN, TcN, TdN;           // Cycle Count
 extern u8 FrameMode;
 
 

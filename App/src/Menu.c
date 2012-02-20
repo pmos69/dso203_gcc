@@ -205,30 +205,30 @@ meter Meter[9] =
 
 
 
-void Display_Meter(void)                  // 每次刷新显示一个测量项
+void Display_Meter(void)                  // each refresh to display a measurement
 {
   u8  i;
   
   for(i=0; i<9; ++i){        
-    if(Meter[i].Flag & UPDAT){            //-----显示需刷新的测量项目名称
+    if(Meter[i].Flag & UPDAT){            //----- the name of the measurements show the need to refresh the
       Meter[i].Flag &= (!UPDAT & !BLINK);       // Clr Update & Blink flag
       Print_Str
-        (Meter[i].XPOS1, Meter[i].YPOS,        // 需要显示的坐标
-         Y_INV[Meter[i].Track],                // 需要显示的颜色(所属通道)
-         PRN,                                  // 需要显示的方式
-         Meter[i].Str +(Meter[i].Item * 5) );   // 需要显示的项目名称
+        (Meter[i].XPOS1, Meter[i].YPOS,        // coordinates to be displayed
+         Y_INV[Meter[i].Track],                // need to display color (belongs channel)
+         PRN,                                  // need to show the way
+         Meter[i].Str +(Meter[i].Item * 5) );   // need to display the project name
     } 
    
   }
   if((Current >= METER_0)&&(Current <= METER_8)){
-    if(Blink){                            //-----显示需闪烁的测量项目名称
+    if(Blink){                            //----- the name of the display required flashing measurements
       i = Current - METER_0;
       Blink = 0;                               // Clr Blink Ctrl flag 
       Print_Str(
-        Meter[i].XPOS1, Meter[i].YPOS,         // 需要闪烁的坐标 
-        Y_INV[Meter[i].Track],                 // 需要闪烁的颜色(所属通道)
-        Twink,                                 // 闪烁方式
-        Meter[i].Str +(Meter[i].Item *5));     // 需要闪烁的项目名称
+        Meter[i].XPOS1, Meter[i].YPOS,         // flashing coordinates
+        Y_INV[Meter[i].Track],                 // ??flashing colors (belongs channel)
+        Twink,                                 // flashing way
+        Meter[i].Str +(Meter[i].Item *5));     // flashing the project name
     }
   }
 }
@@ -240,8 +240,8 @@ void Display_Value(u8 i)
   u32 k, n, m ;
   u16 bag_max_buf = 4096;   // #pmos69 - store sample buffer size
   
-  if(Interlace == 0) Kp = _Kp1; // 独立采样模式
-  else               Kp = _Kp2; // 交替采样模式  
+  if(Interlace == 0) Kp = _Kp1; // independent sampling mode
+  else               Kp = _Kp2; // interleaved sampling mode
   
   k = _T_Range; m = 1;  n = 1;
   if(k < 9)  m = Power(10, (11-k)/3); //9 //11
@@ -269,11 +269,11 @@ if (FrameMode>0)      //_Mode == SCAN
   }
   
   switch (Meter[i].Item){  
-  case VBT://--------------- 计算和显示电池电压 ---------------
+  case VBT://--------------- calculation and display of battery voltage ---------------
     Int2Str(NumStr, __Get(V_BATTERY)*1000, V_UNIT, 3, SIGN);
    
       break;
-  case FPS://--------------- 计算和显示帧计数 ---------------
+  case FPS://--------------- calculates and displays the frame count ---------------
    Int2Str(NumStr, Result_FPS & 0x7F, S_UNIT, 2, STD);
   
     break;  
@@ -433,7 +433,7 @@ if (FrameMode>0)      //_Mode == SCAN
     Meter[i].XPOS2, Meter[i].YPOS,
     Y_COLOR[Meter[i].Track], 
     PRN,
-    NumStr);                              // 显示测量数值
+    NumStr);                              // display the measured values
 }
 
 void Display_Title(void)
@@ -488,7 +488,7 @@ void Display_Title(void)
     
     
     for(j = 0; j < 4; ++j){
-     if(Title[i][j].Flag & UPDAT){   // 需要刷新的Item
+     if(Title[i][j].Flag & UPDAT){   // need to refresh the Item
         Title[i][j].Flag &= ~UPDAT;   // Clr Update flag 
         
         if((i == BATTERY)||(i == TRIGG)){
@@ -570,11 +570,11 @@ void Display_Title(void)
             
           } else if(Title[i][j].MARK == NUM2){ 
                 NumStr[0]=' ';
-            if(i == BK_LIGHT){                        // 背光百分比显示处理
+            if(i == BK_LIGHT){                        // the backlight shows the percentage
               if(Title[i][j].Value == 9){
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
                 } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
-            } else {                                  // 音量百分比显示处理
+            } else {                                  // the volume percentage
               if(Title[i][j].Value == 10){
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
               } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
@@ -614,7 +614,7 @@ void Display_Title(void)
           
         
         
-      } else if((Current == i)&&(Detail[i] == j)&&(Blink)){ // 当前光标位置的Item
+      } else if((Current == i)&&(Detail[i] == j)&&(Blink)){ // current cursor position Item
         Blink = 0;
         if((i == BATTERY)||(i == TRIGG)){
           if((Title[i][j].MARK & FIX)){      // ---- Under fix mode
@@ -701,7 +701,7 @@ void Display_Title(void)
   }
 }
 /*******************************************************************************
- Load_Attr:  加载硬件属性
+ Load_Attr:  load the hardware properties
 *******************************************************************************/
 void Load_Attr(void)
 {
@@ -721,7 +721,7 @@ void Load_Attr(void)
   
 }
 /*******************************************************************************
- Update_Battery:  刷新电池电量指示
+ Update_Battery:  refresh the battery indicator
 *******************************************************************************/
 void Update_Battery(void)
 {

@@ -7,23 +7,23 @@
 
 #include "stm32f10x_lib.h"
 
-//----------- Detail菜单中常量MARK的定义 -----------
-#define NUM2    0x01   // 在指定位置显示2位的Value数值
-#define NUM3    0x02   // 在指定位置显示浮点3位的Value数值
-#define CIRC    0x10   // 该Detail项的Value值在调节到头时循环
-#define FIX     0x20   // 该Detail项的Value值改变时对应的标识字符串不变
-#define NOT     0x80   // 在选择时跳过该Detail项
-//#define NONE    0x00   // 其他
+//----------- The Detail menu constants MARK defined -----------
+#define NUM2    0x01   // display the Value of two values ??in the specified location
+#define NUM3    0x02   // in the specified location to display the floating point value of the Value of 3
+#define CIRC    0x10   // the Detail Value in the regulation of head circulation
+#define FIX     0x20   // the Detail Value change the identity of the corresponding string unchanged
+#define NOT     0x80   // skip the Detail item choice
+//#define NONE    0x00   // Other
 
-//----------- Detail菜单中变量Flag的定义 -----------
-#define HID     0x04   // 不显示该Detail项
-#define UPDAT   0x02   // 该Detail项显示刷新
-#define BLINK   0x01   // 该Detail项显示闪烁
+//----------- Flag of the definition of variables in the Detail menu -----------
+#define HID     0x04   // display the Detail
+#define UPDAT   0x02   // Detail entry display refresh
+#define BLINK   0x01   // the Detail display flashes
 
 #define BATTERY    4
 
 
-//=============== MENU 主菜单项编号定义 ===============
+//=============== MENU Main Menu item is number defined ===============
 #define TRACK1     0
 #define TRACK2     1
 #define TRACK3     2
@@ -40,13 +40,13 @@
 #define BK_LIGHT   11
 #define VOLUME     12
 
-//------------- TRACKn 子菜单项编号定义 --------------  Dettagli TRACK
+//------------- TRACKn submenu item number defined --------------  Dettagli TRACK
 #define SOURCE     0      //Sorgente
 #define COUPLE     1
 #define RANGE      2
 #define POSI       3
 
-//............ TRACKn 中 SOURCE 项编号定义 ........... 
+//............ TRACKn SOURCE item number defined ........... 
 #define HIDE       0
 /**/
 #define CH_A       1
@@ -62,48 +62,48 @@
 #define REC_3      8
 #define REC_4      9
 
-//------------- RUNNING 子菜单项编号定义 -------------
+//------------- RUNNING sub-menu item number defined -------------
 #define STATE      0
 #define STATUS     1
 
-//.............. STATE 子菜单项编号定义 ..............
+//.............. STATE submenu items ID defined  ..............
 #define RUN        0
 #define HOLD       1
 
-//-------------- T_BASE 子菜单项编号定义 -------------
+//-------------- T_BASE submenu item number defined -------------
 #define MODE       0
 #define BASE       1
 #define XPOSI      2
 #define VIEW       3
 
-//............. T_BASE 中 MODE 项编号定义 ............
+//............. T_BASE in MODE number defined ............
 #define AUTO       0
 #define NORM       1
 #define SGL        2
 #define SCAN       3
 #define X_Y        4
 #define X_Y_A      5
-//-------------- OUTPUT 子菜单项编号定义 -------------
+//-------------- OUTPUT submenu item number defined -------------
 #define KIND       0
 #define FRQN       1
 #define DUTYPWM    2
 #define OUTATT     3
 //#define CLASS      1
 
-//--------------- TRIGG 子菜单项编号定义 -------------
+//--------------- TRIGG sub menu item, the number defined -------------
 #define SOURCE     0
 #define TR_KIND    1
 #define THRESHOLD  2
 
-//------------- T_VERNIE 子菜单项编号定义 ------------
+//------------- T_VERNIE submenu item number defined ------------
 #define T1         0
 #define T2         1
 
-//------------- V_VERNIE 子菜单项编号定义 ------------
+//------------- V_VERNIE submenu item number defined ------------
 #define V1         0
 #define V2         1
 
-//--------------- FILE 子菜单项编号定义 --------------
+//---------------  FILE submenu item number defined --------------
 #define SAVE       0
 #define LOAD       1
 #define BMP        0
@@ -111,10 +111,10 @@
 #define BUF     2
 #define CSV     3
 
-//--------- BK_LIGHT & VOLUME子菜单项编号定义 --------
+//--------- BK_LIGHT the VOLUME sub-menu item number defined --------
 #define CLASS      1
 
-//============== METER 主菜单项编号定义 ============== 
+//============== METER main menu items defined number ============== 
 #define METER_0    13
 #define METER_1    14
 #define METER_2    15
@@ -125,7 +125,7 @@
 #define METER_7    20
 #define METER_8    21
 
-//------------- METER 中 Item 项编号定义 -------------
+//------------- The METER in the Item number defined -------------
 #define VBT        0
 #define FPS        1
 #define VPP        2

@@ -13,51 +13,51 @@
 #include "File.h"
 
 /*******************************************************************************
-版本修改说明
-APP V2.30: 从该版本起不再兼容PCB_V2.6以下版本的主板
-           从该版本起不再兼容SYS_V1.31以下版本
-           休眠定时修改为600秒(Main.c)
-           修改及添加了新的SYS库函数(BIOS.s)
-           修改了开机信息显示程序(Main.c)
-APP V2.31: 增加了开机识别FPGA加载配置完成与否判别(Main.c)
-           增加了Licence权限管理功能的Demo程序范例(Ident.c,Main.c)
-           修改了模拟通道校正功能的进入和退出相关操作(calibrat.c)
-           增加了144MHz交替采样模式下的相关功能(Process.c)
-APP V2.32  从该版本起可并行使用IAR 4.42与5.0版本
-           源程序没改动，增加了文件夹　IAR_V5_Prpject
-APP V2.33  修改了扫描时基<1uS时，显示刷新的BUG(Process.c)
-           修改了在校准状态下，操作提示信息的BUG(Calibrat.c)
-APP V2.34  改为按通道单独校准(Calibrat.c & Main.c)
-           修改了校准项选择的操作方式(Calibrat.c)
-APP V2.35  修改了校准过程中的BUG(Calibrat.c)
-           修改了扫描时基<5uS时，暂停不了的BUG(Process.c)
-           优化了显示数据处理程序(Process.c)
-           增加了模拟通道自动零点平衡功能(Main.c,Process.c,Calibrat.c)
-APP V2.36  部分校准操作改为自动模式(Calibrat.c,Process.c,Function.c)
-           修改了开机加载工作参数的方式(Main.c)
-APP V2.37  进一步完善和优化了显示数据处理程序(Process.c)
-           修改了32位有符号及无符号整数转换程序四舍五入的BUG(Function.c)
-           增加了时间频率脉宽占空比测量功能(Process.c, Menu.c)
-APP V2.40  增加了写U盘创建文件名功能(Main.c, Flies.c, dosfs.c)
-           修改存盘时显示文件序号BUG(Menu.c) 
-APP V2.41  增加了文件格式为.BUF的读/写采样缓冲区数据文件(Main.c,Flies.c,Menu.c)
-           增加了文件格式为.CSV的导出采样缓冲区数据文件(Main.c,Flies.c,Menu.c)
-APP V2.42  为节省空间将文件系统转移到SYS_V1.40模块上(ASM.s, Flies.c, dosfs.c)
-           改为用"SerialNo.WPT"的文件形式保存工作参数表(Flies.c)
-           注：APP V2.42以上版本必须与SYS V1.40以上版本一起配合使用
-APP V2.43  修改了模拟通道档位调整时的BUG(Main.c)
-APP V2.44  修改了校准操作时保存参数的BUG(Calibrat.c)
-           增加了开机加载参数成功与否提示(Main.c)
-APP V2.45  修改了读写BUF文件时恢复显示菜单中各个对应项时的BUG(Files.c)
-           删除了读BUF文件时的测试信息反馈显示(Main.c)
-APP V2.50  重写了基于新FAT12文件系统的文件读写程序(Files.c, ASM.s)
-           修改了TH,TL测量显示的BUG(Menu.c)
-           优化了带量纲数值显示相关函数(Menu.c,Function.c,Calibrat.c)
-           修改了脉宽触发程序的BUG(Process.c)
-APP V2.51  修改了Vmin,Vmax,Vpp计量的BUG(Process.c)
+Version of the revised instructions
+APP V2.30: since this version no longer to compatible PCB_V2.6 the following version of the motherboard
+           Since this version is no longer compatible SYS_V1.31 the following version
+           Sleep timing was revised to 600 seconds (Main.c)
+           Modify, and add a new SYS library functions (BIOS.s)
+           Modify the boot information display program (Main.c)
+APP V2.31: an increase of boot identify FPGA load configuration completion discriminant (Main.c)
+           Increase the Licence rights management functionality Demo program example (Ident.c, Main.c),,
+           Modified analog channel correction function entry and exit operations (calibrat.c)
+           Increase the the 144MHz alternately sampling mode function (Process.c)
+APP V2.32: from the version from the IAR 4.42 and version 5.0 can be used in parallel
+           Source did not change, the increase of the folder IAR_V5_Prpject
+APP V2.33: modified scan <1uS, display the refresh BUG (Process.c,)
+           Modified in the calibration state, the operation message BUG (Calibrat.c)
+APP V2.34: changed by channel separate calibration (Calibrat.c & Main.c,)
+           Modify the calibration mode of operation (option Calibrat.c)
+APP V2.35: modified in the calibration process BUG (Calibrat.c),
+           Modified, <5uS scan, the suspension can not BUG (Process.c)
+           To optimize the display data handler (Process.c)
+           Increase of the analog channel automatic zero balance function (Main.c, Process.c, Calibrat.c)
+APP V2.36: part of the calibration operation into automatic mode (Calibrat.c, Process.c, Function.c)
+           Modify the boot loader to the operating parameters (Main.c)
+APP V2.37: to further improve and optimize the display data handler (Process.c)
+           Modify the 32-bit signed and unsigned integer conversion process rounded BUG (Function.c,)
+           Increase the pulse width duty cycle of the time and frequency measurement function (Process.c, Menu.c)
+APP V2.40: increase write U disk to create the file function (Main.c, and Flies.c dosfs.c)
+           Modify the save file number is displayed when BUG (Menu.c)
+APP V2.41: increase the file format for the BUF's read / write sample buffer data files (Main.c, Flies.c, Menu.c)
+           Increased the file format for the CSV export sample buffer data files (Main.c Flies.c, Menu.c)
+APP V2.42: for space-saving file system to SYS_V1.40 module (ASM.s, Flies.c, dosfs.c)
+           Changed use "SerialNo.WPT" file is stored parameter table (Flies.c)
+           Note: the APP V2.42 or later must be used in conjunction with the SYS V1.40 or later
+APP V2.43: modify the adjustment of the analog channels stalls BUG (Main.c),
+APP V2.44: modified to save the parameters in the calibration operation BUG (Calibrat.c),
+           Increase the power load parameters, the success of Tips (Main.c)
+APP V2.45: modified to read and write BUF file recovery display the corresponding menu BUG (Files.c)
+           Delete the read test information when the BUF file feedback (Main.c)
+APP V2.50: rewrite based on the new FAT12 file system, file read and write procedures (Files.c, ASM.s)
+           Changes to TH, TL measurements the display BUG (Menu.c,)
+           Optimized with dimensionless values ??show the correlation function (Menu.c Function.c, Calibrat.c)
+           Modify the pulse width trigger the BUG (Process.c)
+APP V2.51: modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.1 APP (2.51 SmTech 1.8 PMOS69-fixes)"
+#define APP_VERSION       "GCC v1.2 APP (2.51 SmTech 1.8 PMOS69-fixes)"
 
 uc8 PROJECT_STR[20] = "Demo PROG. Ver 1.00";
 u8 OldCurrent;
@@ -102,8 +102,8 @@ int main(void)
   //NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x1C000);   // For Application #3
   //NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x24000);   // For Application #4
   
-  //Note: 用 IAR_V4.x 编译时，变更 App#n 还要同时修改 lnkarm.xcl 文件中的对应项 
-  //      用 IAR_V5.x 编译时，变更 App#n 还要同时修改 xxxxxx.icf 文件中的对应项 
+  // Note: IAR_V4.x compile-time, change the App # n would also have to modify the corresponding entry in the lnkarm.xcl file
+  // IAR_V5.x compile time, to change the App # n would also have to modify xxxxxx.icf file corresponding
   
   __USB_Init();
   
@@ -119,13 +119,13 @@ int main(void)
   X_Attr = (X_attr*)__Get(HORIZONTAL);
   G_Attr = (G_attr*)__Get(GLOBAL);
   T_Attr = (T_attr*)__Get(TRIGGER);
-  Load_Attr();                                 // 赋值Y_Attr等
+  Load_Attr();                                 // assignment Y_Attr
   i = Load_Param(); 
-  if(i == 0)  // 读取预设开机参数
+  if(i == 0)  // read the default boot parameters
     __Display_Str(6*8, 30, GRN, PRN, "     Reload parameter form disk       ");
   else       
     __Display_Str(6*8, 30, YEL, PRN, "     Parameter record not found       ");  
-  //  i = Load_Param(); // 读取预设开机参数 
+  //  i = Load_Param(); // read the default boot parameters
   
   /*--------------------------- LICENCE_CTRL_DEMO --------------------------------
   Offset = Seek_Proj(PROJECT_ID);
@@ -246,8 +246,8 @@ int main(void)
     
     //-------------------------------------------------------------------------- ********* LIFE *************    
     if(PD_Cnt == 0){
-      __Set(BACKLIGHT, 0);     // 关闭背光
-      __Set(STANDBY, EN);      // 进入省电状态  
+      __Set(BACKLIGHT, 0);     // turn off the backlight
+      __Set(STANDBY, EN);      // enter low power states
     } else {
       Synchro();         
       if (TimedDeltaView>0){
@@ -264,12 +264,12 @@ int main(void)
         
         Count_FPS = 0;
         Update_Battery();
-        if (FlagMeter==1) { for(i=0; i<9; ++i)  Display_Value(i);} // 每秒刷新测量值        
+        if (FlagMeter==1) { for(i=0; i<9; ++i)  Display_Value(i);} // refresh the measured values per second        
       }
       
       if (FlagMeter==1) Display_Meter();
       Display_Title();
-      if(Update){                             // 处理按键后需要刷新的项目
+      if(Update){                             // handle button to refresh item
         if (TrgAuto==0)  Print_Str(365,  216, ((SCRN<<8)+Title[TRIGG][SOURCE].Value), PRN, "!Man!");
         if (TrgAuto==1)  Print_Str(365,  216, ((SCRN<<8)+Title[TRIGG][SOURCE].Value), INV, "!1/4!");
         if (TrgAuto==2)  Print_Str(365,  216, ((SCRN<<8)+Title[TRIGG][SOURCE].Value), INV, "!1/2!");
@@ -351,8 +351,8 @@ int main(void)
  
    //--------------------------------------------------------------------------  GESTIONE TASTI MENU
     if(Key_Buffer) { 
-      if(PD_Cnt == 0)  App_init();          // 退出省电状态
-      PD_Cnt = 600;                         // 600秒
+      if(PD_Cnt == 0)  App_init();          // exit the power saving state
+      PD_Cnt = 600;                         // 600 sec.
       //--------------------------------------------------------------------------------------------------------------  
       if(Key_Buffer == KEY1){                                                   // ===--- TASTO 1 PREMUTO ---===
         _State.Value = (_State.Value == 0)? 1 : 0;                              // "RUN/HOLD" 
@@ -424,7 +424,7 @@ int main(void)
 //            }
           }
           if (Delay_Cnt == 0) {   
-            Save_Param();                             // 保存当前操作设置参数   
+            Save_Param();                             // save the current operation to set parameters  
             if(Current != FILE){
               for (j=0; j<4; j++) {
                 Print_Str(91, 0, 0x0405, PRN, "       Save Settings       ");
@@ -575,30 +575,30 @@ int main(void)
          
         if (((Current == T_VERNIE) || (Current == V_VERNIE))&& (FlagMeter==0)) TimedDeltaView=150;
         if(Current < METER_0){
-          if((Current == TRIGG)&&(Detail[Current]==2)){         // 触发电平调节
+          if((Current == TRIGG)&&(Detail[Current]==2)){         // trigger level adjustment
             if(V_Trigg[_Trigg[SOURCE].Value].Value > MIN_Y+4) 
               V_Trigg[_Trigg[SOURCE].Value].Value--;
-          } else if((Current == BK_LIGHT)||(Current == VOLUME)){// 背光或音量调节
+          } else if((Current == BK_LIGHT)||(Current == VOLUME)){// backlight or adjust the volume
             if(_Curr[1].Value > 0)   _Curr[1].Value--;
-          } else if((Current == T_BASE)&&(_Det == XPOSI)&& (FlagFrameMode==0)){      // X_POSI调节
+          } else if((Current == T_BASE)&&(_Det == XPOSI)&& (FlagFrameMode==0)){      // X_POSI adjustment
             if(_Curr[_Det].Value > 30) _Curr[_Det].Value -= 30; 
             else if(_Curr[_Det].Value > 0) _Curr[_Det].Value--;
-            _X_View.Flag |= UPDAT;                              // 刷新X_View
-          } else {                                              // 当前项为其他
+            _X_View.Flag |= UPDAT;                              // refresh X_View
+          } else {                                              // for other Current item
             if(_Curr[_Det].Value > 0) _Curr[_Det].Value--; 
             else if(_Curr[_Det].MARK & CIRC) _Curr[_Det].Value =_Curr[_Det].Limit;
           }
-          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE 选择
+          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE selection
             Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
-            Title[RUNNING][STATE].Flag |= UPDAT;       // 刷新 RUNNING STATE
+            Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
           if((Current == OUTPUT)&&(_Kind != PWM)){
              if (Title[OUTPUT][FRQN].Value > 14) 
-            Title[OUTPUT][FRQN].Value = 14;            // 模拟信号频率上限为20KHz
+            Title[OUTPUT][FRQN].Value = 14;            // upper limit of the analog signal frequency is 20KHz
            } 
           if((Current == FILE)&&(_Curr[0].Value == LOAD)){ 
-            if(_Curr[2].Value == BMP) _Curr[2].Value = BUF;  // 只能Load Dat,Buf文件
-            if(_Curr[2].Value == CSV) _Curr[2].Value = BUF;  // 只能Load Dat,Buf文件
+            if(_Curr[2].Value == BMP) _Curr[2].Value = BUF;  // only the Load Dat Buf file
+            if(_Curr[2].Value == CSV) _Curr[2].Value = BUF;  // only the Load Dat Buf file
           }
           _Curr[0].Flag |= UPDAT;
           _Curr[1].Flag |= UPDAT;
@@ -607,7 +607,7 @@ int main(void)
         } else {
           Meter[Current-METER_0].Flag |= UPDAT;
           if(Meter[Current-METER_0].Item  > VBT) 
-            Meter[Current-METER_0].Item -= 1;          // 改变测量项目 
+            Meter[Current-METER_0].Item -= 1;          // change the measurement items 
           else                     
             Meter[Current-METER_0].Item  = TL;//MIN;
           if(Meter[Current-METER_0].Item == FPS) 
@@ -624,7 +624,7 @@ int main(void)
        
         
         if ((FlagMeter==0)&&(Current == V_VERNIE)&& (_Det==V2)){ _Curr[_Det].Flag |= UPDAT;_Det=V1;goto EndKIndex;}
-        if(Current < METER_0){                         // 改变Detail
+        if(Current < METER_0){                         // change the Detail
           _Curr[_Det].Flag |= UPDAT;
           if(_Det < 3)    _Det += 1;
           else            _Det  = 0;
@@ -636,7 +636,7 @@ int main(void)
           if(_Curr[_Det].MARK & NUM2)                       _Det  = 0; 
           if((_Curr[_Det].MARK & NUM3)&&(Current != FILE)&& (Current != OUTPUT) )  _Det  = 0;  
           _Curr[_Det].Flag |= BLINK;
-        } else {                                       // 改变测量对象
+        } else {                                       // change the measurement object
           Meter[Current-METER_0].Flag |= UPDAT;
           if(Meter[Current-METER_0].Track <=  TRACK4) 
             Meter[Current-METER_0].Track += 1;
@@ -657,12 +657,12 @@ int main(void)
         if ((Current == T_VERNIE) || ((Current == V_VERNIE) && (FlagMeter==0))) TimedDeltaView=150;
         if ((TrgAuto>0)&&(Current == TRIGG) && _Det==2) _Det=0;
         if(Current < METER_0){
-          if((Current == TRIGG)&&(Detail[Current]==2)){         // 触发电平调节
+          if((Current == TRIGG)&&(Detail[Current]==2)){         // trigger level adjustment
             if(V_Trigg[_Trigg[SOURCE].Value].Value < MAX_Y-4) 
               V_Trigg[_Trigg[SOURCE].Value].Value++;
-          } else if ((Current == BK_LIGHT)||(Current == VOLUME)){// 背光或音量调节
+          } else if ((Current == BK_LIGHT)||(Current == VOLUME)){// backlight or adjust the volume
             if(_Curr[1].Value < _Curr[1].Limit)   _Curr[1].Value++;
-          } else if ((Current == T_BASE)&&(_Det == XPOSI) && (FlagFrameMode==0)){      // X_POSI调节
+          } else if ((Current == T_BASE)&&(_Det == XPOSI) && (FlagFrameMode==0)){      // X_POSI adjustment
             if (_Curr[_Det].Value <30){ _Curr[_Det].Value ++; goto OkSlow; }//
             else if (_Curr[_Det].Value <(_Curr[_Det].Limit-30)) _Curr[_Det].Value += 30; //
             else if (_Curr[_Det].Value < (_Curr[_Det].Limit)) _Curr[_Det].Value ++;
@@ -678,22 +678,22 @@ int main(void)
                       if (_Curr[_Det].Value <_Curr[_Det].Limit-MIN_X-1) _Curr[_Det].Value ++; 
                     }
            }
-          else {                                              // 当前项为其他
+          else {                                              // the current item for other
             if(_Curr[_Det].Value < _Curr[_Det].Limit)  _Curr[_Det].Value++;
             
             
             
             else if(_Curr[_Det].MARK & CIRC)   _Curr[_Det].Value  = 0;
           }
-          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE 选择
+          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE selection
             Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
-            Title[RUNNING][STATE].Flag |= UPDAT;       // 刷新 RUNNING STATE
+            Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
           if((Current == OUTPUT)&&(_Kind != PWM)){
             if(Title[OUTPUT][FRQN].Value > 14) 
-              Title[OUTPUT][FRQN].Value = 14;          // 模拟信号频率上限为20KHz
+              Title[OUTPUT][FRQN].Value = 14;          // upper limit of the analog signal frequency is 20KHz
           }
-          if((Current == FILE)&&(_Curr[0].Value == 1)){  // 只能Load Dat,Buf文件
+          if((Current == FILE)&&(_Curr[0].Value == 1)){  // only the Load Dat Buf file
             if(_Curr[2].Value == BMP) _Curr[2].Value = DAT;
             if(_Curr[2].Value == CSV) _Curr[2].Value = DAT;
           }
@@ -704,7 +704,7 @@ int main(void)
         } else {
           Meter[Current-METER_0].Flag |= UPDAT;
           if(Meter[Current-METER_0].Item < TL)//MIN)  
-            Meter[Current-METER_0].Item += 1;          // 改变测量项目
+            Meter[Current-METER_0].Item += 1;          // change the measurement items
           else                     
             Meter[Current-METER_0].Item  = VBT;
           if(Meter[Current-METER_0].Item == VBT) 

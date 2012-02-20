@@ -20,7 +20,7 @@ u32 Power(u8 x, u8 y)
   return m;
 }
 /*******************************************************************************
- delayms: 毫秒（mS）延时程序。 输入: 延时等待的毫秒数值（在72MHz主频情况下）
+ delayms: milliseconds (mS) time delay procedure. Input: delay of milliseconds to wait value (72MHz frequency case)
 *******************************************************************************/
 void Delayms(u16 mS) 
 { 
@@ -32,7 +32,7 @@ void Delayms(u16 mS)
 
 
 /*******************************************************************************
- Sign_int2Str: 32位数转e位有效数字符串 + 量纲字符串
+ Sign_int2Str: 32-digit switch to e-bit effective number of strings + dimensionless string
 ******************************************************************************/
 
 void Int2Str(char *p, s32 n, char *pUnit, u8 e, u8 Mode)
@@ -148,14 +148,14 @@ void Int2Str(char *p, s32 n, char *pUnit, u8 e, u8 Mode)
 
 
 /*******************************************************************************
- Sign_int2Str: 32位数转e位有效数字符串 + 量纲字符串
+ Sign_int2Str: 32-digit switch to e-bit effective number of strings + dimensionless string
 ******************************************************************************
 void Int2Str(u8 *p, s32 n, uc8 *pUnit, u8 e, u8 Mode)
 {
   s32 i, j, m, c;
   u8  *k;
   
-  if(n == 0x80000000){               // 该数值定义为无效数值
+  if(n == 0x80000000){               // This value is defined as an invalid value
     *p++ = ' '; *p++ = '.';
     while(--e)  *p++ = ' '; 
     *p = 0;  return;
@@ -166,12 +166,12 @@ void Int2Str(u8 *p, s32 n, uc8 *pUnit, u8 e, u8 Mode)
     if(n <  0){*p++ = '-';  n = -n;}
   }
   m = n; i = 0; c = 5;
-  while(m >= 10){                    // 检测 n 的有效位数
-    m /= 10;  if(++i > e) c *= 10;   // 有效位数大于e则计算四舍五入位数
+  while(m >= 10){                    // detection of n significant digits
+    m /= 10;  if(++i > e) c *= 10;   // number of significant digits than e calculate the rounded median
   }
-  if(i >= e) n += c;                 // 加上四舍五入值
+  if(i >= e) n += c;                 // plus the rounded value
   m = n; i = 0;
-  while(m >= 10){                    // 重新检测 n 的有效位数
+  while(m >= 10){                    // re-detection of n significant digits
     m /= 10; i++;
   }
   i++;   
@@ -184,9 +184,9 @@ void Int2Str(u8 *p, s32 n, uc8 *pUnit, u8 e, u8 Mode)
     i %= 3;
   }
   p += e; k = p+1;  
-  while(n >= Power(10, e)) n /= 10;  // 截取最高e位有效位数
+  while(n >= Power(10, e)) n /= 10;  // maximum interception of e-bit effective number of bits
   for(j=0; j<m; j++) while(*pUnit++);
-  do *k++ = *pUnit; while(*pUnit++); // 量纲字符字符串  
+  do *k++ = *pUnit; while(*pUnit++); // dimensional character string
   while(e--){
     *p-- = '0'+(n%10); n /= 10;
     if((Mode != STD)&&(m > 0)&&(i == e)) *p-- = '.';
@@ -198,7 +198,7 @@ void Int2Str(u8 *p, s32 n, uc8 *pUnit, u8 e, u8 Mode)
 
 */
 /*******************************************************************************
- Int32String_sign:带符号32位数转3位有效数字字符串  
+ Int32String_sign:碨igned 32-digit switch to three significant digits string
 ******************************************************************************
 void Int32String_sign(I32STR_RES *r, s32 n)
 {
@@ -296,7 +296,7 @@ void Int32String_sign(I32STR_RES *r, s32 n)
   r->len = p-r->str;
 }*/
 /*******************************************************************************
- Int32String:无符号32位数转e位有效数字字符串  
+ Int32String: unsigned 32-bit transfer of e-bit string of numbers
 ******************************************************************************
 void Int32String(I32STR_RES *r, u32 n, u32 e)
 {
@@ -393,18 +393,18 @@ void Int32String(I32STR_RES *r, u32 n, u32 e)
 /*******************************************************************************
  Two ASCII character Change to 1 Byte HEX data 
 *******************************************************************************/
-u8 Str2Byte(char x,char y) // 双ASCII字符转1字节二进制数
+u8 Str2Byte(char x,char y) // double-ASCII characters to 1 byte binary number
 {
   uc8 Hexcode[17]="0123456789ABCDEF";
   u8 i, Temp=0;
   
-  if(x>='a' && x<='z')  x-=32;     // 小写改大写
-  if(y>='a' && y<='z')  y-=32;     // 小写改大写
+  if(x>='a' && x<='z')  x-=32;     // lowercase change the uppercase
+  if(y>='a' && y<='z')  y-=32;     // lowercase change the uppercase
   for(i=0;i<16;i++){
-    if(Hexcode[i]==x)  Temp+=i*16; // 将字符转为高4位十六进制数值
+    if(Hexcode[i]==x)  Temp+=i*16; // characters into the high four hexadecimal values
   }
   for(i=0;i<16;i++){
-    if(Hexcode[i]==y)  Temp+=i;    // 将字符转为低4位十六进制数值
+    if(Hexcode[i]==y)  Temp+=i;    // characters into four hexadecimal values
   }
   return Temp;
 }
