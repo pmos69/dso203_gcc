@@ -18,7 +18,6 @@ v1.1:
 - Updated with marcosin 1.8 release
 
 
-
 v1:
 
 - Removed -fno-common and changes -Os to -O3 in compile options
