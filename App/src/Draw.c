@@ -612,8 +612,8 @@ void Draw_Mark(u16 m, u16 n)
 { 
   u16 i, j, Tmp;
   
-  if(m < 4) { if(Title[m][POSI].Value > 200-3) return;}
-  else      { if(V_Trigg[n].Value > 200-3)     return; } 
+  if(m < 4)  { if(Title[m][POSI].Value > 200-3) return; }
+  else       { if(V_Trigg[n].Value > 200-3)     return; }
   
   for(i = 0; i <= 10; ++i){
     if(i < 7){
@@ -820,25 +820,42 @@ void Draw_Row_XY(u16 Row)
    u16 h;
   u16 TempY;
    u16 TempX;
+   
+  
+   
+   
+   
+   
+   
   if(Row & 1){                                       // Odd row process
 //----------------------- Fill the row base data -------------------------------
     __Row_Copy(Row_Base2, LCD_Buffer1);
 //------------------------- Draw the Curve data --------------------------------
   
+    
+    
+       if((Row == 260)||(Row+1 == MAX_X))                 __Row_Copy(Row_Base1, LCD_Buffer2);
+    else if(Row == MIN_X)             __Row_Copy(Row_Base1, LCD_Buffer2);
+    else if(((Row+1 - MIN_X)%25 == 0)&& (Row<260))     __Row_Copy(Row_Base4, LCD_Buffer2);  //%30
+    else if(((Row+1 - MIN_X)%5  == 0)&& (Row<260))     __Row_Copy(Row_Base3, LCD_Buffer2); //%6
+    else if (Row != 260)                                __Row_Copy(Row_Base2, LCD_Buffer2);
+   
+   
+    
   //  if (Row==V_Trigg[TRACK1].Value) LCD_Buffer2[TrackBuff[(Row*4)+1]] |= Color[TR_1];
   
   for(h = 0; h <= 255; ++h)
   {
-     TempX=(TrackBuff[(h*4)]*5/4)+OffsetX-130;
+     TempX=(TrackBuff[(h*4)])+OffsetX-108;   //*5/4
      TempY=TrackBuff[(h*4)+1]+OffsetY-100;
       
      if ((TempY>0) && (TempY<200) && (TempX>0) && (TempX<250)){
-       if ((Row==150) && (TempY==h))
-          {LCD_Buffer2[TempY-1] |= Color[TR_2];
-          LCD_Buffer2[TempY] |= Color[TR_2];
-          LCD_Buffer2[TempY+1] |= Color[TR_2];
-          LCD_Buffer2[TempY+2] |= Color[TR_2];
-        }
+//       if ((Row==150) && (TempY==h))
+//          {LCD_Buffer2[TempY-1] |= Color[TR_2];
+//          LCD_Buffer2[TempY] |= Color[TR_2];
+//          LCD_Buffer2[TempY+1] |= Color[TR_2];
+//          LCD_Buffer2[TempY+2] |= Color[TR_2];
+//        }
       
 //        if ((TempY<h+5) && (TempY>h)) { 
 //         if (((V_Trigg[TRACK1].Value*5/4)<Row+2) && ((V_Trigg[TRACK1].Value*5/4)>Row-2))
@@ -887,32 +904,34 @@ void Draw_Row_XY(u16 Row)
          }
   
  } 
- 
+  
   
     __LCD_Copy(LCD_Buffer2, Y_SIZE+1);               // Odd row Transitive
   } else {                                           // Even row process
 //----------------------- Fill the row base data -------------------------------
+      if((Row == 260)||(Row+1 == MAX_X))                 __Row_Copy(Row_Base1, LCD_Buffer1);
+    else if(Row == MIN_X)             __Row_Copy(Row_Base1, LCD_Buffer1);
+    else if(((Row+1 - MIN_X)%25 == 0)&& (Row<260))     __Row_Copy(Row_Base4, LCD_Buffer1);  //%30
+    else if(((Row+1 - MIN_X)%5  == 0)&& (Row<260))     __Row_Copy(Row_Base3, LCD_Buffer1); //%6
+    else if (Row != 260)                                __Row_Copy(Row_Base2, LCD_Buffer1);
+   
+   
   
-     if((Row == 250)||(Row+1 == MAX_X))                 __Row_Copy(Row_Base1, LCD_Buffer2);
-    else if(Row+1 == MIN_X)             ;
-    else if(((Row+1 - MIN_X)%30 == 0)&& (Row<250))     __Row_Copy(Row_Base4, LCD_Buffer2);
-    else if(((Row+1 - MIN_X)%6  == 0)&& (Row<250))     __Row_Copy(Row_Base3, LCD_Buffer2);
-    else if (Row != 250)                                __Row_Copy(Row_Base2, LCD_Buffer2);
     
- //  u16 io ;
+//   u16 io ;
     for(h = 0; h <= 255; ++h){
   
-      TempX=(TrackBuff[(h*4)]*5/4)+OffsetX-130;
+      TempX=(TrackBuff[(h*4)])+OffsetX-108;  //*5/4
      TempY=TrackBuff[(h*4)+1]+OffsetY-100;
     
      if ((TempY>0) && (TempY<200) && (TempX>0) && (TempX<250)){
        
-       if ((Row==150) && (TempY==h))
-          {LCD_Buffer1[TempY-1] |= Color[TR_2];
-          LCD_Buffer1[TempY] |= Color[TR_2];
-          LCD_Buffer1[TempY+1] |= Color[TR_2];
-          LCD_Buffer1[TempY+2] |= Color[TR_2];
-        }
+//       if ((Row==150) && (TempY==h))
+//          {LCD_Buffer1[TempY-1] |= Color[TR_2];
+//          LCD_Buffer1[TempY] |= Color[TR_2];
+//          LCD_Buffer1[TempY+1] |= Color[TR_2];
+//          LCD_Buffer1[TempY+2] |= Color[TR_2];
+//        }
 //      if ((TempY<h+5) && (TempY>h)) { 
 //       if (((V_Trigg[TRACK1].Value*5/4)<Row+2) && ((V_Trigg[TRACK1].Value*5/4)>Row-2))
 //          {LCD_Buffer1[TempY-1] |= Color[TR_2];

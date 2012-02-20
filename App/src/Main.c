@@ -57,8 +57,7 @@ APP V2.50  重写了基于新FAT12文件系统的文件读写程序(Files.c, ASM.s)
 APP V2.51  修改了Vmin,Vmax,Vpp计量的BUG(Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "  GCC_v1 APP (APP251_1.7+PMOS69_fixes) "
-
+#define APP_VERSION       "GCC v1.1 APP (2.51 SmTech 1.8 PMOS69-fixes)"
 
 uc8 PROJECT_STR[20] = "Demo PROG. Ver 1.00";
 u8 OldCurrent;
@@ -89,7 +88,7 @@ int main(void)
   u16 Count_FPS = 0, Second = 0;//,Offset, Result 
   u8  UpdateMeter = 0, CounterUpdate  ;
   u8 j;
-  //u8 z;
+//  u8 z;
   u16 TmpVT;
   u16 Vt1Old = 0;
   u16 Vt2Old = 0;
@@ -192,9 +191,9 @@ int main(void)
           OldTrack1X=Title[TRACK1][POSI].Value;
           OldTrack2X=Title[TRACK2][POSI].Value;
         }
-        Title[TRACK1][POSI].Value=100+MIN_Y;
+        Title[TRACK1][POSI].Value=100;
         Title[TRACK2][POSI].Value=100;
-        OffsetX=130;
+        OffsetX=135;
         OffsetY=100;
         OldMeter=FlagMeter;
         if (FlagMeter==0) EnableMeter();
@@ -214,9 +213,9 @@ int main(void)
          _Vt1=_Vt1Old;
         TrgAuto=TrgAutoOld;
         }
-        Title[TRACK1][POSI].Value=100+MIN_Y;
+        Title[TRACK1][POSI].Value=100;
         Title[TRACK2][POSI].Value=100;
-        OffsetX=130;
+        OffsetX=135;
         OffsetY=100;
        
       }

@@ -214,7 +214,7 @@ Save_Buf: 保存采集数据缓存区为BUF格式    输入：文件编号     返回值：0x00=成功
 u8 Save_Buf(u8 FileNum)
 {
   u8   i;
-  char  Filename[12] = "DATA    BUF"; 
+  char Filename[12] = "DATA    BUF"; 
   u16* p ;
   
   u16 pCluster[3];
@@ -253,7 +253,7 @@ Load_Dat: 加载保存过的采集数据缓冲区    输入：文件编号     返回值：0x00=成功
 u8 Load_Buf(u8 FileNum)
 {
   u8  i;
-  char  Filename[13] = "DATA    BUF"; 
+  char Filename[13] = "DATA    BUF"; 
   u16 *p;
   
   u16 pCluster[3];
@@ -363,7 +363,7 @@ Save_Csv: 保存采集数据缓存区为CSV格式    输入：文件编号     返回值：0x00=成功
 *******************************************************************************/
 u8 Save_Csv(u8 FileNum)
 {
-  u8  track[4];
+  u8  track[4]; 
   char Num[4];
   char Filename[12] = "DATA    CSV"; 
   u32 i, k = 0;
@@ -446,7 +446,7 @@ Load_Parameter: 加载之前的工作参数                           Return: 0= Success
 u8 Load_Param(void)
 { 
   u8  Sum = 0, Versions = 0x06; 
-  char	Filename[12];
+  char Filename[12];
   u16 i;
   u16* p =(u16*)SecBuff;
   
@@ -502,7 +502,7 @@ u8 Load_Param(void)
 *******************************************************************************/
 u8 Save_Param(void)             // 保存工作参数表文件
 {
-  u8  Sum = 0,  Versions = 0x06;
+  u8  Sum = 0, Versions = 0x06; 
   char Filename[12];
   u16 i, Tmp[2];
   u16* p =(u16*)SecBuff;

@@ -1,7 +1,7 @@
-/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
- File Name : BIOS.h  
- Version   : DS203_APP Ver 2.5x                                  Author : bure
-*******************************************************************************/
+//********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
+// File Name : BIOS.h  
+// Version   : DS203_APP Ver 2.5x                                  Author : bure
+//*******************************************************************************/
 #ifndef __BIOS_H
 #define __BIOS_H
 
@@ -49,6 +49,7 @@
 #define DIGTAL_CCR       18     // 脉冲输出占空比值 Value = 0~65535
 #define KEY_IF_RST       19     // 定时中断标志复位 Value = 0
 #define STANDBY          20     // 进入降功耗等待   Value = 0
+#define ANALOG_PSC       21
 #define FPGA_RST         31     // FPGA 复位        Value = 0
 
 #define TRIGG_MODE       32+0  // 触发模式          Value = Mode
@@ -157,7 +158,7 @@ typedef struct  // 硬件综合属性
 
 typedef struct  // 垂直通道属性 
 {
-  char STR[8];   // 档位标识字符串
+  char  STR[8];   // 档位标识字符串
   s16 KA1;      // A通道位移误差校正系数1
   u16 KA2;      // A通道斜率误差校正系数2
   s16 KB1;      // B通道位移误差校正系数1
@@ -167,7 +168,7 @@ typedef struct  // 垂直通道属性
 
 typedef struct  // 水平通道属性 
 {
-  char STR[8];   // 档位标识字符串
+  char  STR[8];   // 档位标识字符串
   s16 PSC;      // 预分频系数
   u16 ARR;      // 分频系数
   u16 CCR;      // 占空比系数
@@ -177,7 +178,7 @@ typedef struct  // 水平通道属性
 
 typedef struct  // 触发通道属性 
 {
-  char STR[8];   // 触发方式标识字符串
+  char  STR[8];   // 触发方式标识字符串
   u8  CHx;      // 触发通道编号
   u8  CMD;      // 触发方式控制字
 } T_attr ; 
