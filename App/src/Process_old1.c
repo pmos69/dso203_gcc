@@ -24,8 +24,6 @@ s16 c_Max, d_Max, A_Posi, B_Posi;
 u8  Full=1, Interlace;
 u16 JumpCnt;
 u8 FrameMode;
-u16 Sample;
-u8 Pagina;
 
 uc16 Wait[27]= {1000, 500, 200, 100, 50, 20, 10, 5, 2, 2,   
                 2,      2,   2,   2,  2,  2,  2, 2, 2, 2,    
@@ -39,7 +37,6 @@ T_attr *T_Attr;
 u32 DataBuf[4096];
 u8  TrackBuff  [X_SIZE * 4];         // ÇúÏß¹ì¼£»º´æ£ºi+0,i+1,i+2,i+3,·Ö±ð´æ·Å1¡«4ºÅ¹ì¼£Êý¾Ý
 
-
 s8  Ka1[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // AÍ¨µÀµÍÎ»Îó²îÐ£ÕýÏµÊý
 s8  Kb1[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // BÍ¨µÀµÍÎ»Îó²îÐ£ÕýÏµÊý
 u16 Ka2[10] ={1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024}; // AÍ¨µÀÔöÒæÎó²îÐ£ÕýÏµÊý
@@ -47,12 +44,9 @@ u16 Kb2[10] ={1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024}; // BÍ
 s8  Ka3[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // AÍ¨µÀ¸ßÎ»Îó²îÐ£ÕýÏµÊý
 s8  Kb3[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // BÍ¨µÀ¸ßÎ»Îó²îÐ£ÕýÏµÊý
 
-D_tab D_Tab[23] ={  // Âö³å²¨ÐÎÊä³öÇý¶¯±í, »ùÓÚ72MHzÖ÷Æµ
-//    STR      PSC     ARR       DUTY% 
-  {" !1Hz! ", 1800-1,  40000-1,     50},
-  {" !2Hz! ", 1800-1,  20000-1,     50},
-  {" !5Hz! ", 1800-1,   8000-1,     50},
-  {" 10Hz ",  180-1,  40000-1,     50},
+D_tab D_Tab[20] ={  // Âö³å²¨ÐÎÊä³öÇý¶¯±í, »ùÓÚ72MHzÖ÷Æµ
+//    STR      PSC     ARR       DUTY%
+  {" 10Hz ",  180-1,  20000-1,     50},
   {" 20Hz ",  180-1,  20000-1,     50},
   {" 50Hz ",  180-1,   8000-1,     50},
   {"!100Hz!", 180-1,   4000-1,     50},
@@ -73,93 +67,38 @@ D_tab D_Tab[23] ={  // Âö³å²¨ÐÎÊä³öÇý¶¯±í, »ùÓÚ72MHzÖ÷Æµ
   {" 6MHz ",    1-1,     12-1,     50},
   {" 8MHz ",    1-1,      9-1,     50}};
 
-
-//A_tab A_Tab[11] ={ // Ä£Äâ²¨ÐÎÊä³öÇý¶¯±í, »ùÓÚ72MHzÖ÷Æµ, Ã¿ÖÜÆÚ36µãºÏ³É
-////    STR     PSC     ARR 
-//  {" 10Hz ",  20-1,  10000-1},
-//  {" 20Hz ",  20-1,   5000-1},
-//  {" 50Hz ",  20-1,   2000-1},
-//  {"!100Hz!", 20-1,   1000-1},
-//  {"!200Hz!", 20-1,    500-1},
-//  {"!500Hz!", 20-1,    200-1},
-//  {" 1KHz ",  20-1,    100-1},
-//  {" 2KHz ",  20-1,     50-1},
-//  {" 5KHz ",  20-1,     20-1},
-//  {"!10KHz!", 20-1,     10-1},
-//  {"!20KHz!", 20-1,      5-1}};
-A_tab A_Tab[15] ={ // Ä£Äâ²¨ÐÎÊä³öÇý¶¯±í, »ùÓÚ72MHzÖ÷Æµ, Ã¿ÖÜÆÚ36µãºÏ³É
+A_tab A_Tab[11] ={ // Ä£Äâ²¨ÐÎÊä³öÇý¶¯±í, »ùÓÚ72MHzÖ÷Æµ, Ã¿ÖÜÆÚ36µãºÏ³É
 //    STR     PSC     ARR 
-  {"! 1Hz !", 20-1,  50000-1},
-  {"! 2Hz !", 20-1,  20000-1},
-  {"! 5Hz !", 20-1,  10000-1},
-  {" 10Hz ",  10-1,  10000-1},
-  {" 20Hz ",  10-1,   5000-1},
-  {" 50Hz ",  10-1,   2000-1},
-  {"!100Hz!", 10-1,   1000-1},
-  {"!200Hz!", 10-1,    500-1},
-  {"!500Hz!", 10-1,    200-1},
-  {" 1KHz ",  10-1,    100-1},
-  {" 2KHz ",  10-1,     50-1},
-  {" 5KHz ",  10-1,     20-1},
-  {"!10KHz!", 10-1,     10-1},
-  {"!20KHz!", 10-1,      5-1},
-  {"!40KHz!",  4-1,      5-1}};
+  {" 10Hz ",  20-1,  10000-1},
+  {" 20Hz ",  20-1,   5000-1},
+  {" 50Hz ",  20-1,   2000-1},
+  {"!100Hz!", 20-1,   1000-1},
+  {"!200Hz!", 20-1,    500-1},
+  {"!500Hz!", 20-1,    200-1},
+  {" 1KHz ",  20-1,    100-1},
+  {" 2KHz ",  20-1,     50-1},
+  {" 5KHz ",  20-1,     20-1},
+  {"!10KHz!", 20-1,     10-1},
+  {"!20KHz!", 20-1,      5-1}};
 
-u16   ATT_DATA[72];
+u16 SIN_DATA[36] =  // Sine wave data                                                                                                 //         
+  {0x000,0x027,0x08E,0x130,0x209,0x311,0x441,0x58F,0x6F0,    // 90
+   0x85A,0x9C0,0xB19,0xC59,0xD76,0xE68,0xF26,0xFAB,0xFF3,    // 180
+   0xFFF,0xFD7,0xF70,0xECE,0xDF5,0xCED,0xBBD,0xA6F,0x90E,    // 270
+   0x7A4,0x63E,0x4E5,0x3A5,0x288,0x196,0x0D8,0x053,0x00B,};  // 360   
 
-//u16 SIN_DATA[72] =  // Sine wave data                                                                                                 //         
-//  {0x000,0x027,0x08E,0x130,0x209,0x311,0x441,0x58F,0x6F0,    // 90
-//   0x85A,0x9C0,0xB19,0xC59,0xD76,0xE68,0xF26,0xFAB,0xFF3,    // 180
-//   0xFFF,0xFD7,0xF70,0xECE,0xDF5,0xCED,0xBBD,0xA6F,0x90E,    // 270
-//   0x7A4,0x63E,0x4E5,0x3A5,0x288,0x196,0x0D8,0x053,0x00B,};  // 360   
-//u16 SIN_DATA[72] = 
-//{2048,2404,2748,3072,3364,3617,3822,3972,4065,4096,4065,3972,3822,3617,3364,
-//3072,2748,2404,2048,1692,1348,1024,732,479,274,124,31,0,31,124,274,479,732,1024,
-//1348,1692,
-//2048,2404,2748,3072,3364,3617,3822,3972,4065,4096,4065,3972,3822,3617,3364,
-//3072,2748,2404,2048,1692,1348,1024,732,479,274,124,31,0,31,124,274,479,732,1024,
-//1348,1692,};
+u16 TRG_DATA[36] =  // triangle wave data
+  {0x000,0x0E3,0x1C6,0x2AA,0x38D,0x471,0x554,0x638,0x71B,    // 90
+   0x7FF,0x8E2,0x9C6,0xAA9,0xB8D,0xC70,0xD54,0xE37,0xF1B,    // 180
+   0xFFE,0xF1B,0xE37,0xD54,0xC70,0xB8D,0xAA9,0x9C6,0x8E2,    // 270
+   0x7FF,0x71B,0x638,0x554,0x471,0x38D,0x2AA,0x1C6,0x0E3};   // 360   
+         
+u16 SAW_DATA[36] =  // Sawtooth wave data                                                                                             //         
+  {0x000,0x075,0x0EA,0x15F,0x1D4,0x249,0x2BE,0x333,0x3A8,    // 90
+   0x41D,0x492,0x507,0x57C,0x5F1,0x666,0x6DB,0x750,0x7C5,    // 180
+   0x83A,0x8AF,0x924,0x999,0xA0E,0xA83,0xAF8,0xB6D,0xBE2,    // 270
+   0xC57,0xCCC,0xD41,0xDB6,0xE2B,0xEA0,0xF15,0xF8A,0xFFF};   // 360    
 
-u16 SIN_DATA[72] = 
-{2048,2226,2404,2578,2748,2914,3072,3223,3364,3496,3617,3726,3822,
-3904,3972,4026,4065,4088,4095,4088,4065,4026,3972,3904,3822,3726,3617,
-3496,3364,3223,3072,2914,2748,2578,2404,2226,2048,1870,1692,1518,1348,
-1182,1024,873,732,600,479,370,274,192,124,70,31,8,0,8,31,70,124,192,274,
-370,479,600,732,873,1024,1182,1348,1518,1692,1870,};
-
-u16 TRG_DATA[72] =  // triangle wave data
-  {0,114,228,342,456,570,684,798,912,1026,1140,1254,1368,1482,1596,1710,1824,1938,2052,
-2166,2280,2394,2508,2622,2736,2850,2964,3078,3192,3306,3420,3534,3648,3762,3876,3990,4095,
-3990,3876,3762,3648,3534,3420,3306,3192,3078,2964,2850,2736,2622,2508,2394,2280,2166,2052,
-1938,1824,1710,1596,1482,1368,1254,1140,1026,912,798,684,570,456,342,228,114};
-
-u16 SAW_DATA[72] =  // Sawtooth wave data                                                                                             //         
-  {0,
-57,112,168,224,280,336,392,448,504,560,616,672,728,784,840,896,952,1008,1064,1120,1176,1232,
-1288,1344,1400,1456,1512,1568,1624,1680,1736,1792,1848,1904,1960,2016,2072,2128,2184,2240,2296,
-2352,2408,2464,2520,2576,2632,2688,2744,2800,2856,2912,2968,3024,3080,3136,3192,3248,3304,3360,
-3416,3472,3528,3584,3640,3696,3752,3808,3864,3920,3976};   // 360   
-
-u16 DIGI_DATA[72] =  // Sawtooth wave data                                                                                             //         
-  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,
-  4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095};   // 360 
-
-void BackGround_Reset(void)
-{ 
-  u16 i, j;
-  
-  __Clear_Screen(BLACK);       
-  for(i=0; i<13; i++) for(j=0; j<4; j++) Title[i][j].Flag |= UPDAT;
-  for(i=0; i<9; i++)                     Meter[i].Flag    |= UPDAT;
-  if(Current != FILE) {
-    Title[FILE][0].Flag &= !UPDAT;
-    Title[FILE][1].Flag &= !UPDAT;
-    Title[FILE][3].Flag &= !UPDAT;
-  }  
-   Update = 1;                  // ·µ»Øºó»Ö¸´Ô­À´µÄµµÎ»ÉèÖÃ
-}
 
 /*******************************************************************************
  App_init: ÏÔÊ¾´°¿Ú²¨ÐÎÊý¾Ý³õÊ¼»¯
@@ -249,56 +188,25 @@ void Update_Base(void)
 *******************************************************************************/
 void Update_Output(void) 
 {
-  
-  u8 att;
-
   if(_Kind == SINE){
-    for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(SIN_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
-     DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
-      __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
-      __Set(ANALOG_CNT, 72);
-      __Set(ANALOG_PTR, (u32)ATT_DATA);
-    DMA2_Channel4->CCR |= DMA_CCR1_EN;
-      __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-    
+    __Set(ANALOG_CNT, 36);
+    (*((vu32 *)(0x40020400+0x50))) = (u32)&SIN_DATA[0];
+    __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
   }
   if(_Kind == SAW){
-   for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(SAW_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
-     DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
-      __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
-      __Set(ANALOG_CNT, 72);
-      __Set(ANALOG_PTR, (u32)ATT_DATA);
-     DMA2_Channel4->CCR |= DMA_CCR1_EN;
-      __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
+    __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
+    (*((vu32 *)(0x40020400+0x50))) = (u32)&SAW_DATA[0];
+    __Set(ANALOG_CNT, 36);
   }
   if(_Kind == TRIANG){
-    for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(TRG_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
-     DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
-      __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
-      __Set(ANALOG_CNT, 72);
-      __Set(ANALOG_PTR, (u32)ATT_DATA);
-    DMA2_Channel4->CCR |= DMA_CCR1_EN;
-      __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
+    __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
+    (*((vu32 *)(0x40020400+0x50))) = (u32)&TRG_DATA[0];
+    __Set(ANALOG_CNT, 36);
   }
-  
   if(_Kind == DIGI){
-    for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(DIGI_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
-     DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
-      __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
-      __Set(ANALOG_CNT, 72);
-      __Set(ANALOG_PTR, (u32)ATT_DATA);
-    DMA2_Channel4->CCR |= DMA_CCR1_EN;
-      __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-  }
-
-  if(_Kind == PWM){
     __Set(DIGTAL_PSC, D_Tab[_Frqn].PSC);
     __Set(DIGTAL_ARR, D_Tab[_Frqn].ARR);
-    __Set(DIGTAL_CCR, ((D_Tab[_Frqn].ARR+1)*(100-Title[OUTPUT][DUTYPWM].Value))/100);
+    __Set(DIGTAL_CCR, (D_Tab[_Frqn].ARR+1)/2);
   }
 }
 /*******************************************************************************
@@ -338,110 +246,84 @@ void Process(void)
   Posi_41  = _4_posi - _1_posi;
   Posi_42  = _4_posi - _2_posi;
   Posi_4_2 = _4_posi + _2_posi;
-  Posi_4F1 = _4_posi - FileBuff[ 399];
-  Posi_4F2 = _4_posi - FileBuff[ 799];
-  Posi_4F3 = _4_posi - FileBuff[ 1199];
-  Posi_4F4 = _4_posi - FileBuff[1599];
+  Posi_4F1 = _4_posi - FileBuff[ 299];
+  Posi_4F2 = _4_posi - FileBuff[ 599];
+  Posi_4F3 = _4_posi - FileBuff[ 899];
+  Posi_4F4 = _4_posi - FileBuff[1199];
   A_Posi   = ((_1_posi-Ka1[_A_Range])*1024)/Ka2[_A_Range];
   B_Posi   = ((_2_posi-Kb1[_B_Range])*1024)/Kb2[_B_Range];
   
   a_Max = A_Posi; b_Max = B_Posi; 
-  a_Min = A_Posi; b_Min = B_Posi;  
-  
-  //a_Avg = 2048;   b_Avg = 2048;   #pmos69 - seems weird to start the average (total) counter with anything but zero when no samples have been accounted
-  //a_Ssq = 2048;   b_Ssq = 2048;   #pmos69 - seems weird to start the square (total) counter with anything but zero when no samples have been accounted
-  a_Avg = 0;   b_Avg = 0; 
-  a_Ssq = 0;   b_Ssq = 0;      
+  a_Min = A_Posi; b_Min = B_Posi;             
+  a_Avg = 2048;   b_Avg = 2048; 
+  a_Ssq = 2048;   b_Ssq = 2048;      
   
   if((_3_posi + 20)>= Y_BASE+Y_SIZE)  c_Max = Y_BASE+Y_SIZE-1;
   else                                c_Max = _3_posi + 20;
   if((_4_posi + 20)>= Y_BASE+Y_SIZE)  d_Max = Y_BASE+Y_SIZE-1;
   else                                d_Max = _4_posi + 20;
  
-  if (FrameMode>0)      //_Mode == SCAN
-  	{
-    
-    if (_Mode==SCAN)
-      {
-        if (FlagMeter==0) (bag_max_buf = (390*FrameMode));
-        if (FlagMeter==1) (bag_max_buf = (305*FrameMode));
-        
-      } 
-    else
-      {
-        bag_max_buf = (300*FrameMode);  //X_SIZE
-      }
-  
-    }
+  if (FrameMode>0)  //_Mode == SCAN
+  	bag_max_buf = (X_SIZE*FrameMode)+10;
   else
-     {   
   //	bag_max_buf = X_SIZE - 10;
   	bag_max_buf = 4096;
-        
-       
-}
-
-
-
-  if(Interlace == 0){                           // ¶ÀÁ¢²ÉÑùÄ£Ê½
-  
-    k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value;//  // ¼ÆËã²åÖµÔËËãºó´°¿ÚÎ»ÖÃµÄÐÞÕýÖµ
-   
+   if(Interlace == 0){                           // ¶ÀÁ¢²ÉÑùÄ£Ê½
+    k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value ;  // ¼ÆËã²åÖµÔËËãºó´°¿ÚÎ»ÖÃµÄÐÞÕýÖµ
     for(i=0; i <bag_max_buf; i++){
-       
-             if((_T_base > 15)&&(_Status == RUN))  DataBuf[i] = __Read_FIFO(); // ¶ÁÈë32Î»FIFOÊý¾Ý, ¶ÁºóÖ¸Õë+1
-          else if((__Get(FIFO_EMPTY)==0)&&(i == JumpCnt)&&(_Status == RUN)){
-            JumpCnt++;
-            DataBuf[i] = __Read_FIFO();             // ¶ÁÈë32Î»FIFOÊý¾Ý, ¶ÁºóÖ¸Õë+1
-          }
-         
+      DataBuf[i] = __Read_FIFO();
       
-          Ch[A] = (DataBuf[i] & 0xFF );              
-          a_Avg += Ch[A];                           // ÀÛ¼ÆAÍ¨µÀÖ±Á÷Æ½¾ùÖµ              
-          Tmp = Ch[A]- A_Posi;
-          a_Ssq +=(Tmp * Tmp);                      // Í³¼ÆAÍ¨µÀÆ½·½ºÍ
-          Ch[B] = ((DataBuf[i] >> 8) & 0xFF);       
-          b_Avg += Ch[B];                           // ÀÛ¼ÆBÍ¨µÀÖ±Á÷Æ½¾ùÖµ
-          Tmp = Ch[B]- B_Posi;
-          b_Ssq +=(Tmp * Tmp);                      // Í³¼ÆBÍ¨µÀÆ½·½ºÍ
-            
-          if(Ch[A] > a_Max)  a_Max = Ch[A];         // Í³¼ÆAÍ¨µÀ×î´óÖµ  
-          if(Ch[A] < a_Min)  a_Min = Ch[A];         // Í³¼ÆAÍ¨µÀ×îÐ¡Öµ  
-          if(Ch[B] > b_Max)  b_Max = Ch[B];         // Í³¼ÆBÍ¨µÀ×î´óÖµ  
-          if(Ch[B] < b_Min)  b_Min = Ch[B];         // Í³¼ÆBÍ¨µÀ×îÐ¡Öµ  
-           
-          C_D = DataBuf[i] >>16;
-          if((i>1)&&(i<4094)){
-            if(Sa == 2){TaS = i; Ta = i; PaS = 0;}
-            if(Ch[A] > a_Mid_H){
-              if(Sa == 0){ TaS = i; TaN++;} 
-              Sa = 1;  
-            } else { 
-              if(Ch[A] < a_Mid_L) if(Sa == 1){Sa = 0; PaS += i-TaS;}
-            }
-            if(Sb == 2){TbS = i; Tb = i; PbS = 0;}
-            if(Ch[B] > b_Mid_H){
-              if(Sb == 0){ TbS = i; TbN++;} 
-              Sb = 1;  
-            } else { 
-              if(Ch[B] < b_Mid_L) if(Sb == 1){Sb = 0; PbS += i-TbS;}
-            }
-            if(Sc == 2){TcS = i; Tc = i; PcS = 0;}
-            if(C_D & 1){
-              if(Sc == 0){ TcS = i; TcN++;} 
-              Sc = 1;  
-            } else {
-              if(Sc == 1){Sc = 0; PcS += i-TcS;} 
-            }
-            if(Sd == 2){TdS = i; Td = i; PdS = 0;}
-            if(C_D & 2){
-              if(Sd == 0){ TdS = i; TdN++;} 
-              Sd = 1;  
-            } else {
-              if(Sd == 1){Sd = 0; PdS += i-TdS;} 
-            }
-          }
-     
+      
+      if((_T_base > 16)&&(_Status == RUN))  DataBuf[i] = __Read_FIFO(); // ¶ÁÈë32Î»FIFOÊý¾Ý, ¶ÁºóÖ¸Õë+1
+      else if((__Get(FIFO_EMPTY)==0)&&(i == JumpCnt)&&(_Status == RUN)){
+        JumpCnt++;
+        DataBuf[i] = __Read_FIFO();             // ¶ÁÈë32Î»FIFOÊý¾Ý, ¶ÁºóÖ¸Õë+1
+      }
+      Ch[A] = (DataBuf[i] & 0xFF );              
+      a_Avg += Ch[A];                           // ÀÛ¼ÆAÍ¨µÀÖ±Á÷Æ½¾ùÖµ
+      Tmp = Ch[A]- A_Posi;
+      a_Ssq +=(Tmp * Tmp);                      // Í³¼ÆAÍ¨µÀÆ½·½ºÍ
+      Ch[B] = ((DataBuf[i] >> 8) & 0xFF);
+      b_Avg += Ch[B];                           // ÀÛ¼ÆBÍ¨µÀÖ±Á÷Æ½¾ùÖµ
+      Tmp = Ch[B]- B_Posi;
+      b_Ssq +=(Tmp * Tmp);                      // Í³¼ÆBÍ¨µÀÆ½·½ºÍ
+
+      if(Ch[A] > a_Max)  a_Max = Ch[A];         // Í³¼ÆAÍ¨µÀ×î´óÖµ
+      if(Ch[A] < a_Min)  a_Min = Ch[A];         // Í³¼ÆAÍ¨µÀ×îÐ¡Öµ
+      if(Ch[B] > b_Max)  b_Max = Ch[B];         // Í³¼ÆBÍ¨µÀ×î´óÖµ
+      if(Ch[B] < b_Min)  b_Min = Ch[B];         // Í³¼ÆBÍ¨µÀ×îÐ¡Öµ
+       
+      C_D = DataBuf[i] >>16;
+      if((i>1)&&(i<4094)){
+        if(Sa == 2){TaS = i; Ta = i; PaS = 0;}
+        if(Ch[A] > a_Mid_H){
+          if(Sa == 0){ TaS = i; TaN++;} 
+          Sa = 1;  
+        } else { 
+          if(Ch[A] < a_Mid_L) if(Sa == 1){Sa = 0; PaS += i-TaS;}
+        }
+        if(Sb == 2){TbS = i; Tb = i; PbS = 0;}
+        if(Ch[B] > b_Mid_H){
+          if(Sb == 0){ TbS = i; TbN++;} 
+          Sb = 1;  
+        } else { 
+          if(Ch[B] < b_Mid_L) if(Sb == 1){Sb = 0; PbS += i-TbS;}
+        }
+        if(Sc == 2){TcS = i; Tc = i; PcS = 0;}
+        if(C_D & 1){
+          if(Sc == 0){ TcS = i; TcN++;} 
+          Sc = 1;  
+        } else {
+          if(Sc == 1){Sc = 0; PcS += i-TcS;} 
+        }
+        if(Sd == 2){TdS = i; Td = i; PdS = 0;}
+        if(C_D & 2){
+          if(Sd == 0){ TdS = i; TdN++;} 
+          Sd = 1;  
+        } else {
+          if(Sd == 1){Sd = 0; PdS += i-TdS;} 
+        }
+      }
       if(i >= k){                               // Ö¸Õëµ½´ïÖ¸¶¨´°¿ÚÎ»ÖÃ
         V[A]  = Ka1[_A_Range] +(Ka2[_A_Range] *Ch[A]+ 512)/1024;      
         V[B]  = Kb1[_B_Range] +(Kb2[_B_Range] *Ch[B]+ 512)/1024;      //µ±Ç°µãµÄÖ÷Öµ
@@ -450,16 +332,16 @@ void Process(void)
                      V[B_]+((V[B]-V[B_])*(1024 - j))/1024, //µ±Ç°CH_BµãµÄ²åÖµ
                      C_D,                                  //µ±Ç°µãÊý×ÖÍ¨µÀÖµ
                      n++);
-          j -= _Kp1+5;
-          if(n >= X_SIZE+TRACK_OFFSET){ k = 8192;  break;}     //300
+          j -= _Kp1;
+          if(n >= 300){ k = 8192;  break;}
         }
         j += 1024;
         V[A_] = V[A];  V[B_] = V[B];     
       }
-     }
-  } 
+    }
+  }
   else {                            // ½»Ìæ²ÉÑùÄ£Ê½
-    k =((1024 -_Kp2)*150 + 512)/1024 + _X_posi.Value;  // ¼ÆËã²åÖµÔËËãºó´°¿ÚÎ»ÖÃµÄÐÞÕýÖµ
+    k =((1024 -_Kp2)*150 + 512)/1024 + _X_posi.Value ;  // ¼ÆËã²åÖµÔËËãºó´°¿ÚÎ»ÖÃµÄÐÞÕýÖµ
     for(i=0; i <bag_max_buf; i++){
       if(_Status == RUN)  DataBuf[i] = __Read_FIFO(); // ¶ÁÈë32Î»FIFOÊý¾Ý, ¶ÁºóÖ¸Õë+1
       C_D    = DataBuf[i] >>16;
@@ -481,7 +363,7 @@ void Process(void)
       a_Avg += (Ch[A]+Ch[B])/2;                                   // ÀÛ¼ÆÖ±Á÷Æ½¾ùÖµ                                   
       if(Ch[A] > a_Max)  a_Max = Ch[A];          
       if(Ch[B] > a_Max)  a_Max = Ch[B];                          // Í³¼Æ×î´óÖµ 
-      if(Ch[A] < a_Min)  a_Min = Ch[A];         
+      if(Ch[A] < a_Min)  a_Min = Ch[A];
       if(Ch[B] < a_Min)  a_Min = Ch[B];                          // Í³¼Æ×îÐ¡Öµ  
 
       if(i >= k){                 // µÚ1µãÖ¸Õëµ½´ïÖ¸¶¨´°¿ÚÎ»ÖÃ
@@ -495,8 +377,8 @@ void Process(void)
         while(j > 0 ){
           Tmp = V[B_]+((V[A]- V[B_])*(1024 - j))/1024; //µ±Ç°µÚ1µãµÄ²åÖµ
           Send_Data(Tmp, Tmp, C_D, n++);
-          j -= _Kp2+5;
-          if(n >= X_SIZE+TRACK_OFFSET){ k = 8192;  break;} //300
+          j -= _Kp2;
+          if(n >= 300){ k = 8192;  break;}
         }
         j += 1024;
       }
@@ -504,8 +386,8 @@ void Process(void)
         while(j > 0 ){
           Tmp = V[A]+((V[B]- V[A])*(1024 - j))/1024;  //µ±Ç°µÚ2µãµÄ²åÖµ
           Send_Data(Tmp, Tmp, C_D, n++);
-          j -= _Kp2+5;
-          if(n >= X_SIZE+TRACK_OFFSET){ k = 8192;  break;} //300
+          j -= _Kp2;
+          if(n >= 300){ k = 8192;  break;}
         }
         j += 1024;
         V[B_] = V[B];       
@@ -520,33 +402,17 @@ void Process(void)
     if(_2_source == HIDE)  b_Avg = _2_posi*4096;   // BÍ¨µÀºÏ²¢µ½AÍ¨µÀÊ±
   }
 
-  if ((FrameMode!=0) && (_Mode==SCAN)) __Set(FIFO_CLR, W_PTR);
-  
-  
   a_Mid_H = 4 +(a_Max + a_Min)/2;
   a_Mid_L = a_Mid_H - 8;
   b_Mid_H = 4 +(b_Max + b_Min)/2;
   b_Mid_L = b_Mid_H - 8;
 
   TaS -= Ta; TbS -= Tb; TcS -= Tc; TdS -= Td;
-
-// for(j=0; j<4; j++){                               // Ïû³ýÆÁÄ»¶ËµãÁ¬Ïß
-//   
-//    TrackBuff[(  0)*4+ j] = TrackBuff[(  1)*4 + j];
-//   TrackBuff[(299)*4+ j] = TrackBuff[(298)*4 + j];
-//  
-//
-// }
-    
- for(j=0; j<X_SIZE; j++){                               // Sposta il buffer per eliminra il problema dei primi pixel
-    TrackBuff[(j)*4] = TrackBuff[(j+TRACK_OFFSET)*4];
-    TrackBuff[(j)*4+1] = TrackBuff[(j+TRACK_OFFSET)*4+1];
-    TrackBuff[(j)*4+2] = TrackBuff[(j+TRACK_OFFSET)*4+2];
-    TrackBuff[(j)*4+3] = TrackBuff[(j+TRACK_OFFSET)*4+3];
- }
- 
- 
- 
+  
+  for(j=0; j<4; j++){                               // Ïû³ýÆÁÄ»¶ËµãÁ¬Ïß
+    TrackBuff[(  0)*4+ j] = TrackBuff[(  1)*4 + j];
+    TrackBuff[(299)*4+ j] = TrackBuff[(298)*4 + j];
+  }
 }
 
 void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  //Êä³öÏÔÊ¾Êý¾Ý
@@ -556,15 +422,15 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  //Êä³öÏÔÊ¾Êý¾Ý
   i = n*4;
   if(Va >= Y_BASE+Y_SIZE)  TrackBuff[i + TRACK1] = Y_BASE+Y_SIZE-1;
   else if(Va <= Y_BASE+1)  TrackBuff[i + TRACK1] = Y_BASE+1;
-  else TrackBuff[i + TRACK1] = Va;
+  else                     TrackBuff[i + TRACK1] = Va;
   if(Vb >= Y_BASE+Y_SIZE)  TrackBuff[i + TRACK2] = Y_BASE+Y_SIZE-1;
   else if(Vb <= Y_BASE+1)  TrackBuff[i + TRACK2] = Y_BASE+1;
-  else TrackBuff[i + TRACK2] = Vb;
-  
+  else                     TrackBuff[i + TRACK2] = Vb;
+
   if(C_D & 1)  TrackBuff[i + TRACK3] = c_Max;
   else         TrackBuff[i + TRACK3] = _3_posi;
   
-  switch (_4_source){                       
+  switch (_4_source){
   case A_add_B:
     if(Interlace == 0) Tmp = Posi_412 + Va + Vb;
     else{
@@ -578,24 +444,24 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  //Êä³öÏÔÊ¾Êý¾Ý
       if(_2_source != HIDE) Tmp = Posi_4_2 - Vb;
     } break;
   case C_and_D:
-    if((~C_D)& 3) Tmp = d_Max; 
+    if((~C_D)& 3) Tmp = d_Max;
     else          Tmp = _4_posi;
-    break;  
+    break;
   case C_or_D:
     if(C_D & 3)   Tmp = d_Max; 
     else          Tmp = _4_posi;
     break;  
   case REC_1:
-    Tmp = Posi_4F1 + FileBuff[n];  
+    Tmp = Posi_4F1 + FileBuff[n];
     break;
   case REC_2:
-    Tmp = Posi_4F2 + FileBuff[n+400];  
+    Tmp = Posi_4F2 + FileBuff[n+300];
     break;
   case REC_3:
-    Tmp = Posi_4F3 + FileBuff[n+800];  
+    Tmp = Posi_4F3 + FileBuff[n+600];
     break;
   case REC_4:
-    Tmp = Posi_4F4 +  FileBuff[n+1200];  
+    Tmp = Posi_4F4 +  FileBuff[n+900];
     break;
   default:
     if(C_D & 2)  Tmp = d_Max;
@@ -610,83 +476,69 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  //Êä³öÏÔÊ¾Êý¾Ý
 *******************************************************************************/
 void Synchro(void)  //É¨ÃèÍ¬²½·½Ê½¹²ÓÐ£ºAUTO¡¢NORM¡¢SGL¡¢NONE¡¢SCAN 5ÖÖÄ£Ê½
 { 
-//  u16  i;
-
+  u16  i;
+  
   switch (_Mode){ 
-    case X_Y_A:
   case AUTO:
-      __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
-      if(__Get(FIFO_START)!=0)
-      {
-        Process();                                 
-        Wait_Cnt = Wait[_T_base];
-      } else if(Wait_Cnt==0)
-        {
-          if(JumpCnt >= 4095)  JumpCnt = 0; 
-          Process();   
-          Wait_Cnt = Wait[_T_base];
-        } break;
-  case NORM:
-      __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
-      if(__Get(FIFO_START)!=0)
-      {
-        Process();                                 
-        Wait_Cnt = Wait[_T_base];
-      } else if(Wait_Cnt==0)
-        {
-      //  for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0; // Cancella se non ha il trigger
-        Wait_Cnt = Wait[_T_base];
-        } break;
-  case SGL:
-      __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
-      if(__Get(FIFO_START)!=0)  Process();         
-      break;
-  case X_Y:
-  
-  case SCAN:
-      __Set(TRIGG_MODE, UNCONDITION);               
-      Process();                                  
-   }
-  
-  Draw_Window();                                  
-  
-  if ((_Mode==SCAN) || (_Mode==X_Y)) Wait_Cnt = 1;
- 
-  if ((FrameMode>0) && (_Status == RUN))
-    {   //_Mode == SCAN &&
-      Wait_Cnt = 1;
-      if (_Mode==SCAN)
-      {
-        if ((FlagMeter==0) && (JumpCnt> ((390*FrameMode)-1))) JumpCnt=0;
-        if ((FlagMeter==1) && (JumpCnt> ((305*FrameMode)-1))) JumpCnt=0;
-      } 
-      else
-      {
-        if (JumpCnt> ((300*FrameMode)-1)) JumpCnt=0;	//
-      }
-    }
-
-  if((_Status == RUN)&&(__Get(FIFO_FULL)!=0))
-    {    // FIFO is full
-      __Set(FIFO_CLR, W_PTR);                       
+      __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  // Éè´¥·¢Ìõ¼þ
+    if(__Get(FIFO_START)!=0){
+      Process();                                  // Éú³ÉÐÂµÄÏÔÊ¾²¨ÐÎ
       Wait_Cnt = Wait[_T_base];
-      JumpCnt =0;
-      
-      if(_Mode == SGL)
-      {
-        _Status = HOLD;                          
-        _State.Flag |= UPDAT;
+    } else if(Wait_Cnt==0){
+      if(JumpCnt >= 4095)  JumpCnt = 0;         
+      Process();   
+      Wait_Cnt = Wait[_T_base];
+    } break;
+  case NORM:
+        __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  // Éè´¥·¢Ìõ¼þ
+    if(__Get(FIFO_START)!=0){
+      Process();                                  // Éú³ÉÐÂµÄÏÔÊ¾²¨ÐÎ
+      Wait_Cnt = Wait[_T_base];
+    } else if(Wait_Cnt==0){
+      for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0;// Çå³ý¾ÉµÄÏÔÊ¾²¨ÐÎ
+      Wait_Cnt = Wait[_T_base];
+    } break;
+  case SGL:
+    __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  // Éè´¥·¢Ìõ¼þ
+    if(__Get(FIFO_START)!=0)  Process();          // Éú³ÉÐÂµÄÏÔÊ¾²¨ÐÎ
+    break;
+  //case NONE:
+    
+  case SCAN:
+    
+    __Set(TRIGG_MODE, UNCONDITION);               // ÉèÎªÎÞÌõ¼þ´¥·¢
+    Process();                                    // Éú³Éµ±Ç°ÏÔÊ¾²¨ÐÎ
+    break;
+  }
+ 
+ Draw_Window();                                  // Ë¢ÐÂÆÁÄ»²¨ÐÎÏÔÊ¾Çø
+  
+    if((_Status == RUN) && (FrameMode>0)){  //_Mode == SCAN
+    	if(_Mode != AUTO) Wait_Cnt = 1;
+    	if (JumpCnt> (X_SIZE*FrameMode)-1) 	// bag
+		JumpCnt=0;
+	}
+
+  
+  
+  if( (_Status == RUN)&&(__Get(FIFO_FULL)!=0)){    // FIFO is full
+    __Set(FIFO_CLR, W_PTR);                       // FIFOÐ´Ö¸Õë¸´Î»
+    Wait_Cnt = Wait[_T_base];
+    JumpCnt =0;
+    if(_Mode == SGL){
+      _Status = HOLD;                             // Ò»Ö¡Íêºó£¬½øÈëÔÝÍ£
+      _State.Flag |= UPDAT;
+    }
+    if (_Mode == SCAN){
+      Wait_Cnt = 1;
+      for(i=0; i<X_SIZE; i++){                    // ÖØ½¨µ±Ç°¹ì¼£»ùÏß                   
+        TrackBuff[i*4 + TRACK1] = _1_posi;
+        TrackBuff[i*4 + TRACK2] = _2_posi; 
+        TrackBuff[i*4 + TRACK3] = _3_posi; 
+        TrackBuff[i*4 + TRACK4] = _4_posi;
       }
-//    if(_Mode == SCAN){
-//      Wait_Cnt = 1;
-//      for(i=0; i<X_SIZE; i++){                                     
-//        TrackBuff[i*4 + TRACK1] = _1_posi;
-//        TrackBuff[i*4 + TRACK2] = _2_posi; 
-//        TrackBuff[i*4 + TRACK3] = _3_posi; 
-//        TrackBuff[i*4 + TRACK4] = _4_posi;
-//      }
-//    
-//    }
+    
+    }
   }    
 }  
 /******************************** END OF FILE *********************************/

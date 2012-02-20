@@ -121,7 +121,7 @@ void Int2Str(char *p, s32 n, char *pUnit, u8 e, u8 Mode)
   }
   if((Mode!=STD)&&(Mode!=SIGN)&&(m==0))
   {
- //   *p++;
+//    *p++;
     *p-- = '.';
     *p= '0';
   }

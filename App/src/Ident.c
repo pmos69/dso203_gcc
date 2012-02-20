@@ -91,11 +91,9 @@ u8 Add_Str(u32 ProjStrAddr, u16 Offset)
   __FLASH_Unlock();
   for(i=0; i<16; i+=2){
     Data  = *(u8*)ProjStrAddr;
- //   (u8*)
-	ProjStrAddr++;
+    ProjStrAddr++;
     Data |= (*(u8*)ProjStrAddr)<<8;
- //   (u8*)
-	ProjStrAddr++;
+    ProjStrAddr++;
     Result &= __FLASH_Prog(REC_BASE + Offset + i + 16, Data);
   }
   __FLASH_Lock();

@@ -1,4 +1,4 @@
-Just some kick&dirty fixes over marcosin 1.7 version of the DSO203 APP.
+Just some kick&dirty fixes over marcosin 1.8 version of the DSO203 APP.
 
 Win32 GCC support by gabonator1
 
@@ -12,6 +12,11 @@ All thanks to:
 - Gabriel (gabonator1)
 
 -------------------------------------------
+
+v1.1:
+
+- Updated with marcosin 1.8 release
+
 
 v1:
 

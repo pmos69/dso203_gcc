@@ -238,32 +238,7 @@ void Display_Value(u8 i)
   s32 Tmp = 0;
   u16 Kp;
   u32 k, n, m ;
-  u16 bag_max_buf = 4096;
-
-
-// #pmos69 - Determine bag_max_buf - as in process.c 
-if (FrameMode>0)      //_Mode == SCAN
-  	{
-    
-    if (_Mode==SCAN)
-      {
-        if (FlagMeter==0) (bag_max_buf = (390*FrameMode));
-        if (FlagMeter==1) (bag_max_buf = (305*FrameMode));
-        
-      } 
-    else
-      {
-        bag_max_buf = (300*FrameMode);  //X_SIZE
-      }
-  
-    }
-  else
-     {   
-  //	bag_max_buf = X_SIZE - 10;
-  	bag_max_buf = 4096;
-        
-       
-}
+  u16 bag_max_buf = 4096;   // #pmos69 - store sample buffer size
   
   if(Interlace == 0) Kp = _Kp1; // 独立采样模式
   else               Kp = _Kp2; // 交替采样模式  
@@ -272,6 +247,26 @@ if (FrameMode>0)      //_Mode == SCAN
   if(k < 9)  m = Power(10, (11-k)/3); //9 //11
   else       n = Power(10, (k- 9)/3);  //9
   k = X_Attr[(k%3)+9].SCALE; //9
+  
+  
+  // #pmos69 - Determine bag_max_buf - as in process.c 
+if (FrameMode>0)      //_Mode == SCAN
+  	{
+    
+    if (_Mode==SCAN)
+      {
+        if (FlagMeter==0) (bag_max_buf = (390*FrameMode));
+        if (FlagMeter==1) (bag_max_buf = (305*FrameMode));      
+      } 
+    else
+      {
+        bag_max_buf = (300*FrameMode);  //X_SIZE
+      }
+    }
+  else
+     {   
+  	bag_max_buf = 4096;
+  }
   
   switch (Meter[i].Item){  
   case VBT://--------------- 计算和显示电池电压 ---------------
@@ -303,7 +298,7 @@ if (FrameMode>0)      //_Mode == SCAN
     break;
   case VDC:
     if(Meter[i].Track == TRACK1){
-	Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi;	// #pmos69 - use bag_max_buf as average divider
+	  Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi;	// #pmos69 - use bag_max_buf as average divider
       if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
       Tmp *= Y_Attr[_A_Range].SCALE;
       if  (_1_source ==2) Tmp=Tmp*10;
@@ -321,7 +316,7 @@ if (FrameMode>0)      //_Mode == SCAN
     break;
   case RMS:
     if(Meter[i].Track == TRACK1){
-      Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024;	// #pmos69 - use bag_max_buf as average divider
+	  Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024;	// #pmos69 - use bag_max_buf as average divider
       if(Tmp <= 2) Tmp = 0;
       Tmp *= Y_Attr[_A_Range].SCALE;
       
