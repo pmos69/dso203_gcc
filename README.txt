@@ -2,14 +2,20 @@ Just some kick&dirty fixes over marcosin 1.8 version of the DSO203 APP.
 
 Win32 GCC support by gabonator1
 
-Uses CodeSourcery Arm toolchain: https://sourcery.mentor.com/sgpp/lite/arm/portal/release1802
-	just download the Windows TAR archive and unpack it somewhere, no installation is required
-	watch out for symlinks in the TAR you'll have to re-create them or copy/rename files to "fill the gaps"
+-------------------------------------------
+
+Access source in github:
+  https://github.com/pmos69/dso203_gcc 
+
+or get a zip with the complete tree here:
+  https://github.com/pmos69/dso203_gcc/zipball/master
 
 -------------------------------------------
 
-Access source in github:			https://github.com/pmos69/dso203_gcc 
-or get a zip with the complete tree here : 	https://github.com/pmos69/dso203_gcc/zipball/master
+Uses CodeSourcery Arm toolchain:
+  https://sourcery.mentor.com/sgpp/lite/arm/portal/release1802
+Just download the Windows TAR archive and unpack it somewhere, no installation is required.
+Watch out for symlinks in the TAR you'll have to re-create them or copy/rename files to "fill the gaps"
 
 -------------------------------------------
 
