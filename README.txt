@@ -27,6 +27,12 @@ All thanks to:
 -------------------------------------------
 
 
+v1.4
+
+- changed compile options: "-O3" replaced by "-O0 -fno-common -fzero-initialized-in-bss"
+- removed explicit initialization of the FrameMode variable
+
+
 v1.3
 
 - initialized FrameMode variable at creation
