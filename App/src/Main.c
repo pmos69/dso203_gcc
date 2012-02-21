@@ -57,7 +57,7 @@ APP V2.50: rewrite based on the new FAT12 file system, file read and write proce
 APP V2.51: modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.2 APP (2.51 SmTech 1.8 PMOS69-fixes)"
+#define APP_VERSION       "GCC v1.3 APP (2.51 SmTech 1.8 PMOS69-fixes)"
 
 uc8 PROJECT_STR[20] = "Demo PROG. Ver 1.00";
 u8 OldCurrent;

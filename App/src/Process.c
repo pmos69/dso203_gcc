@@ -23,7 +23,7 @@ s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4
 s16 c_Max, d_Max, A_Posi, B_Posi;
 u8  Full=1, Interlace;
 u16 JumpCnt;
-u8 FrameMode;
+u8 FrameMode = 0;
 u16 Sample;
 u8 Pagina;
 
