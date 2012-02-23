@@ -27,6 +27,12 @@ All thanks to:
 -------------------------------------------
 
 
+v1.5
+
+- Re-did a complete code merge of marcosin 1.8 & fixes into 2.51 by hand. - Now compiles with -Os
+- X_Y modes don't work, and mess the buffer - Reset needed to proceed after using X_Y.
+
+
 v1.4
 
 - changed compile options: "-O3" replaced by "-O0 -fno-common -fzero-initialized-in-bss"

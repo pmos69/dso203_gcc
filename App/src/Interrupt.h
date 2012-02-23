@@ -1,19 +1,18 @@
-//********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
-// File Name : Interrupt.h  
-// Version   : DS203_APP Ver 2.3x                                  Author : bure
-//*******************************************************************************
+/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
+ File Name : Interrupt.h  
+ Version   : DS203_APP Ver 2.3x                                  Author : bure
+*******************************************************************************/
 
 #ifndef __Interrupt_H
 #define __Interrupt_H
 
-#include "stm32f10x_lib.h" 
+#include "stm32f10x_lib.h"
 
 extern vu8  Cursor_Cnt, Key_Wait_Cnt, Key_Repeat_Cnt, Key_Buffer, Cnt_mS, Cnt_20mS;
 extern vu8  Twink, Blink;
 extern u8   Volume, Light;
 extern vu16 Delay_Cnt, Beep_mS, Key_Status_Last, Sec_Cnt, PD_Cnt, TimedDeltaView ; 
 extern vu32 Wait_Cnt; 
-
 void NMIException(void);
 void HardFaultException(void);
 void MemManageException(void);

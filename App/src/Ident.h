@@ -1,7 +1,7 @@
-///********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
-// File Name : Authenticate.h  
-// Version   : DS203_APP Ver 2.3x                          Author : kewei & bure
-//*******************************************************************************/
+/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
+ File Name : Authenticate.h  
+ Version   : DS203_APP Ver 2.3x                          Author : kewei & bure
+*******************************************************************************/
 #ifndef __AUTHENTICATE_H
 #define __AUTHENTICATE_H
 

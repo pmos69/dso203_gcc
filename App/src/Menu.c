@@ -20,7 +20,7 @@ u8 Cnt_Batt;
 u8 FlagInCharge;
 
 //  u8 N[20];
-//uc8 T_UNIT[12] ={'A','B', 0 ,'C','D', 0 ,'E','F', 0 ,'G','H', 0 };
+//char T_UNIT[12] ={'A','B', 0 ,'C','D', 0 ,'E','F', 0 ,'G','H', 0 };
 char T_UNIT[12] ={'u','S', 0 ,'u','S', 0 ,'m','S', 0 ,'S',' ', 0 };
 char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
 char F_UNIT[12] ={'H','z', 0 ,'H','z', 0 ,'K','C', 0 ,'M','C', 0 };
@@ -50,7 +50,7 @@ char NO_RANGE[5]      = "";//" -- ";
 char NO_DEF[5]        = "";//"--";                       
 
 char  YCOUPLE[3][10]  = {"DC", "AC", "!-!"};                        // Track Couple Str                    
-char   Vertical[15][10];                                             // Track Range Str
+char  Vertical[15][10];                                             // Track Range Str
 char  YPOSISTR[5]    = {"YPOS"};                                    // Track Position Str 
 uc16 Y_INV[5]       = {(SCRN<<8)+TR_1, (SCRN<<8)+TR_2,
                        (SCRN<<8)+TR_3, (SCRN<<8)+TR_4,
@@ -59,8 +59,8 @@ uc16 Y_COLOR[5]     = {(TR_1<<8)+SCRN, (TR_2<<8)+SCRN,
                        (TR_3<<8)+SCRN, (TR_4<<8)+SCRN,
                        (VERNIE<<8)+SCRN};                          // Track Color 2
 
-char MODESTR[10][10]  = {"!AUTO!", "!NORM!","SINGL","!SCAN!","X_Y S","X_Y A"};  //,"!NONE!"                                  // Sync Mode Str
-char   BaseStr[30][10];                                              // Time Base b Str
+char MODESTR[10][10]  = {"!AUTO!", "!NORM!","SINGL","!SCAN!","X_Y S","X_Y A"};        // Sync Mode Str
+char BaseStr[30][10];                                              // Time Base b Str
 char  XPOSISTR[5]    = {"XPOS"};
 uc16 XCOLOR[2]      = {(SCRN<<8)+X_POSI, (X_POSI<<8)+SCRN};        // Time Base Color
 
@@ -79,9 +79,8 @@ char  TRIGSTR[8][10] = {"TRG A", "TRG B", "TRG C", "TRG D"};      // Trigger sou
                           
 char  TR_TYPE[8][10] = {":!\\!", ":!^!", "<Vt", ">Vt",            // Trigger Type Str
                        "<TL",   ">TL",  "<TH", ">TH"};
-
 char  VT_STR[3]  =  "LEV";                                // Trigg Voltage Str
-
+                          
 char  VERNIE1[5]     = {"!V1!"};          // V1 Vernie Str
 char  VERNIE2[5]     = {"!V2!"};          // V2 Vernie Str
 char  VERNIE3[5]     = {"!T1!"};          // T1 Vernie Str
@@ -90,9 +89,7 @@ uc16 V_INV[1]       = {(SCRN<<8)+VERNIE};
 uc16 V_COLOR[1]     = {(VERNIE<<8)+SCRN};                         // Y Vernie Color
 uc16 T_INV[1]       = {(SCRN<<8)+VERNIE};
 uc16 T_COLOR[1]        = {(VERNIE<<8)+SCRN};                         // X Vernie Color
- 
-
-char F_FUNC[2][10]  = {"Save File", "Load File"};                 // File Function Str
+char  F_FUNC[2][10]  = {"Save File", "Load File"};                 // File Function Str
 
 char  F_EXT[8][10]   = {".BMP?", ".DAT?", ".BUF?",".CSV?", " OK! ",
                          " ERR!",".HEX", ".BIN",};                  // File Ext Name Str
@@ -103,9 +100,9 @@ char  METER[12][5]   = {"Vbt", "FPS", "Vpp", "Vdc", "RMS",  "Max",
                        "Min", "Frq", "Per", "Dut", "!TH!", "!TL!"};
 
 u8   Detail[14];
-char  NumStr[12];
+char NumStr[12];
 u8   Current = 0, TypeA = 0, Update = 1;
-char   BL_Str[5]="B.L", Vol_Str[5]="Vol";
+char BL_Str[5]="B.L", Vol_Str[5]="Vol";
 
 menu Title[13][4]=   
 {
@@ -113,13 +110,13 @@ menu Title[13][4]=
   {//============================ Title Track1 Group ===========================
     {(char*)CH_A_STR,(u16*)Y_INV,     3-1, CIRC,   35,  228,     1, UPDAT}, //  Track source   2
     {(char*)YCOUPLE, (u16*)Y_COLOR,   2-1, CIRC,   35,  216,     0, UPDAT}, //  Track Couple        
-    {(char*)Vertical,(u16*)Y_COLOR,   9-1,    0,   51,  216,     5, UPDAT}, //  Track Range 9
+    {(char*)Vertical,(u16*)Y_COLOR,   9-1,    0,   51,  216,     5, UPDAT}, //  Track Range 
     {(char*)YPOSISTR,(u16*)Y_INV,     200,  FIX,    0,    0,   150, UPDAT}, //  Adj. Track Position 160
   },
   {//============================ Title Track2 Group ===========================
     {(char*)CH_B_STR,(u16*)Y_INV+1,   3-1, CIRC,   86,  228,     1, UPDAT}, //  Track source   2
     {(char*)YCOUPLE, (u16*)Y_COLOR+1, 2-1, CIRC,   86,  216,     1, UPDAT}, //  Track Couple        
-    {(char*)Vertical,(u16*)Y_COLOR+1, 9-1,    0,  102,  216,     1, UPDAT}, //  Track Range 9
+    {(char*)Vertical,(u16*)Y_COLOR+1, 9-1,    0,  102,  216,     1, UPDAT}, //  Track Range
     {(char*)YPOSISTR,(u16*)Y_INV+1,   200,  FIX,    0,    0,   100, UPDAT}, //  Adj. Track Position
   },
   {//============================ Title Track3 Group ===========================
@@ -140,24 +137,23 @@ menu Title[13][4]=
     {(char*)BATT_STR,(u16*)B_COLOR,   5-1,  NOT,    0,    0,     0,   HID}, 
     {(char*)BATT_STR,(u16*)B_COLOR,   5-1,  NOT,    0,    0,     0,   HID},
   },
-         
   {//======================= Title Output Signal Group =========================
-    {(char*)FO_TYPE, (u16*)O_COLOR,   5-1, CIRC,  239,  228,     3, UPDAT}, //  Output Wave Kind    282 228     
-    {(char*)FO_STR,  (u16*)O_COLOR+1,23-1,    0,  239,  216,    13, UPDAT}, //  Output Frequency    282 216
-    {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  212,  216,    50, UPDAT}, //  Duty value      282,202   
-    {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  196,  216,    50, UPDAT}, //  Attenuazione    251,202   
+    {(char*)FO_TYPE, (u16*)O_COLOR,   5-1, CIRC,  239,  228,     3, UPDAT}, //  Output Wave Kind    282 228       
+    {(char*)FO_STR,  (u16*)O_COLOR+1,23-1,    0,  239,  216,    13, UPDAT}, //  Output Frequency    282 216      
+    {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  212,  216,    50, UPDAT}, //  Duty value      282,202
+    {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  196,  216,    50, UPDAT}, //  Attenuazione    251,202         
   },
-   {//========================= Title Time Base Group ===========================
+  {//========================= Title Time Base Group ===========================
     {(char*)MODESTR, (u16*)XCOLOR,    6-1, CIRC,  290,  228,     0, UPDAT}, //  Sync Mode    5 numero modi  239  228
     {(char*)BaseStr, (u16*)XCOLOR+1, 27-1,    0,  290,  216,    17, UPDAT}, //  Time Base Range             239 216
     {(char*)XPOSISTR,(u16*)XCOLOR,   3695,  FIX,  366,    0,     0, UPDAT}, //  Adj. X position  3795
     {(char*)XPOSISTR,(u16*)XCOLOR,   3695,  NOT,   80,    0,     0, UPDAT}, //  View window rule  3795
-  },   
+  },           
   {//=====================;===== Title Trigger Group ====;======================
-    {(char*)TRIGSTR, (u16*)Y_INV,     4-1, CIRC,  333,  228,     1, UPDAT}, //  Trigger source        
+    {(char*)TRIGSTR, (u16*)Y_INV,     4-1, CIRC,  333,  228,     1, UPDAT}, //  Trigger source         
     {(char*)TR_TYPE, (u16*)Y_INV,     8-1, CIRC,  373,  228,     0, UPDAT}, //  Trigger Kine         
     {(char*)VT_STR,  (u16*)Y_COLOR,   200,  FIX,  333,  216,     0, UPDAT}, //  Adj. Trigger threshold     
-    {(char*)VT_STR,  (u16*)Y_COLOR,     0,  NOT,  357,  216,     0,   HID}, //  Number position    0,  NOT,  357,  216,     0,   HID
+    {(char*)VT_STR,  (u16*)Y_COLOR,     0,  NOT,  357,  216,     0,   HID}, //  Number position     
   },
   {//============================ Title Y Vernie Group =========================
     {(char*)VERNIE1, (u16*)V_INV,   200-1,  FIX,   35,    0,   180, UPDAT}, //  V1 Vernie         
@@ -172,8 +168,8 @@ menu Title[13][4]=
     {(char*)F_EXT,   (u16*)F_INV,       0,  NOT,    0,    0,     0,   HID},  
   },
   {//============================ Title X Vernie Group =========================
-    {(char*)VERNIE3, (u16*)T_INV,     395,  FIX,  312,    0,    80, UPDAT}, //  T1 Vernie     300    
-    {(char*)VERNIE4, (u16*)T_INV,     395,  FIX,  339,    0,   280, UPDAT}, //  T2 Vernie     300
+    {(char*)VERNIE3, (u16*)T_INV,     395,  FIX,  312,    0,    80, UPDAT}, //  T1 Vernie     300     
+    {(char*)VERNIE4, (u16*)T_INV,     395,  FIX,  339,    0,   280, UPDAT}, //  T2 Vernie     300   
     {(char*)DELTA_T, (u16*)T_INV,       0,  NOT,  314,  182,     0, UPDAT}, //  Delta T Str     
     {(char*)NumStr,  (u16*)T_COLOR,   400, NUM3,  342,  182,    80, UPDAT}, //  Delta T value 300   
   },
@@ -203,32 +199,29 @@ meter Meter[9] =
   {(char*)METER, TRACK1,    VDC,     314,    342,    17,  UPDAT}, //  Meter #8
 };         
 
-
-
-void Display_Meter(void)                  // each refresh to display a measurement
+void Display_Meter(void)                  // 每次刷新显示一个测量项
 {
   u8  i;
   
   for(i=0; i<9; ++i){        
-    if(Meter[i].Flag & UPDAT){            //----- the name of the measurements show the need to refresh the
+    if(Meter[i].Flag & UPDAT){            //-----显示需刷新的测量项目名称
       Meter[i].Flag &= (!UPDAT & !BLINK);       // Clr Update & Blink flag
       Print_Str
-        (Meter[i].XPOS1, Meter[i].YPOS,        // coordinates to be displayed
-         Y_INV[Meter[i].Track],                // need to display color (belongs channel)
-         PRN,                                  // need to show the way
-         Meter[i].Str +(Meter[i].Item * 5) );   // need to display the project name
+        (Meter[i].XPOS1, Meter[i].YPOS,        // 需要显示的坐标
+         Y_INV[Meter[i].Track],                // 需要显示的颜色(所属通道)
+         PRN,                                  // 需要显示的方式
+         Meter[i].Str +(Meter[i].Item * 5));   // 需要显示的项目名称
     } 
-   
   }
   if((Current >= METER_0)&&(Current <= METER_8)){
-    if(Blink){                            //----- the name of the display required flashing measurements
+    if(Blink){                            //-----显示需闪烁的测量项目名称
       i = Current - METER_0;
       Blink = 0;                               // Clr Blink Ctrl flag 
       Print_Str(
-        Meter[i].XPOS1, Meter[i].YPOS,         // flashing coordinates
-        Y_INV[Meter[i].Track],                 // ??flashing colors (belongs channel)
-        Twink,                                 // flashing way
-        Meter[i].Str +(Meter[i].Item *5));     // flashing the project name
+        Meter[i].XPOS1, Meter[i].YPOS,         // 需要闪烁的坐标 
+        Y_INV[Meter[i].Track],                 // 需要闪烁的颜色(所属通道)
+        Twink,                                 // 闪烁方式
+        Meter[i].Str +(Meter[i].Item *5));     // 需要闪烁的项目名称
     }
   }
 }
@@ -237,17 +230,16 @@ void Display_Value(u8 i)
 {
   s32 Tmp = 0;
   u16 Kp;
-  u32 k, n, m ;
+  u32 k, n, m;
   u16 bag_max_buf = 4096;   // #pmos69 - store sample buffer size
   
-  if(Interlace == 0) Kp = _Kp1; // independent sampling mode
-  else               Kp = _Kp2; // interleaved sampling mode
+  if(Interlace == 0) Kp = _Kp1; // 独立采样模式
+  else               Kp = _Kp2; // 交替采样模式  
   
   k = _T_Range; m = 1;  n = 1;
   if(k < 9)  m = Power(10, (11-k)/3); //9 //11
   else       n = Power(10, (k- 9)/3);  //9
-  k = X_Attr[(k%3)+9].SCALE; //9
-  
+  k = X_Attr[(k%3)+9].SCALE;
   
   // #pmos69 - Determine bag_max_buf - as in process.c 
 if (FrameMode>0)      //_Mode == SCAN
@@ -267,117 +259,111 @@ if (FrameMode>0)      //_Mode == SCAN
      {   
   	bag_max_buf = 4096;
   }
-  
+
   switch (Meter[i].Item){  
-  case VBT://--------------- calculation and display of battery voltage ---------------
+  case VBT://--------------- 计算和显示电池电压 ---------------
     Int2Str(NumStr, __Get(V_BATTERY)*1000, V_UNIT, 3, SIGN);
-   
-      break;
-  case FPS://--------------- calculates and displays the frame count ---------------
-   Int2Str(NumStr, Result_FPS & 0x7F, S_UNIT, 2, STD);
-  
+    break;
+  case FPS://--------------- 计算和显示帧计数 ---------------
+    Int2Str(NumStr, Result_FPS & 0x7F, S_UNIT, 2, STD);
     break;  
   case VPP:
-    if(Meter[i].Track == TRACK1){
+    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
       Tmp = (Ka2[_A_Range]*(a_Max - a_Min)+ 512)/1024;
       if(Tmp <= 4) Tmp = 0;
       Tmp *= Y_Attr[_A_Range].SCALE;
-
+	  
       if  (_1_source ==2) Tmp=Tmp*10;
       if  (_1_source == HIDE) Tmp=0;
-     }
+    }
     if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
       Tmp = (Kb2[_B_Range]*(b_Max - b_Min)+ 512)/1024;
       if(Tmp <= 4) Tmp = 0;
       Tmp *= Y_Attr[_B_Range].SCALE;
-      if  (_2_source ==2) Tmp=Tmp*10;
+	  if  (_2_source ==2) Tmp=Tmp*10;
       if  (_2_source == HIDE) Tmp=0;
     }
-   
+	
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case VDC:
-    if(Meter[i].Track == TRACK1){
-	  Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi;	// #pmos69 - use bag_max_buf as average divider
+    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
+      Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // #pmos69 - use bag_max_buf as average divider
       if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
       Tmp *= Y_Attr[_A_Range].SCALE;
-      if  (_1_source ==2) Tmp=Tmp*10;
+	  if  (_1_source ==2) Tmp=Tmp*10;
       if  (_1_source == HIDE) Tmp=0;
-   }
-    if(Meter[i].Track == TRACK2){
-      Tmp = Kb1[_B_Range]+(Kb2[_B_Range]*(b_Avg/bag_max_buf)+ 512)/1024 - _2_posi;	// #pmos69 - use bag_max_buf as average divider
+    }
+    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
+      Tmp = Kb1[_B_Range]+(Kb2[_B_Range]*(b_Avg/bag_max_buf)+ 512)/1024 - _2_posi; // #pmos69 - use bag_max_buf as average divider
       if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
       Tmp *= Y_Attr[_B_Range].SCALE;
-      if  (_2_source ==2) Tmp=Tmp*10;
+	  if  (_2_source ==2) Tmp=Tmp*10;
       if  (_2_source == HIDE) Tmp=0;
     }
-    
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case RMS:
-    if(Meter[i].Track == TRACK1){
-	  Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024;	// #pmos69 - use bag_max_buf as average divider
+    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
+      Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024; // #pmos69 - use bag_max_buf as average divider
       if(Tmp <= 2) Tmp = 0;
       Tmp *= Y_Attr[_A_Range].SCALE;
-      
-      if  (_1_source ==2) Tmp=Tmp*10;
+	  
+	  if  (_1_source ==2) Tmp=Tmp*10;
       if  (_1_source == HIDE) Tmp=0;
     }
-    if(Meter[i].Track == TRACK2){
-      Tmp = Kb1[_B_Range] +(Kb2[_B_Range]*Int_sqrt(b_Ssq/bag_max_buf)+ 512)/1024;	// #pmos69 - use bag_max_buf as average divider
+    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
+      Tmp = Kb1[_B_Range] +(Kb2[_B_Range]*Int_sqrt(b_Ssq/bag_max_buf)+ 512)/1024; // #pmos69 - use bag_max_buf as average divider
       if(Tmp <= 2) Tmp = 0;
       Tmp *= Y_Attr[_B_Range].SCALE;
-      if  (_2_source ==2) Tmp=Tmp*10;
+	  if  (_2_source ==2) Tmp=Tmp*10;
       if  (_2_source == HIDE) Tmp=0;
     }
-  
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN); //unsign
     break;
   case MAX:
-    if(Meter[i].Track == TRACK1){
+    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
       Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Max + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
-      if  (_1_source ==2) Tmp=Tmp*10;
+	  if  (_1_source ==2) Tmp=Tmp*10;
       if  (_1_source == HIDE) Tmp=0;
-    }
-    if(Meter[i].Track == TRACK2){
+	}
+    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
       Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Max + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
-      if  (_2_source ==2) Tmp=Tmp*10;
+	  if  (_2_source ==2) Tmp=Tmp*10;
       if  (_2_source == HIDE) Tmp=0;
     }
-    
+	
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case MIN:
-    if(Meter[i].Track == TRACK1){
+    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
       Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Min + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
-      if  (_1_source ==2) Tmp=Tmp*10;
+	  if  (_1_source ==2) Tmp=Tmp*10;
       if  (_1_source == HIDE) Tmp=0;
     }
-    if(Meter[i].Track == TRACK2){
+    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
       Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Min + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
-      if  (_2_source ==2) Tmp=Tmp*10;
+	  if  (_2_source ==2) Tmp=Tmp*10;
       if  (_2_source == HIDE) Tmp=0;
     }
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case FRQ:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){ 
+    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A))
       Tmp = 2000*((5000000 * TaN)/TaS);
-      
-    }
     if((Meter[i].Track == TRACK2)&&(_2_source == CH_B))
       Tmp = 2000*((5000000 * TbN)/TbS);
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = 2000*((5000000 * TcN)/TcS);
     if((Meter[i].Track == TRACK4)&&(_4_source == CH_D))
       Tmp = 2000*((5000000 * TdN)/TdS);
-    
-                                                                                        
-     if(n < 10)  Int2Str(NumStr,((((250*(Tmp/(k/6)))/m)/15)),   F_UNIT, 4, UNSIGN);
-     else  Int2Str(NumStr, ((Kp*(n*(Tmp/(k/6))/240)/256)*1000), F_UNIT, 4, UNSIGN); //aggiunto *1000   4
-  
-    
+	  
+
+    if(n < 10)  Int2Str(NumStr,((((250*(Tmp/(k/6)))/m)/15)),   F_UNIT, 4, UNSIGN);
+    else       Int2Str(NumStr, ((Kp*(n*(Tmp/(k/6))/240)/256)*1000), F_UNIT, 4, UNSIGN); //aggiunto *1000   4
     break;  
+	
+	
   case CIR:
     if((Meter[i].Track == TRACK1)&&(_1_source == CH_A))
       Tmp = (k *TaS)/TaN;
@@ -433,7 +419,7 @@ if (FrameMode>0)      //_Mode == SCAN
     Meter[i].XPOS2, Meter[i].YPOS,
     Y_COLOR[Meter[i].Track], 
     PRN,
-    NumStr);                              // display the measured values
+    NumStr);                              // 显示测量数值
 }
 
 void Display_Title(void)
@@ -459,38 +445,11 @@ void Display_Title(void)
         Print_Str(Title[OUTPUT][OUTATT].XPOS, Title[OUTPUT][OUTATT].YPOS,
                   (Title[OUTPUT][OUTATT].Color[0]),z,NumStr);
       }
-   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+	  
   for(i = TRACK1; i <= VOLUME; ++i){
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     for(j = 0; j < 4; ++j){
-     if(Title[i][j].Flag & UPDAT){   // need to refresh the Item
+      if(Title[i][j].Flag & UPDAT){   // 需要刷新的Item
         Title[i][j].Flag &= ~UPDAT;   // Clr Update flag 
-        
         if((i == BATTERY)||(i == TRIGG)){
           if(Title[i][j].MARK & FIX){                  // ---- Under fix mode
             Print_Str( 
@@ -516,18 +475,12 @@ void Display_Title(void)
               Title[i][j].Str                          // String fixed
              );
           } else if(Title[i][j].MARK & NUM3){          // ---- Under NUM3 mode
-            
-              if(i == V_VERNIE){
-             
-                if  (Title[_Meas_V_Track][SOURCE].Value ==2) 
+            if(i == V_VERNIE){
+              if  (Title[_Meas_V_Track][SOURCE].Value ==2) 
                   {Int2Str(NumStr,(_V1_Vernie-_V2_Vernie)*_Meas_V_Scale*10, V_UNIT, 3, SIGN);}
                 else
                   {Int2Str(NumStr,(_V1_Vernie-_V2_Vernie)*_Meas_V_Scale, V_UNIT, 3, SIGN);
                 }
-               
-              //  if  (_1_source ==2) Int2Str(NumStr,(_V1_Vernie-_V2_Vernie)*_Meas_V_Scale*10, V_UNIT, 3, SIGN);
-              //  if  (_1_source !=2) Int2Str(NumStr,(_V1_Vernie-_V2_Vernie)*_Meas_V_Scale, V_UNIT, 3, SIGN);
-                
               Print_Str(
                 Title[i][j].XPOS, Title[i][j].YPOS,
                 Title[i][j].Color[_Meas_V_Track],      // Color fixed  
@@ -565,16 +518,13 @@ void Display_Title(void)
                 Title[FILE][1].Str                        // String for numerical
               );
             }
-            
-            
-            
           } else if(Title[i][j].MARK == NUM2){ 
                 NumStr[0]=' ';
-            if(i == BK_LIGHT){                        // the backlight shows the percentage
+            if(i == BK_LIGHT){                        // 背光百分比显示处理
               if(Title[i][j].Value == 9){
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
                 } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
-            } else {                                  // the volume percentage
+            } else {                                  // 音量百分比显示处理
               if(Title[i][j].Value == 10){
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
               } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
@@ -611,10 +561,7 @@ void Display_Title(void)
             ); 
           }
         }//
-          
-        
-        
-      } else if((Current == i)&&(Detail[i] == j)&&(Blink)){ // current cursor position Item
+      } else if((Current == i)&&(Detail[i] == j)&&(Blink)){ // 当前光标位置的Item
         Blink = 0;
         if((i == BATTERY)||(i == TRIGG)){
           if((Title[i][j].MARK & FIX)){      // ---- Under fix mode
@@ -657,35 +604,6 @@ void Display_Title(void)
               ); 
       }
                   }
-          
-         
-//       if ((_Det==DUTYPWM) || (_Det==OUTATT)){ z=Twink; } else { z=PRN;}
-          
-//          if((i == OUTPUT)&&(Title[i][j].MARK & NUM3)){   ///////////////////////////////////////
-//          if (j==  OUTATT)
-//          {  
-//             
-//              Int2Str(Title[i][j].Str, (Title[i][j].Value*26000), V_UNIT, 2, UNSIGN);
-//              Print_Str(
-//                Title[i][j].XPOS, Title[i][j].YPOS,
-//                Title[i][j].Color[0],                  // Color fixed  
-//                Twink, 
-//                Title[i][j].Str                        // String for numerical
-//              );
-//           } 
-//            
-//          if (j==  DUTYPWM)
-//          {  
-//              
-//              u8ToDec3(Title[i][j].Str, Title[i][j].Value);
-//              Print_Str(
-//                Title[i][j].XPOS, Title[i][j].YPOS,
-//                Title[i][j].Color[0],                  // Color fixed  
-//                Twink, 
-//                Title[i][j].Str                        // String for numerical
-//              );
-//            }
-//          }
             if((i == FILE)&&(Title[i][j].MARK & NUM3)){
               u8ToDec3(Title[i][1].Str, Title[i][1].Value);
               Print_Str(
@@ -700,16 +618,17 @@ void Display_Title(void)
     }
   }
 }
+
 /*******************************************************************************
- Load_Attr:  load the hardware properties
+ Load_Attr:  加载硬件属性
 *******************************************************************************/
 void Load_Attr(void)
 {
   u16 i;
   
-  
   for(i=0; i<G_Attr[0].Yp_Max+1; ++i) 
     strcpy(&Vertical[i][0], Y_Attr[i].STR);
+
   Title[TRACK1][RANGE].Limit = G_Attr[0].Yp_Max;
   Title[TRACK2][RANGE].Limit = G_Attr[0].Yp_Max;
   Title[TRACK3][RANGE].Limit = 0;
@@ -721,7 +640,7 @@ void Load_Attr(void)
   
 }
 /*******************************************************************************
- Update_Battery:  refresh the battery indicator
+ Update_Battery:  刷新电池电量指示
 *******************************************************************************/
 void Update_Battery(void)
 {

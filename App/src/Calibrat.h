@@ -1,7 +1,7 @@
-///********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
-// File Name : Calibrat.h  
-// Version   : DS203_APP Ver 2.3x                                  Author : bure
-//*******************************************************************************/
+/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
+ File Name : Calibrat.h  
+ Version   : DS203_APP Ver 2.3x                                  Author : bure
+*******************************************************************************/
 #ifndef __CALIBRAT_H
 #define __CALIBRAT_H
 

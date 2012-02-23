@@ -145,8 +145,8 @@ u32 Input_Lic(u16 x0, u8 y0) // Return: 32Bits Lic
   u8  i=0, j;
   char n[2]={"0"};
   u32 Lic=0;
-  char  NumStr[9];
-  u8 Type = 0;
+  u8  Type = 0;
+  char NumStr[9];
   
   Word2Hex(NumStr, Lic);
   __Display_Str(x0, y0, 0xFFFF, 0, NumStr);
@@ -155,7 +155,7 @@ u32 Input_Lic(u16 x0, u8 y0) // Return: 32Bits Lic
     Word2Hex(NumStr, Lic);
     if( Type != Twink ){  // Blink current number each 0.5 Sec.
       Type = Twink;
-      for(j=0; j<8; ++j){ // refresh display eight digits, the current bit flashing
+      for(j=0; j<8; ++j){ // 刷新显示8位数字，当前位闪烁
         n[0] = NumStr[j];
         if(i==j) __Display_Str(j*8+ x0, y0, 0xFFFF, Type, n);
         else     __Display_Str(j*8+ x0, y0, 0xFFFF, 0,  n);

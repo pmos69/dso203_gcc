@@ -1,7 +1,7 @@
-//********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
-// File Name : Interrupt.c  
-// Version   : DS203_APP Ver 2.3x                                  Author : bure
-//*******************************************************************************/
+/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
+ File Name : Interrupt.c  
+ Version   : DS203_APP Ver 2.3x                                  Author : bure
+*******************************************************************************/
 #include "Interrupt.h"
 #include "Function.h"
 #include "Menu.h"
@@ -10,7 +10,7 @@
 vu8  Cursor_Cnt, Key_Wait_Cnt, Key_Repeat_Cnt, Key_Buffer, Cnt_mS, Cnt_20mS;
 vu8  Twink, Blink;
 u8   Volume=20, Light;
-vu16 Delay_Cnt, Beep_mS, Key_Status_Last, Sec_Cnt, PD_Cnt,TimedDeltaView;
+vu16 Delay_Cnt, Beep_mS, Key_Status_Last, Sec_Cnt, PD_Cnt, TimedDeltaView ; 
 vu32 Wait_Cnt; 
 
 void NMIException(void)
@@ -145,11 +145,9 @@ void TIM3_IRQHandler(void)
   if(Cnt_mS > 0)   Cnt_mS--;
   else {                                     //Read keys per 20mS
     Cnt_mS =20;
-    
     if(Wait_Cnt >0)  Wait_Cnt--;
     if(Delay_Cnt >20) Delay_Cnt -= 20;
     else              Delay_Cnt  = 0;
-    
     if(Beep_mS >=20)  Beep_mS   -= 20;
     else              __Set(BEEP_VOLUME, 0); // Beep off
     if(Cnt_20mS < 50) Cnt_20mS++;
@@ -157,7 +155,6 @@ void TIM3_IRQHandler(void)
       Cnt_20mS = 0;
       __Set(BETTERY_DT, 1);                  //Battery Detect
       Sec_Cnt++;
-  
       if(PD_Cnt > 0) PD_Cnt--;
     }
     Cursor_Cnt++;
@@ -165,11 +162,10 @@ void TIM3_IRQHandler(void)
       Cursor_Cnt=0;
       Twink=!Twink;
       Blink = BLINK;
-    
     }
-    
-    if(TimedDeltaView > 0) TimedDeltaView--;
-    
+	
+	if(TimedDeltaView > 0) TimedDeltaView--;
+	
     if(Key_Wait_Cnt)    Key_Wait_Cnt--;
     if(Key_Repeat_Cnt)  Key_Repeat_Cnt--;
     KeyCode=Read_Keys();

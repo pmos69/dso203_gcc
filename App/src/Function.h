@@ -1,5 +1,4 @@
-
-/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. *******************
+/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
  File Name : Function.h  
  Version   : DS203_APP Ver 2.3x                                  Author : bure
 *******************************************************************************/
@@ -10,7 +9,7 @@
 
 #define NO_KEY       0
 #define KEY1         1
-#define KEY2         2 
+#define KEY2         2
 #define KEY3         3
 #define KEY4         4
 #define K_INDEX_DEC  5

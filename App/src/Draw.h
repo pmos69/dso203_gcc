@@ -1,7 +1,7 @@
-//********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
-// File Name : Draw.h  
-// Version   : DS203_APP Ver 2.3x                                  Author : bure
-//*******************************************************************************/
+/********************* (C) COPYRIGHT 2010 e-Design Co.,Ltd. ********************
+ File Name : Draw.h  
+ Version   : DS203_APP Ver 2.3x                                  Author : bure
+*******************************************************************************/
 #ifndef __DRAW_H
 #define __DRAW_H
 
@@ -91,7 +91,6 @@ void Draw_Mark(u16 m, u16 n);
 void Update_Mark(void);						
 void Update_View_Area(void);
 void Clear_Meter_Area(void);
-
 
 #endif
 

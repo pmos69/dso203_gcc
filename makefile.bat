@@ -39,9 +39,7 @@ set SRC_INC=..\App\inc
 set SRC_LDS=..\App\lds
 set SRC_ASM=..\App\asm
 
-rem set CFLAGS=-Wall -Os -Werror -fno-common -mcpu=cortex-m3 -mthumb -msoft-float -MD -I !STM_INC! -I !SRC_INC! -I !SRC_SRC!
-rem set CFLAGS=-Wall -O3 -Werror -mcpu=cortex-m3 -mthumb -msoft-float -MD -I !STM_INC! -I !SRC_INC! -I !SRC_SRC!
-set CFLAGS=-Wall -O0 -Werror -fno-common -fzero-initialized-in-bss -mcpu=cortex-m3 -mthumb -msoft-float -MD -I !STM_INC! -I !SRC_INC! -I !SRC_SRC!
+set CFLAGS=-Wall -Os -Werror -fno-common -mcpu=cortex-m3 -mthumb -msoft-float -MD -I !STM_INC! -I !SRC_INC! -I !SRC_SRC!
 set AFLAGS=-mcpu=cortex-m3 -mthumb
 set LDFLAGS=-nostartfiles -mcpu=cortex-m3 -mthumb -march=armv7 -mfix-cortex-m3-ldrd -msoft-float 
 
