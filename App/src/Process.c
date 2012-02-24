@@ -369,11 +369,18 @@ void Process(void)
       b_Avg += Ch[B];                           // 累计B通道直流平均值
       Tmp = Ch[B]- B_Posi;
       b_Ssq +=(Tmp * Tmp);                      // 统计B通道平方和
-        
-      if(Ch[A] > a_Max)  a_Max = Ch[A];         // 统计A通道最大值  
-      if(Ch[A] < a_Min)  a_Min = Ch[A];         // 统计A通道最小值  
-      if(Ch[B] > b_Max)  b_Max = Ch[B];         // 统计B通道最大值  
-      if(Ch[B] < b_Min)  b_Min = Ch[B];         // 统计B通道最小值  
+		
+		if(i == 0) {
+		    a_Max = Ch[A];
+			a_Min = a_Max;
+			b_Max = Ch[B];
+			b_Min = b_Max;
+		} else {
+			if(Ch[A] > a_Max)  a_Max = Ch[A];         // 统计A通道最大值
+			if(Ch[A] < a_Min)  a_Min = Ch[A];         // 统计A通道最小值  
+			if(Ch[B] < b_Min)  b_Min = Ch[B];         // 统计B通道最小值  
+			if(Ch[B] > b_Max)  b_Max = Ch[B];         // 统计B通道最大值
+		}
        
       C_D = DataBuf[i] >>16;
       if((i>1)&&(i<4094)){
@@ -442,11 +449,19 @@ void Process(void)
         Tmp    = (Ch[B]- B_Posi);
         a_Ssq += (Tmp * Tmp)/2;                                    // 统计平方和                    
       }
-      a_Avg += (Ch[A]+Ch[B])/2;                                   // 累计直流平均值                                   
-      if(Ch[A] > a_Max)  a_Max = Ch[A];          
-      if(Ch[B] > a_Max)  a_Max = Ch[B];                          // 统计最大值 
-      if(Ch[A] < a_Min)  a_Min = Ch[A];         
-      if(Ch[B] < a_Min)  a_Min = Ch[B];                          // 统计最小值  
+      a_Avg += (Ch[A]+Ch[B])/2;                                   // 累计直流平均值
+	  
+		if(i == 0) {
+		    a_Max = Ch[A];
+			a_Min = a_Max;
+			b_Max = Ch[B];
+			b_Min = b_Max;
+		} else {
+			if(Ch[A] > a_Max)  a_Max = Ch[A];         // 统计A通道最大值
+			if(Ch[A] < a_Min)  a_Min = Ch[A];         // 统计A通道最小值  
+			if(Ch[B] < b_Min)  b_Min = Ch[B];         // 统计B通道最小值  
+			if(Ch[B] > b_Max)  b_Max = Ch[B];         // 统计B通道最大值
+		}	  
 
       if(i >= k){                 // 第1点指针到达指定窗口位置
         if(_2_source == HIDE){                            // B通道合并到A通道时

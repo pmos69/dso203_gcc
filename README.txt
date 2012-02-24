@@ -27,6 +27,12 @@ All thanks to:
 -------------------------------------------
 
 
+v1.6
+
+- Fixed X_Y modes - now operational again
+- Fixed Min, Max and Vpp readings
+
+
 v1.5
 
 - Re-did a complete code merge of marcosin 1.8 & fixes into 2.51 by hand. - Now compiles with -Os

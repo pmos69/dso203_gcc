@@ -588,8 +588,8 @@ void Draw_Window(void)
   __Row_DMA_Ready();
   __Row_Copy(Row_Base2, LCD_Buffer1);
    
-  if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK1][SOURCE].Value == HIDE)) for (h = 0; h <= 400; ++h) TrackBuff[h*4]=105;
-  if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK2][SOURCE].Value == HIDE)) for (h = 0; h <= 400; ++h) TrackBuff[(h*4)+1]=100;
+  if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK1][SOURCE].Value == HIDE)) for (h = 0; h <= X_SIZE; ++h) TrackBuff[h*4]=105;
+  if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK2][SOURCE].Value == HIDE)) for (h = 0; h <= X_SIZE; ++h) TrackBuff[(h*4)+1]=100;
   
   if ((_Mode!=X_Y) && (_Mode!=X_Y_A)) for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row(Row); //Modo oscilloscopio
   if ((_Mode==X_Y) || (_Mode==X_Y_A)) for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row_XY(Row); //Modo X Y

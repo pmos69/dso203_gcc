@@ -57,7 +57,7 @@ APP V2.50  重写了基于新FAT12文件系统的文件读写程序(Files.c, ASM.s)
 APP V2.51  修改了Vmin,Vmax,Vpp计量的BUG(Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.5 APP (2.51 SmTech 1.8 PMOS69-fixes)"
+#define APP_VERSION       "GCC v1.6 APP (2.51 SmTech 1.8 PMOS69-fixes)"
 
 uc8 PROJECT_STR[20] = "Demo PROG. Ver 1.00";
 u8 OldCurrent;
