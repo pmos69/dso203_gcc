@@ -21,7 +21,8 @@ u32 a_Avg, b_Avg, a_Ssq, b_Ssq;              // the average cumulative sum of sq
 u8  a_Max, b_Max, a_Min, b_Min;              // the original maximum value, the original minimum value
 s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
 s16 c_Max, d_Max, A_Posi, B_Posi;
-u8  Full=1, Interlace;
+//u8  Full=1;
+u8 Interlace;
 u16 JumpCnt;
 u8 FrameMode;
 
@@ -115,6 +116,7 @@ u16 DIGI_DATA[72] =  // Sawtooth wave data                                      
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
   4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,
   4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095};   // 360 
+
 
 void BackGround_Reset(void)
 { 
@@ -389,8 +391,12 @@ void Process(void)
         }
         j += 1024;
         V[A_] = V[A];  V[B_] = V[B];     
-      }
+      }	  
+	  
+	  
     }
+
+
   } 
   else {                            // alternate sampling mode
     k =((1024 -_Kp2)*150 + 512)/1024 + _X_posi.Value;  // calculation of the interpolation window position correction value
@@ -603,6 +609,8 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
     }
   }    
 }  
+
+
 u16 get_bag_max_buf(void) {
 u16 out = 4096;
 if (FrameMode>0) {    //_Mode == SCAN
@@ -610,7 +618,8 @@ if (FrameMode>0) {    //_Mode == SCAN
         if (FlagMeter==0) (out = (390*FrameMode));
         if (FlagMeter==1) (out = (305*FrameMode));
     } else
-        out = (300*FrameMode);  //X_SIZE
+        out = (300*FrameMode);
+		//out = (X_SIZE*FrameMode);  //X_SIZE -> incorrect triggering
   
   }
   return out;

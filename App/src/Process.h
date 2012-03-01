@@ -84,7 +84,7 @@ extern u32 a_Avg, b_Avg, a_Ssq, b_Ssq;
 //extern s16 a_Vdc, b_Vdc;            
 extern u8  a_Max, b_Max, a_Min, b_Min;                // statistics of intermediate variables
 
-extern u16 Tcs, Tcnt;
+//extern u16 Tcs, Tcnt;
 
 extern u16 TaS, TbS, TcS, TdS;            // cycles accumulated
 extern u16 PaS, PbS, PcS, PdS;            // pulse width of the cumulative

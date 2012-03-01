@@ -62,7 +62,7 @@ typedef struct
 #define LCD_X2      399
 #define LCD_Y1      0
 #define LCD_Y2      239
-#define X_SIZE      386   //300  400
+#define X_SIZE      392   //300  400
 #define X_BASE      0
 #define Y_SIZE      200
 #define Y_BASE      0

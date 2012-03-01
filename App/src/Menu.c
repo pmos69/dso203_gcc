@@ -19,7 +19,7 @@ u8 FlagInCharge;
 char T_UNIT[12] ={'u','S', 0 ,'u','S', 0 ,'m','S', 0 ,'S',' ', 0 };
 char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
 char F_UNIT[12] ={'H','z', 0 ,'H','z', 0 ,'K','C', 0 ,'M','C', 0 };
-char N_UNIT[12] ={ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
+//char N_UNIT[12] ={ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
 char S_UNIT[12] ={'/','S','e','c', 0 ,'/','S','e','c', 0 , 0 , 0 };
 char P_UNIT[12] ={'%',' ', 0 ,'%',' ', 0 ,'%',' ', 0 , 0 , 0 , 0 };
 
@@ -93,7 +93,9 @@ char  METER[12][5]   = {"Vbt", "FPS", "Vpp", "Vdc", "RMS",  "Max",
 
 u8   Detail[14];
 char NumStr[12];
-u8   Current = 0, TypeA = 0, Update = 1;
+//u8   Current = 0, TypeA = 0, Update = 1;
+u8   Current = 0, Update = 1;
+
 char BL_Str[5]="B.L", Vol_Str[5]="Vol";
 
 char  x10[8][6]   = {"0.5V", " 1V ", " 2V ", " 5V ", "!10V!", "!20V!", "!50V!", "100V"};

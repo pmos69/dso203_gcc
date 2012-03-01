@@ -23,7 +23,7 @@
 #define UNSIGN       1
 #define STD          2
 
-extern u32 TestCnt;
+// extern u32 TestCnt;
 
 u32  Power(u8 x, u8 y); 
 void Delayms(u16 mS); 

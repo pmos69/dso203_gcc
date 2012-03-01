@@ -1,12 +1,15 @@
-DSO203 GCC v1.7 APP
+DSO203 GCC v1.8 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
 
 (Win32 GCC support by gabonator1)
 
+Tested with:
+	- SYS 1.51
+	- FPGA 2.51
 
-Contribute or simply enjoy.
+Please contribute or simply enjoy.
 
 Pedro Simões
 
@@ -28,61 +31,113 @@ Watch out for symlinks in the TAR you'll have to re-create them or copy/rename f
 -------------------------------------------
 
 All thanks to:
-- Seeed-Studio
+- The original firmware developers
 - Marco Sinatti (marcosin)
 - Gabriel Valky (gabonator1)
 
 -------------------------------------------
 
+Revisions:
+
+v1.8
+- Fixed horizontal display (previous blunder with X_SIZE)
+- Minor code clean up (and code size reduction)
 
 v1.7
-
 - Fixed x10 probe modes - Division scales and meter values
 - Calibration accuracy fix
 
-
 v1.6
-
 - Fixed X_Y modes - now operational again
 - Fixed Min, Max and Vpp readings
 
-
 v1.5
-
 - Re-did a complete code merge of marcosin 1.8 & fixes into 2.51 by hand. - Now compiles with -Os
 - X_Y modes don't work, and mess the buffer - Reset needed to proceed after using X_Y.
 
-
 v1.4
-
 - changed compile options: "-O3" replaced by "-O0 -fno-common -fzero-initialized-in-bss"
 - removed explicit initialization of the FrameMode variable
 
-
 v1.3
-
 - initialized FrameMode variable at creation
 	Can now start correctly everytime. (at least on my DSO)
 	If you have problems with bogus display in full-buffer mode, try saving settings and restarting.
 
-
 v1.2:
-
 - automatic chinese->english translation of all chinese comments in the source.
 
-
 v1.1:
-
 - Updated with marcosin 1.8 release
 
-
 v1:
-
 - Removed -fno-common and changes -Os to -O3 in compile options
      APP still only starts correctly 1/3 of the times
-
 - Fixed Vdc and RMS values display when in 1-page buffer mode (menu.c)
      Calculation didn't take into account the buffer size when calculating the averages
-
 - Fixed wrong calculations for Vdc and RMS (process.c)
      the counters (a_Avg, b_Avg, a_Ssq, b_Ssq) were initialized with a value different than 0)
+	 
+
+-------------------------------------------
+
+Marco Sinatti (marcosin) Revisions:
+	 
+Versione APP251_V1.0 Richiede FPGA V2.22 - SYS1.50
+-Tasto quadrato = Abilita il buffer ridotto a una schermata, disabilita lo scorrimento
+-Tasto triangolo = cambio visualizzatori misure
+-Corretto visualizzazione unità di misura della frequenza
+
+Versione APP251_1.1 Richiede FPGA V2.22 - SYS1.50
+-Aggiunto opzione portata x10 in modo da leggere la tensione corretta sui meter quando si utilizza la sonda x10
+-Aggiunto accesso veloce ai cursoti V1 V2 T1 T2 in modo da poter andare direttamente a fare misure senza scorrere tutti i menù. Premendo il tasto si accede a V1, ripremendolo a V2, etc... dopo T2 si torna alla posizione da cui si era partiti
+-Aggiunto livello trigger automatico, si setta da solo al centro della forma d'onda, il tasto è comodo anche per accedere al volo al menù trigger
+-Aggiunto indicatore della batteria in carica, mentre stà caricando il riempimento della batteria scorre
+-Tolto la modalità NONE sulla base dei tempi, perchè era identica a SCAN
+-Modificato l'indicazione dell'impostazione a frame singolo, adesso viene evidenziata con un rettandolo sull'indicatore del buffer in basso
+-Migliorata l'acquisizione a frame singolo che lavorava male in alcune portate
+
+Versione APP251_1.3 Richiede FPGA V2.22 - SYS1.50
+-Visualizzazione a schermo intero nascondendo i meter
+-Durante l'uso dei cursori, se i meter sono nascosti appare comunque il DeltaT e il DeltaV
+-Risolto bug sulla visualizzazione della linea che appare sui primi pixel dello schermo
+-Risolto bug aggiornamento livello trigger automatico
+-Nella modalità trigger automatica si può decidere di impostare in automatico il livello a 1/2 1/4 3/4 della Vpp
+-Modificato visualizzazione carica batteria con scorrimento quando effettivamente è in carica
+-Aumentato velocità di scorrimento dei cursori di misurazione
+-Modificato modalità di riduzione del buffer, adesso quando siamo in "frame singolo" in realtà lavora così:
+SCAN = cattura e visualizza un solo frame, purtroppo non è un roll vero
+NON SCAN = cattura 1,6 frame, in questo modo il trigger funziona bene, si ha la possibilità di scorrere la visualizzazione
+-In modalità SCAN non si hanno più deformazioni della forma d'onda al centro dello schermo
+-In modalità SCAN tolgo il riferimento della XPOS perchè non serve
+-Aggiunto modalità PWM e regolazione ampiezza segnale in uscita, modificando il generatore di funzioni in questo modo:
+SQUARE = Onda quadra da 0Hz-20Khz con ampiezza regolabile da 0 a 2,6V
+TRIANG = Onda triangolare da 0Hz-20Khz con ampiezza regolabile da 0 a 2,6V
+SEW = Onda a dente di sega da 0Hz-20Khz con ampiezza regolabile da 0 a 2,6V
+SINUS = Onda sinusoidale da 0Hz-20Khz con ampiezza regolabile da 0 a 2,6V
+PWM = Segnale PWM con duty regolabile da 0 a 100 %, frequenza da 10Hz a 8Mhz.
+
+Versione APP251_1.4 Richiede FPGA V2.22 - SYS1.50_1.6 
+-Funzione X_Y (da terminare)
+-Cambio rapido menù meter modificato, adesso con i canali C e D ad OFF quando si cambia i meter non li imposta sui canali disabilitati
+-Sistemato SYS per il problema del range tensione
+-Sistemato SYS sul menù calibrazione
+-Rimodificato singolo frame, quando impostato non fa scorrere XPOS
+
+Versione APP251_1.5 Richiede FPGA V2.22 - SYS1.50_1.6 
+-Corretto visulizzazione DeltaV quando X10 sul canale B (prendeva sempre il canale A)
+
+Versione APP251_1.6  Richiede FPGA V2.22 - SYS150_1.6 
+-Modalità SCAN a singolo frame in vero ROLL
+-Aggiunto 1-2-5Hz su generatore
+-Portato frequenza massima generatore a 50Khz 
+-Aumentato da 36 a 72 campionamenti la generazione delle forme d'onda
+
+Versione APP251_1.7  Richiede FPGA V2.22 - SYS150_1.6 
+-Invertito titolo generatore e tempo base
+-Spostato meter duty e tensione generatore
+-Implementato XY_S (scan) XY_A  (auto) da terminare
+-NORMAL migliorato, non cancella lo schermo quando attende un nuovo trigger
+
+Versione APP251_1.8  Richiede FPGA V2.22 - SYS150_1.6 
+-Migliorato griglia e sistemato scala su modalità XY
