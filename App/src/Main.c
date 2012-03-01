@@ -13,51 +13,51 @@
 #include "File.h"
 
 /*******************************************************************************
-°æ±¾ĞŞ¸ÄËµÃ÷
-APP V2.30: ´Ó¸Ã°æ±¾Æğ²»ÔÙ¼æÈİPCB_V2.6ÒÔÏÂ°æ±¾µÄÖ÷°å
-           ´Ó¸Ã°æ±¾Æğ²»ÔÙ¼æÈİSYS_V1.31ÒÔÏÂ°æ±¾
-           ĞİÃß¶¨Ê±ĞŞ¸ÄÎª600Ãë(Main.c)
-           ĞŞ¸Ä¼°Ìí¼ÓÁËĞÂµÄSYS¿âº¯Êı(BIOS.s)
-           ĞŞ¸ÄÁË¿ª»úĞÅÏ¢ÏÔÊ¾³ÌĞò(Main.c)
-APP V2.31: Ôö¼ÓÁË¿ª»úÊ¶±ğFPGA¼ÓÔØÅäÖÃÍê³ÉÓë·ñÅĞ±ğ(Main.c)
-           Ôö¼ÓÁËLicenceÈ¨ÏŞ¹ÜÀí¹¦ÄÜµÄDemo³ÌĞò·¶Àı(Ident.c,Main.c)
-           ĞŞ¸ÄÁËÄ£ÄâÍ¨µÀĞ£Õı¹¦ÄÜµÄ½øÈëºÍÍË³öÏà¹Ø²Ù×÷(calibrat.c)
-           Ôö¼ÓÁË144MHz½»Ìæ²ÉÑùÄ£Ê½ÏÂµÄÏà¹Ø¹¦ÄÜ(Process.c)
-APP V2.32  ´Ó¸Ã°æ±¾Æğ¿É²¢ĞĞÊ¹ÓÃIAR 4.42Óë5.0°æ±¾
-           Ô´³ÌĞòÃ»¸Ä¶¯£¬Ôö¼ÓÁËÎÄ¼ş¼Ğ¡¡IAR_V5_Prpject
-APP V2.33  ĞŞ¸ÄÁËÉ¨ÃèÊ±»ù<1uSÊ±£¬ÏÔÊ¾Ë¢ĞÂµÄBUG(Process.c)
-           ĞŞ¸ÄÁËÔÚĞ£×¼×´Ì¬ÏÂ£¬²Ù×÷ÌáÊ¾ĞÅÏ¢µÄBUG(Calibrat.c)
-APP V2.34  ¸ÄÎª°´Í¨µÀµ¥¶ÀĞ£×¼(Calibrat.c & Main.c)
-           ĞŞ¸ÄÁËĞ£×¼ÏîÑ¡ÔñµÄ²Ù×÷·½Ê½(Calibrat.c)
-APP V2.35  ĞŞ¸ÄÁËĞ£×¼¹ı³ÌÖĞµÄBUG(Calibrat.c)
-           ĞŞ¸ÄÁËÉ¨ÃèÊ±»ù<5uSÊ±£¬ÔİÍ£²»ÁËµÄBUG(Process.c)
-           ÓÅ»¯ÁËÏÔÊ¾Êı¾İ´¦Àí³ÌĞò(Process.c)
-           Ôö¼ÓÁËÄ£ÄâÍ¨µÀ×Ô¶¯ÁãµãÆ½ºâ¹¦ÄÜ(Main.c,Process.c,Calibrat.c)
-APP V2.36  ²¿·ÖĞ£×¼²Ù×÷¸ÄÎª×Ô¶¯Ä£Ê½(Calibrat.c,Process.c,Function.c)
-           ĞŞ¸ÄÁË¿ª»ú¼ÓÔØ¹¤×÷²ÎÊıµÄ·½Ê½(Main.c)
-APP V2.37  ½øÒ»²½ÍêÉÆºÍÓÅ»¯ÁËÏÔÊ¾Êı¾İ´¦Àí³ÌĞò(Process.c)
-           ĞŞ¸ÄÁË32Î»ÓĞ·ûºÅ¼°ÎŞ·ûºÅÕûÊı×ª»»³ÌĞòËÄÉáÎåÈëµÄBUG(Function.c)
-           Ôö¼ÓÁËÊ±¼äÆµÂÊÂö¿íÕ¼¿Õ±È²âÁ¿¹¦ÄÜ(Process.c, Menu.c)
-APP V2.40  Ôö¼ÓÁËĞ´UÅÌ´´½¨ÎÄ¼şÃû¹¦ÄÜ(Main.c, Flies.c, dosfs.c)
-           ĞŞ¸Ä´æÅÌÊ±ÏÔÊ¾ÎÄ¼şĞòºÅBUG(Menu.c) 
-APP V2.41  Ôö¼ÓÁËÎÄ¼ş¸ñÊ½Îª.BUFµÄ¶Á/Ğ´²ÉÑù»º³åÇøÊı¾İÎÄ¼ş(Main.c,Flies.c,Menu.c)
-           Ôö¼ÓÁËÎÄ¼ş¸ñÊ½Îª.CSVµÄµ¼³ö²ÉÑù»º³åÇøÊı¾İÎÄ¼ş(Main.c,Flies.c,Menu.c)
-APP V2.42  Îª½ÚÊ¡¿Õ¼ä½«ÎÄ¼şÏµÍ³×ªÒÆµ½SYS_V1.40Ä£¿éÉÏ(ASM.s, Flies.c, dosfs.c)
-           ¸ÄÎªÓÃ"SerialNo.WPT"µÄÎÄ¼şĞÎÊ½±£´æ¹¤×÷²ÎÊı±í(Flies.c)
-           ×¢£ºAPP V2.42ÒÔÉÏ°æ±¾±ØĞëÓëSYS V1.40ÒÔÉÏ°æ±¾Ò»ÆğÅäºÏÊ¹ÓÃ
-APP V2.43  ĞŞ¸ÄÁËÄ£ÄâÍ¨µÀµµÎ»µ÷ÕûÊ±µÄBUG(Main.c)
-APP V2.44  ĞŞ¸ÄÁËĞ£×¼²Ù×÷Ê±±£´æ²ÎÊıµÄBUG(Calibrat.c)
-           Ôö¼ÓÁË¿ª»ú¼ÓÔØ²ÎÊı³É¹¦Óë·ñÌáÊ¾(Main.c)
-APP V2.45  ĞŞ¸ÄÁË¶ÁĞ´BUFÎÄ¼şÊ±»Ö¸´ÏÔÊ¾²Ëµ¥ÖĞ¸÷¸ö¶ÔÓ¦ÏîÊ±µÄBUG(Files.c)
-           É¾³ıÁË¶ÁBUFÎÄ¼şÊ±µÄ²âÊÔĞÅÏ¢·´À¡ÏÔÊ¾(Main.c)
-APP V2.50  ÖØĞ´ÁË»ùÓÚĞÂFAT12ÎÄ¼şÏµÍ³µÄÎÄ¼ş¶ÁĞ´³ÌĞò(Files.c, ASM.s)
-           ĞŞ¸ÄÁËTH,TL²âÁ¿ÏÔÊ¾µÄBUG(Menu.c)
-           ÓÅ»¯ÁË´øÁ¿¸ÙÊıÖµÏÔÊ¾Ïà¹Øº¯Êı(Menu.c,Function.c,Calibrat.c)
-           ĞŞ¸ÄÁËÂö¿í´¥·¢³ÌĞòµÄBUG(Process.c)
-APP V2.51  ĞŞ¸ÄÁËVmin,Vmax,Vpp¼ÆÁ¿µÄBUG(Process.c)
+Version changes
+APP V2.30: since this version no longer to compatible PCB_V2.6 the following version of the motherboard
+           Since this version is no longer compatible SYS_V1.31 the following version
+           Sleep timing was revised to 600 seconds (Main.c)
+           Modify, and add a new SYS library functions (BIOS.s)
+           Modify the boot information display program (Main.c)
+APP V2.31: an increase of boot identify FPGA load configuration completion discriminant (Main.c)
+           Increase the Licence rights management functionality Demo program example (Ident.c, Main.c),,
+           Modified analog channel correction function entry and exit operations (calibrat.c)
+           Increase the the 144MHz alternately sampling mode function (Process.c)
+APP V2.32 from the version from the IAR 4.42 and version 5.0 can be used in parallel
+           Source did not change, the increase of the folder IAR_V5_Prpject
+APP V2.33 modified scan <1uS, display the refresh BUG (Process.c,)
+           Modified in the calibration state, the operation message BUG (Calibrat.c)
+APP V2.34 changed by channel separate calibration (Calibrat.c & Main.c,)
+           Modify the calibration mode of operation (option Calibrat.c)
+APP V2.35 modified in the calibration process BUG (Calibrat.c),
+           Modified, <5uS scan, the suspension can not BUG (Process.c)
+           To optimize the display data handler (Process.c)
+           Increase of the analog channel automatic zero balance function (Main.c, Process.c, Calibrat.c)
+APP V2.36 part of the calibration operation into automatic mode (Calibrat.c, Process.c, Function.c)
+           Modify the boot loader to the operating parameters (Main.c)
+APP V2.37 to further improve and optimize the display data handler (Process.c)
+           Modify the 32-bit signed and unsigned integer conversion process rounded BUG (Function.c,)
+           Increase the pulse width duty cycle of the time and frequency measurement function (Process.c, Menu.c)
+APP V2.40 increase write U disk to create the file function (Main.c, and Flies.c dosfs.c)
+           Modify the save file number is displayed when BUG (Menu.c)
+APP V2.41 increase the file format for the BUF's read / write sample buffer data files (Main.c, Flies.c, Menu.c)
+           Increased the file format for the CSV export sample buffer data files (Main.c Flies.c, Menu.c)
+APP V2.42 for space-saving file system to SYS_V1.40 module (ASM.s, Flies.c, dosfs.c)
+           Changed use "SerialNo.WPT" file is stored parameter table (Flies.c)
+           Note: the APP V2.42 or later must be used in conjunction with the SYS V1.40 or later
+APP V2.43 modify the adjustment of the analog channels stalls BUG (Main.c),
+APP V2.44 modified to save the parameters in the calibration operation BUG (Calibrat.c),
+           Increase the power load parameters, the success of Tips (Main.c)
+APP V2.45 modified to read and write BUF file recovery Display the corresponding menu BUG (Files.c)
+           Delete the read test information when the BUF file feedback (Main.c)
+APP V2.50 rewrite based on the new FAT12 file system, file read and write procedures (Files.c, ASM.s)
+           Changes to TH, TL measurements the display BUG (Menu.c,)
+           Optimized with dimensionless values ??show the correlation function (Menu.c Function.c, Calibrat.c)
+           Modify the pulse width trigger the BUG (Process.c)
+APP V2.51 modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.6 APP (2.51 SmTech 1.8 PMOS69-fixes)"
+#define APP_VERSION       "GCC v1.7 APP (2.51+SmTech1.8+PMOS69 fixes)"
 
 uc8 PROJECT_STR[20] = "Demo PROG. Ver 1.00";
 u8 OldCurrent;
@@ -93,13 +93,7 @@ int main(void)
   u16 Vt2Old=0;
   u16 _Vt1Old;
   
-//  u8 N[20];
-//  u8 T_Unit[15]={'u','S','u','S','m','S','S'};
-  
   NVIC_SetVectorTable(NVIC_VectTab_FLASH, (u32)&_vectors);
-  
-//Note: ÓÃ IAR_V4.x ±àÒëÊ±£¬±ä¸ü App#n »¹ÒªÍ¬Ê±ĞŞ¸Ä lnkarm.xcl ÎÄ¼şÖĞµÄ¶ÔÓ¦Ïî 
-//      ÓÃ IAR_V5.x ±àÒëÊ±£¬±ä¸ü App#n »¹ÒªÍ¬Ê±ĞŞ¸Ä xxxxxx.icf ÎÄ¼şÖĞµÄ¶ÔÓ¦Ïî 
   
   __USB_Init();
   
@@ -113,50 +107,13 @@ int main(void)
   X_Attr = (X_attr*)__Get(HORIZONTAL);
   G_Attr = (G_attr*)__Get(GLOBAL);
   T_Attr = (T_attr*)__Get(TRIGGER);
-  Load_Attr();                                 // ¸³ÖµY_AttrµÈ
+  Load_Attr();                                 // assignment Y_Attr
   i = Load_Param(); 
-  if(i == 0)  // ¶ÁÈ¡Ô¤Éè¿ª»ú²ÎÊı
+  if(i == 0)  // read the default boot parameters
     __Display_Str(6*8, 30, GRN, PRN, "     Reload parameter form disk       ");
   else       
     __Display_Str(6*8, 30, YEL, PRN, "     Parameter record not found       ");  
-//  i = Load_Param(); // ¶ÁÈ¡Ô¤Éè¿ª»ú²ÎÊı 
 
-  /*--------------------------- LICENCE_CTRL_DEMO --------------------------------
-  Offset = Seek_Proj(PROJECT_ID);
-  if(Offset >= 2048){                          // Project ID not found
-    Offset = Seek_Blank();
-    if(Offset == 2048){  
-      __Display_Str(6*8, 50, GRN, PRN,   "         Licence record full         ");
-      while (1){};
-    } else {
-      Result  = Add_Proj(PROJECT_ID, Offset);  // Set project ID
-      Result &= Add_Cnt(DEMOCNT, Offset);      // Set max demo run counter      
-      Result &= Add_Str((u32)PROJECT_STR, Offset); 
-      if(Result != 1){                                
-        __Display_Str(6*8,50,GRN, PRN,   "       Project ID writen error       ");
-        Delayms(500);
-      }
-    }
-  }
-  Licence = Get_Lic(Offset);                   // Get project licence record
-  if(__Ident(DEVELOPER_ID, PROJECT_ID, Licence)!= 1){
-    __Display_Str(6*8, 50, GRN, PRN,   "Please input project licence:00000000");
-    Licence = Input_Lic((6+29)*8, 50);         // Input Licence
-    if(__Ident(DEVELOPER_ID, PROJECT_ID, Licence)!=1)  Result = 0;
-    else{                                      // Licence correct
-      Result  = Add_Lic(Licence, Offset);            
-      if(Result == 1)                                
-        __Display_Str(6*8,50,GRN, PRN, "          Licence writen ok          ");
-      else  
-        __Display_Str(6*8,50,GRN, PRN, "         Licence writen error        ");
-      Delayms(500);
-    }
-    if(Result != 1){
-      __Display_Str(6*8, 30, GRN, PRN, "      Push any key to next step      ");
-      while(Key_Buffer == 0){};
-    }
-  }
-//  --------------------------------------------------------------------------*/
   
   Beep_mS = 500;
   Balance();
@@ -172,7 +129,7 @@ int main(void)
   _Vt1Old=_Vt1;
   TrgAutoOld=TrgAuto;   
   
-   //-------------------------------------------------------------------------- ************** LOOP MAIN *****************
+//-------------------------------------------------------------------------- ************** LOOP MAIN *****************
   while (1){
   
   
@@ -227,9 +184,7 @@ int main(void)
       }
     }
    
-     OldMode=_Mode;
-   // if (_Mode==X_Y) Title[TRACK1][POSI].Value=120;
-   // if (_Mode==X_Y) Title[TRACK2][POSI].Value=100;
+    OldMode=_Mode;
     if ((_Mode==X_Y) ||  (_Mode==X_Y_A))  Title[TRACK1][POSI].Value=101+MIN_Y;
     if ((_Mode==X_Y) ||  (_Mode==X_Y_A))   Title[TRACK2][POSI].Value=100;
     
@@ -240,10 +195,10 @@ int main(void)
 	
     //-------------------------------------------------------------------------- ********* LIFE *************    
     if(PD_Cnt == 0){
-      __Set(BACKLIGHT, 0);     // ¹Ø±Õ±³¹â
-      __Set(STANDBY, EN);      // ½øÈëÊ¡µç×´Ì¬  
+      __Set(BACKLIGHT, 0);     // turn off the backlight
+      __Set(STANDBY, EN);      // enter low power states
     } else {
-      Synchro();                              // Í¬²½ÏÔÊ¾¸÷¸ö¹ì¼£²¨ĞÎÊı¾İ
+      Synchro();                              // simultaneous display of waveform data of each track
 	  if (TimedDeltaView>0){
         Title[T_VERNIE][2].Flag |= UPDAT; 
         _D_V_Source.Flag |= UPDAT;            // Updat delta V 
@@ -257,11 +212,11 @@ int main(void)
         Result_FPS = Count_FPS;
         Count_FPS = 0;
         Update_Battery();
-        if (FlagMeter==1) { for(i=0; i<9; ++i)  Display_Value(i);} // Ã¿ÃëË¢ĞÂ²âÁ¿Öµ        
+        if (FlagMeter==1) { for(i=0; i<9; ++i)  Display_Value(i);} // refresh the measured values ??per second
       }
       if (FlagMeter==1) Display_Meter();
       Display_Title();
-      if(Update){                             // ´¦Àí°´¼üºóĞèÒªË¢ĞÂµÄÏîÄ¿
+      if(Update){                             // handle button to refresh item
 	    if (TrgAuto==0)  Print_Str(365,  216, ((SCRN<<8)+Title[TRIGG][SOURCE].Value), PRN, "!Man!");
         if (TrgAuto==1)  Print_Str(365,  216, ((SCRN<<8)+Title[TRIGG][SOURCE].Value), INV, "!1/4!");
         if (TrgAuto==2)  Print_Str(365,  216, ((SCRN<<8)+Title[TRIGG][SOURCE].Value), INV, "!1/2!");
@@ -283,29 +238,10 @@ int main(void)
       Blink = 0;
     }
     if((_State.Value == HOLD)&&((__Get(FIFO_FULL)!= 0)||(__Get(FIFO_START)== 0))){
-//    if((_State.Value == HOLD)&&(Twink== 1)){
       _State.Value = 2; 
       _State.Flag |= UPDAT;
     }
 
-     //----------------------------------------------------------------------------------  PWM 
-//    if (Current == OUTPUT) {
-//      if ((_Det==DUTYPWM) || (_Det==OUTATT)){ z=Twink; } else { z=INV;}
-//      if  (Title[OUTPUT][KIND].Value == PWM)
-//      {
-//        u8ToDec3(Title[OUTPUT][DUTYPWM].Str, Title[OUTPUT][DUTYPWM].Value);
-//        Print_Str(156,  216, (Title[OUTPUT][DUTYPWM].Color[0]), z, "Duty % "); //225,202[Title[OUTPUT][PWM].Value]
-//        Print_Str(Title[OUTPUT][DUTYPWM].XPOS, Title[OUTPUT][DUTYPWM].YPOS,
-//                  (Title[OUTPUT][DUTYPWM].Color[0]),z,Title[OUTPUT][DUTYPWM].Str);
-//      }  
-//      else
-//      {
-//        Print_Str(156,  216, (Title[OUTPUT][DUTYPWM].Color[0]), z, "!!Out ");//230,202
-//        Int2Str(NumStr, (Title[OUTPUT][OUTATT].Value*26000), V_UNIT, 2, UNSIGN);
-//        Print_Str(Title[OUTPUT][OUTATT].XPOS, Title[OUTPUT][OUTATT].YPOS,
-//                  (Title[OUTPUT][OUTATT].Color[0]),z,NumStr);
-//      }
-//    }
    
     //--------------------------------------------------------------------------  TRIGGER AUTOMATICO
     if  (TrgAuto>0){                                                                   
@@ -323,7 +259,6 @@ int main(void)
     
     if (FlagFrameMode==1){
           if (_Mode==SCAN) {
-          //  _X_posi.Value=200;
             _X_posi.Value=0;
               FrameMode=1;
             
@@ -342,16 +277,16 @@ int main(void)
  
    //--------------------------------------------------------------------------  GESTIONE TASTI MENU	
     if(Key_Buffer) { 
-      if(PD_Cnt == 0)  App_init();          // ÍË³öÊ¡µç×´Ì¬
-      PD_Cnt = 600;                         // 600Ãë
+      if(PD_Cnt == 0)  App_init();          // exit the power saving state
+      PD_Cnt = 600;                         // 600 seconds
 	  //--------------------------------------------------------------------------------------------------------------  
       if(Key_Buffer == KEY1){
-        _State.Value = (_State.Value == 0)? 1 : 0;       						// "RUN/HOLD" ×´Ì¬»¥»»
-        _State.Flag |= UPDAT;                          							// ÖÃÏàÓ¦µÄ¸üĞÂ±êÖ¾
+        _State.Value = (_State.Value == 0)? 1 : 0;       						// "RUN/HOLD" state swap
+        _State.Flag |= UPDAT;                          							// set the corresponding update flag
         if((Current == FILE)&&(_Curr[2].Value == BUF)) reset_parameter();		//
         if(_Mode == SGL){														//
-          for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0; 							// Çå³ı¾ÉµÄÏÔÊ¾²¨ĞÎ
-          __Set(FIFO_CLR, W_PTR);                      							// FIFOĞ´Ö¸Õë¸´Î»
+          for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0; 							// clear the old waveform
+          __Set(FIFO_CLR, W_PTR);                      							// FIFO write pointer reset
         }
       }
       //--------------------------------------------------------------------------------------------------------------
@@ -386,36 +321,9 @@ int main(void)
               break;       
             }
               
-//             Title[Current][_Det].Flag |= UPDAT;                                // aggiorna titolo corrente per lasciare lo sfondo acceso
-//            if ((Current != T_VERNIE) && (Current != V_VERNIE)){                // se il titolo non è gia dei cursori
-//              OldCurrent=Current;                                               // memorizza il titolo corrente
-//              OldDet=_Det;                                                      // memorizza il dettaglio corrente
-//              Current = V_VERNIE;                                               // vai sul titolo del cursore V
-//              _Det=V1 ;                                                         // imposta il detaglio V1
-//              break;
-//            }
-//            if ((Current==V_VERNIE) && (_Det==V1)){                             // se il corrente è V con dettaglio V1            
-//              _Det=V2;                                                          // imposta il dettaglio a V2 
-//              break;
-//            }
-//            if ((Current==V_VERNIE) && (_Det==V2)){                             // se il corrente è V con dettaglio V2
-//              Current=T_VERNIE;                                                 // imposta il titolo a T 
-//              _Det=T1;                                                          // imposta il dettaglio a T1  
-//              break;
-//            }
-//            if ((Current==T_VERNIE) && (_Det==T1)){                             // se il corrente è T con dettaglio T1
-//              _Det=T2;                                                          // imposta il dettaglio a T2 
-//              break;
-//            }   
-//            if ((Current==T_VERNIE) && (_Det==T2)){                             // se il corrente è T con dettaglio T2
-//              Current=OldCurrent;                                               // rirpistina al vecchio titolo
-//              _Det=OldDet;                                                      // ripristina al vecchio dettaglio
-//              if (Current==FILE){Current=TRACK1; _Det=0;}
-//              break;
-//            }
           }
           if (Delay_Cnt == 0) {   
-            Save_Param();                             // ±£´æµ±Ç°²Ù×÷ÉèÖÃ²ÎÊı   
+            Save_Param();                             // save the current operation to set parameters
             if(Current != FILE){
               for (j=0; j<4; j++) {
                 Print_Str(91, 0, 0x0405, PRN, "       Save Settings       ");
@@ -430,7 +338,7 @@ int main(void)
       //-------------------------------------------------------------------------------------------------------------        
       if(Key_Buffer== KEY4){                                                    // ===--- TASTO 4 PREMUTO --====
 	    if ((Current != FILE)) {                                                //
-          Delay_Cnt = 700;  //*************************************
+          Delay_Cnt = 700; 
           while (Delay_Cnt > 0){
             if((__Get(KEY_STATUS)& KEY4_STATUS)!=0){
               if (FlagMeter==1){ 
@@ -564,30 +472,30 @@ int main(void)
         if ((Current == T_VERNIE) || ((Current == V_VERNIE)&& (FlagMeter==0))) TimedDeltaView=150;
 		
         if(Current < METER_0){
-          if((Current == TRIGG)&&(Detail[Current]==2)){         // ´¥·¢µçÆ½µ÷½Ú
+          if((Current == TRIGG)&&(Detail[Current]==2)){         // trigger level adjustment
             if(V_Trigg[_Trigg[SOURCE].Value].Value > MIN_Y+4) 
               V_Trigg[_Trigg[SOURCE].Value].Value--;
-          } else if((Current == BK_LIGHT)||(Current == VOLUME)){// ±³¹â»òÒôÁ¿µ÷½Ú
+          } else if((Current == BK_LIGHT)||(Current == VOLUME)){//  adjust backlight or volume
             if(_Curr[1].Value > 0)   _Curr[1].Value--;
-          } else if((Current == T_BASE)&&(_Det == XPOSI)&& (FlagFrameMode==0)){      // X_POSIµ÷½Ú
+          } else if((Current == T_BASE)&&(_Det == XPOSI)&& (FlagFrameMode==0)){      // X_POSI adjustment
             if(_Curr[_Det].Value > 30) _Curr[_Det].Value -= 30; 
             else if(_Curr[_Det].Value > 0) _Curr[_Det].Value--;
-            _X_View.Flag |= UPDAT;                              // Ë¢ĞÂX_View
-          } else {                                              // µ±Ç°ÏîÎªÆäËû
+            _X_View.Flag |= UPDAT;                              // refresh X_View
+          } else {                                              //  for other current item
             if(_Curr[_Det].Value > 0) _Curr[_Det].Value--; 
             else if(_Curr[_Det].MARK & CIRC) _Curr[_Det].Value =_Curr[_Det].Limit;
           }
-          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE Ñ¡Ôñ
+          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE selection
             Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
-            Title[RUNNING][STATE].Flag |= UPDAT;       // Ë¢ĞÂ RUNNING STATE
+            Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
           if((Current == OUTPUT)&&(_Kind != PWM)){
              if (Title[OUTPUT][FRQN].Value > 14) 
-            Title[OUTPUT][FRQN].Value = 14;            // Ä£ÄâĞÅºÅÆµÂÊÉÏÏŞÎª20KHz
+            Title[OUTPUT][FRQN].Value = 14;            // upper limit of the analog signal frequency is 20KHz
            } 
           if((Current == FILE)&&(_Curr[0].Value == LOAD)){ 
-            if(_Curr[2].Value == BMP) _Curr[2].Value = BUF;  // Ö»ÄÜLoad Dat,BufÎÄ¼ş
-            if(_Curr[2].Value == CSV) _Curr[2].Value = BUF;  // Ö»ÄÜLoad Dat,BufÎÄ¼ş
+            if(_Curr[2].Value == BMP) _Curr[2].Value = BUF;  // only the Load Dat, Buf file
+            if(_Curr[2].Value == CSV) _Curr[2].Value = BUF;  // only the Load Dat, Buf file
           }
           _Curr[0].Flag |= UPDAT;
           _Curr[1].Flag |= UPDAT;
@@ -596,7 +504,7 @@ int main(void)
         } else {
           Meter[Current-METER_0].Flag |= UPDAT;
           if(Meter[Current-METER_0].Item  > VBT) 
-            Meter[Current-METER_0].Item -= 1;          // ¸Ä±ä²âÁ¿ÏîÄ¿ 
+            Meter[Current-METER_0].Item -= 1;          // change the measurement items
           else                     
             Meter[Current-METER_0].Item  = TL;//MIN;
           if(Meter[Current-METER_0].Item == FPS) 
@@ -612,30 +520,33 @@ int main(void)
             if ((Current == TRACK4)&&(_Det == 0))_Det = 2;
        
         
-        if ((FlagMeter==0)&&(Current == V_VERNIE)&& (_Det==V2)){ _Curr[_Det].Flag |= UPDAT;_Det=V1;goto EndKIndex;}
-		
-        if(Current < METER_0){                         // ¸Ä±äDetail
-          _Curr[_Det].Flag |= UPDAT;
-          if(_Det < 3)    _Det += 1;
-          else            _Det  = 0;
-		  
-          if ((Current == OUTPUT) && (Title[OUTPUT][KIND].Value==PWM) && (_Det==OUTATT)) _Det=0;
-          if ((Current == OUTPUT) && (Title[OUTPUT][KIND].Value!=PWM) && (_Det==DUTYPWM)) _Det+=1;  
-          
-          if(_Curr[_Det].MARK & NOT)                        _Det  = 0; 
-          if(_Curr[_Det].MARK & NUM2)                       _Det  = 0; 
-          if((_Curr[_Det].MARK & NUM3)&&(Current != FILE)&& (Current != OUTPUT) )  _Det  = 0;  
-          _Curr[_Det].Flag |= BLINK;
-        } else {                                       // ¸Ä±ä²âÁ¿¶ÔÏó
-          Meter[Current-METER_0].Flag |= UPDAT;
-          if(Meter[Current-METER_0].Track <=  TRACK4) 
-            Meter[Current-METER_0].Track += 1;
-          if(Meter[Current-METER_0].Track > TRACK4) 
-            Meter[Current-METER_0].Track  = TRACK1;
-        }
-      EndKIndex:
-       ; 
+        if ((FlagMeter!=0)||(Current != V_VERNIE)|| (_Det!=V2))
+		{
+			if(Current < METER_0){                         // change the Detail
+			  _Curr[_Det].Flag |= UPDAT;
+			  if(_Det < 3)    _Det += 1;
+			  else            _Det  = 0;
+			  
+			  if ((Current == OUTPUT) && (Title[OUTPUT][KIND].Value==PWM) && (_Det==OUTATT)) _Det=0;
+			  if ((Current == OUTPUT) && (Title[OUTPUT][KIND].Value!=PWM) && (_Det==DUTYPWM)) _Det+=1;  
+			  
+			  if(_Curr[_Det].MARK & NOT)                        _Det  = 0; 
+			  if(_Curr[_Det].MARK & NUM2)                       _Det  = 0; 
+			  if((_Curr[_Det].MARK & NUM3)&&(Current != FILE)&& (Current != OUTPUT) )  _Det  = 0;  
+			  _Curr[_Det].Flag |= BLINK;
+			} else {                                       // change the measurement object
+			  Meter[Current-METER_0].Flag |= UPDAT;
+			  if(Meter[Current-METER_0].Track <=  TRACK4) 
+				Meter[Current-METER_0].Track += 1;
+			  if(Meter[Current-METER_0].Track > TRACK4) 
+				Meter[Current-METER_0].Track  = TRACK1;
+			}
+	    } else {
+			_Curr[_Det].Flag |= UPDAT;
+			_Det=V1;
+		}
       }
+	  
       //----------------------------------------------------------------------------------------------------------------    
       if(Key_Buffer == K_INDEX_INC){                                            // ===--- TASTO 5 +++ PREMUTO --====
         
@@ -647,12 +558,12 @@ int main(void)
         if ((Current == T_VERNIE) || ((Current == V_VERNIE) && (FlagMeter==0))) TimedDeltaView=150;
         if ((TrgAuto>0)&&(Current == TRIGG) && _Det==2) _Det=0;
         if(Current < METER_0){
-          if((Current == TRIGG)&&(Detail[Current]==2)){         // ´¥·¢µçÆ½µ÷½Ú
+          if((Current == TRIGG)&&(Detail[Current]==2)){         // trigger level adjustment
             if(V_Trigg[_Trigg[SOURCE].Value].Value < MAX_Y-4) 
               V_Trigg[_Trigg[SOURCE].Value].Value++;
-          } else if ((Current == BK_LIGHT)||(Current == VOLUME)){// ±³¹â»òÒôÁ¿µ÷½Ú
+          } else if ((Current == BK_LIGHT)||(Current == VOLUME)){// adjust backlight or volume
             if(_Curr[1].Value < _Curr[1].Limit)   _Curr[1].Value++;
-          } else if ((Current == T_BASE)&&(_Det == XPOSI) && (FlagFrameMode==0)){      // X_POSIµ÷½Ú
+          } else if ((Current == T_BASE)&&(_Det == XPOSI) && (FlagFrameMode==0)){      // X_POSI adjustment
             if (_Curr[_Det].Value <30){ _Curr[_Det].Value ++; goto OkSlow; }//
             else if (_Curr[_Det].Value <(_Curr[_Det].Limit-30)) _Curr[_Det].Value += 30; //
             else if (_Curr[_Det].Value < (_Curr[_Det].Limit)) _Curr[_Det].Value ++;
@@ -668,22 +579,22 @@ int main(void)
                       if (_Curr[_Det].Value <_Curr[_Det].Limit-MIN_X-1) _Curr[_Det].Value ++; 
                     }
            }
-          else {                                              // µ±Ç°ÏîÎªÆäËû
+          else {                                              // the current item for other
             if(_Curr[_Det].Value < _Curr[_Det].Limit)  _Curr[_Det].Value++;
             
             
             
             else if(_Curr[_Det].MARK & CIRC)   _Curr[_Det].Value  = 0;
           }
-          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE Ñ¡Ôñ
+          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE selection
             Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
-            Title[RUNNING][STATE].Flag |= UPDAT;       // Ë¢ĞÂ RUNNING STATE
+            Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
           if((Current == OUTPUT)&&(_Kind != PWM)){
             if(Title[OUTPUT][FRQN].Value > 14) 
-              Title[OUTPUT][FRQN].Value = 14;          // Ä£ÄâĞÅºÅÆµÂÊÉÏÏŞÎª20KHz
+              Title[OUTPUT][FRQN].Value = 14;          // upper limit of the analog signal frequency is 20KHz
           }
-          if((Current == FILE)&&(_Curr[0].Value == 1)){  // Ö»ÄÜLoad Dat,BufÎÄ¼ş
+          if((Current == FILE)&&(_Curr[0].Value == 1)){  // only the Load Dat, Buf file
             if(_Curr[2].Value == BMP) _Curr[2].Value = DAT;
             if(_Curr[2].Value == CSV) _Curr[2].Value = DAT;
           }
@@ -694,7 +605,7 @@ int main(void)
         } else {
           Meter[Current-METER_0].Flag |= UPDAT;
           if(Meter[Current-METER_0].Item < TL)//MIN)  
-            Meter[Current-METER_0].Item += 1;          // ¸Ä±ä²âÁ¿ÏîÄ¿
+            Meter[Current-METER_0].Item += 1;          //  change the measurement items
           else                     
             Meter[Current-METER_0].Item  = VBT;
           if(Meter[Current-METER_0].Item == VBT) 
@@ -718,7 +629,6 @@ int main(void)
           }
           if(Current == RUNNING) Current --;               // Jump over Item 4
 		  
-          //if(_Det >2)  _Det =0;
           _Curr[_Det].Flag |= BLINK;
 		   _Curr[_Det].Flag |= UPDAT;
           if (Current==FILE){
@@ -729,8 +639,10 @@ int main(void)
 		  }
         } else {
           Meter[Current-METER_0].Flag |= UPDAT; 
-          if(Current == METER_0) Current = METER_8;
-          else                   Current --;
+          if(Current == METER_0)
+			Current = METER_8;
+          else
+			Current --;
           Meter[Current-METER_0].Flag |= BLINK;
         }
       }
@@ -738,33 +650,34 @@ int main(void)
       if(Key_Buffer == K_ITEM_S){    // ===--- TASTO 6 centrale PREMUTO --====   
         _Curr[_Det].Flag |= UPDAT;
         if (FlagMeter==0){
-          if (((Current <= METER_8)&& (Current >= METER_0)) || (Current==BK_LIGHT) || (Current==VOLUME) ){Current=TRACK1 ;}
-          
-          goto EndItem_S;
-        }
-        if(Current < METER_0) 
-        {
-          Current = METER_0;
-        }
-        else     
-        {
-          for(CounterUpdate=0;CounterUpdate<9;++CounterUpdate){  // Udate di tutti i meter per tenterli accesi
-            Meter[CounterUpdate].Flag |= UPDAT;
-          }
-          Current = TRACK1;
-        }
-      EndItem_S:;
+			if (((Current <= METER_8)&& (Current >= METER_0)) || (Current==BK_LIGHT) || (Current==VOLUME) ){
+				Current=TRACK1 ;
+			}
+        } else {
+			if(Current < METER_0) {
+				Current = METER_0;
+			} else {
+				for(CounterUpdate=0;CounterUpdate<9;++CounterUpdate){  // Udate di tutti i meter per tenterli accesi
+					Meter[CounterUpdate].Flag |= UPDAT;
+				}
+			  Current = TRACK1;
+			}
+		}
       }
       //---------------------------------------------------------------------------------------------------------------  
       if(Key_Buffer == K_ITEM_INC){                                             // ===--- TASTO 6 +++ PREMUTO --====
         if(Current < METER_0){
           _Curr[_Det].Flag |= UPDAT;
-          if ((FlagMeter==0) && (Current == T_VERNIE))  {Current = TRACK1;goto NoInc;}
-          if(Current == VOLUME)  Current = TRACK1;
-          else                   Current ++;
+          if ((FlagMeter==0) && (Current == T_VERNIE))  {
+			Current = TRACK1;
+			goto NoInc;
+		  }
+          if(Current == VOLUME)
+			Current = TRACK1;
+          else
+			Current ++;
         NoInc: 
           if(Current == RUNNING) Current ++;              // Jump over RUNNING
-      //    if(_Det >2)    _Det =0;
           _Curr[_Det].Flag |= BLINK;
           _Curr[_Det].Flag |= UPDAT;
           if (Current==FILE){

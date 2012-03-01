@@ -10,26 +10,18 @@
 #include "Draw.h"
 #include "BIOS.h"
 
-//I32STR_RES Num;
-
 u16 Result_FPS;
-u8 x10;
 u8 Cnt_InCharge;
 u8 Cnt_Charged;
 u8 Cnt_Batt;
 u8 FlagInCharge;
 
-//  u8 N[20];
-//char T_UNIT[12] ={'A','B', 0 ,'C','D', 0 ,'E','F', 0 ,'G','H', 0 };
 char T_UNIT[12] ={'u','S', 0 ,'u','S', 0 ,'m','S', 0 ,'S',' ', 0 };
 char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
 char F_UNIT[12] ={'H','z', 0 ,'H','z', 0 ,'K','C', 0 ,'M','C', 0 };
 char N_UNIT[12] ={ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
 char S_UNIT[12] ={'/','S','e','c', 0 ,'/','S','e','c', 0 , 0 , 0 };
 char P_UNIT[12] ={'%',' ', 0 ,'%',' ', 0 ,'%',' ', 0 , 0 , 0 , 0 };
-//u8 V_Unit[4][3]={"uV","mV","V ","kV"};
-//u8 T_Unit[5][3]={"nS","uS","mS","S ","  "};
-//u8 F_Unit[5][4]={"Hz","Hz","KC","MC","  "};
 
 char STATESTR[3][10] = {"!RUN!", "HOLD", "HOLD"};                  // Running state str
 
@@ -103,6 +95,8 @@ u8   Detail[14];
 char NumStr[12];
 u8   Current = 0, TypeA = 0, Update = 1;
 char BL_Str[5]="B.L", Vol_Str[5]="Vol";
+
+char  x10[8][6]   = {"0.5V", " 1V ", " 2V ", " 5V ", "!10V!", "!20V!", "!50V!", "100V"};
 
 menu Title[13][4]=   
 {
@@ -199,29 +193,29 @@ meter Meter[9] =
   {(char*)METER, TRACK1,    VDC,     314,    342,    17,  UPDAT}, //  Meter #8
 };         
 
-void Display_Meter(void)                  // 每次刷新显示一个测量项
+void Display_Meter(void)                  // refresh measurements display
 {
   u8  i;
   
   for(i=0; i<9; ++i){        
-    if(Meter[i].Flag & UPDAT){            //-----显示需刷新的测量项目名称
+    if(Meter[i].Flag & UPDAT){            //-----the name of the measurements show the need to refresh
       Meter[i].Flag &= (!UPDAT & !BLINK);       // Clr Update & Blink flag
       Print_Str
-        (Meter[i].XPOS1, Meter[i].YPOS,        // 需要显示的坐标
-         Y_INV[Meter[i].Track],                // 需要显示的颜色(所属通道)
-         PRN,                                  // 需要显示的方式
-         Meter[i].Str +(Meter[i].Item * 5));   // 需要显示的项目名称
+        (Meter[i].XPOS1, Meter[i].YPOS,        // coordinates to be displayed
+         Y_INV[Meter[i].Track],                // need to display color (belongs channel)
+         PRN,                                  // print (no flash)
+         Meter[i].Str +(Meter[i].Item * 5));   // need to display the project name
     } 
   }
   if((Current >= METER_0)&&(Current <= METER_8)){
-    if(Blink){                            //-----显示需闪烁的测量项目名称
+    if(Blink){                            //----- the name of the display required flashing measurements
       i = Current - METER_0;
       Blink = 0;                               // Clr Blink Ctrl flag 
       Print_Str(
-        Meter[i].XPOS1, Meter[i].YPOS,         // 需要闪烁的坐标 
-        Y_INV[Meter[i].Track],                 // 需要闪烁的颜色(所属通道)
-        Twink,                                 // 闪烁方式
-        Meter[i].Str +(Meter[i].Item *5));     // 需要闪烁的项目名称
+        Meter[i].XPOS1, Meter[i].YPOS,         // flashing coordinates
+        Y_INV[Meter[i].Track],                 // flashing colors (belongs channel)
+        Twink,                                 // flashing
+        Meter[i].Str +(Meter[i].Item *5));     // flashing the project name
     }
   }
 }
@@ -231,127 +225,128 @@ void Display_Value(u8 i)
   s32 Tmp = 0;
   u16 Kp;
   u32 k, n, m;
-  u16 bag_max_buf = 4096;   // #pmos69 - store sample buffer size
+  u16 bag_max_buf = 4096;   // store sample buffer size
   
-  if(Interlace == 0) Kp = _Kp1; // 独立采样模式
-  else               Kp = _Kp2; // 交替采样模式  
+  if(Interlace == 0) Kp = _Kp1; // independent sampling mode
+  else               Kp = _Kp2; // interleaved sampling mode
   
   k = _T_Range; m = 1;  n = 1;
   if(k < 9)  m = Power(10, (11-k)/3); //9 //11
   else       n = Power(10, (k- 9)/3);  //9
   k = X_Attr[(k%3)+9].SCALE;
   
-  // #pmos69 - Determine bag_max_buf - as in process.c 
-if (FrameMode>0)      //_Mode == SCAN
-  	{
-    
-    if (_Mode==SCAN)
-      {
-        if (FlagMeter==0) (bag_max_buf = (390*FrameMode));
-        if (FlagMeter==1) (bag_max_buf = (305*FrameMode));      
-      } 
-    else
-      {
-        bag_max_buf = (300*FrameMode);  //X_SIZE
-      }
-    }
-  else
-     {   
-  	bag_max_buf = 4096;
-  }
-
+  bag_max_buf = get_bag_max_buf();
+		
   switch (Meter[i].Item){  
-  case VBT://--------------- 计算和显示电池电压 ---------------
+  case VBT://--------------- calculation and display of battery voltage ---------------
     Int2Str(NumStr, __Get(V_BATTERY)*1000, V_UNIT, 3, SIGN);
     break;
-  case FPS://--------------- 计算和显示帧计数 ---------------
+  case FPS://--------------- calculates and displays the frame count ---------------
     Int2Str(NumStr, Result_FPS & 0x7F, S_UNIT, 2, STD);
     break;  
   case VPP:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
-      Tmp = (Ka2[_A_Range]*(a_Max - a_Min)+ 512)/1024;
-      if(Tmp <= 4) Tmp = 0;
-      Tmp *= Y_Attr[_A_Range].SCALE;
-	  
-      if  (_1_source ==2) Tmp=Tmp*10;
-      if  (_1_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK1){
+		if  (_1_source == HIDE) Tmp=0;
+		else {
+			Tmp = (Ka2[_A_Range]*(a_Max - a_Min)+ 512)/1024;
+			if(Tmp <= 4) Tmp = 0;
+			Tmp *= Y_Attr[_A_Range].SCALE;
+			if  (_1_source == CH_X10) Tmp=Tmp*10;
+		}
     }
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
-      Tmp = (Kb2[_B_Range]*(b_Max - b_Min)+ 512)/1024;
-      if(Tmp <= 4) Tmp = 0;
-      Tmp *= Y_Attr[_B_Range].SCALE;
-	  if  (_2_source ==2) Tmp=Tmp*10;
-      if  (_2_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK2){
+		if  (_2_source == HIDE) Tmp=0;
+		else {
+			Tmp = (Kb2[_B_Range]*(b_Max - b_Min)+ 512)/1024;
+			if(Tmp <= 4) Tmp = 0;
+			Tmp *= Y_Attr[_B_Range].SCALE;
+			if  (_2_source == CH_X10) Tmp=Tmp*10;
+		}
     }
 	
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case VDC:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
-      Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // #pmos69 - use bag_max_buf as average divider
-      if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
-      Tmp *= Y_Attr[_A_Range].SCALE;
-	  if  (_1_source ==2) Tmp=Tmp*10;
-      if  (_1_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK1){
+		if  (_1_source == HIDE) Tmp=0;
+		else {
+			Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // use bag_max_buf as average divider
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
+			Tmp *= Y_Attr[_A_Range].SCALE;
+			if  (_1_source == CH_X10) Tmp=Tmp*10;
+		}
     }
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
-      Tmp = Kb1[_B_Range]+(Kb2[_B_Range]*(b_Avg/bag_max_buf)+ 512)/1024 - _2_posi; // #pmos69 - use bag_max_buf as average divider
-      if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
-      Tmp *= Y_Attr[_B_Range].SCALE;
-	  if  (_2_source ==2) Tmp=Tmp*10;
-      if  (_2_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK2){
+		if  (_2_source == HIDE) Tmp=0;
+		else {
+			Tmp = Kb1[_B_Range]+(Kb2[_B_Range]*(b_Avg/bag_max_buf)+ 512)/1024 - _2_posi; // use bag_max_buf as average divider
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
+			Tmp *= Y_Attr[_B_Range].SCALE;
+			if  (_2_source == CH_X10) Tmp=Tmp*10;
+		}
     }
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case RMS:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
-      Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024; // #pmos69 - use bag_max_buf as average divider
-      if(Tmp <= 2) Tmp = 0;
-      Tmp *= Y_Attr[_A_Range].SCALE;
-	  
-	  if  (_1_source ==2) Tmp=Tmp*10;
-      if  (_1_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK1){
+		if  (_1_source == HIDE) Tmp=0;
+		else {
+			Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024; // use bag_max_buf as average divider
+			if(Tmp <= 2) Tmp = 0;
+			Tmp *= Y_Attr[_A_Range].SCALE;
+			if  (_1_source == CH_X10) Tmp=Tmp*10;
+		}
     }
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
-      Tmp = Kb1[_B_Range] +(Kb2[_B_Range]*Int_sqrt(b_Ssq/bag_max_buf)+ 512)/1024; // #pmos69 - use bag_max_buf as average divider
-      if(Tmp <= 2) Tmp = 0;
-      Tmp *= Y_Attr[_B_Range].SCALE;
-	  if  (_2_source ==2) Tmp=Tmp*10;
-      if  (_2_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK2){
+		if  (_2_source == HIDE) Tmp=0;
+		else {
+			Tmp = Kb1[_B_Range] +(Kb2[_B_Range]*Int_sqrt(b_Ssq/bag_max_buf)+ 512)/1024; // use bag_max_buf as average divider
+			if(Tmp <= 2) Tmp = 0;
+			Tmp *= Y_Attr[_B_Range].SCALE;
+			if  (_2_source == CH_X10) Tmp=Tmp*10;
+		}
     }
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN); //unsign
     break;
   case MAX:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
-      Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Max + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
-	  if  (_1_source ==2) Tmp=Tmp*10;
-      if  (_1_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK1){
+		if  (_1_source == HIDE) Tmp=0;
+		else {
+			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Max + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
+			if  (_1_source == CH_X10) Tmp=Tmp*10;
+		}
 	}
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
-      Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Max + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
-	  if  (_2_source ==2) Tmp=Tmp*10;
-      if  (_2_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK2){
+		if  (_2_source == HIDE) Tmp=0;
+		else {
+			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Max + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
+			if  (_2_source == CH_X10) Tmp=Tmp*10;
+		}
     }
 	
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case MIN:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A)){
-      Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Min + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
-	  if  (_1_source ==2) Tmp=Tmp*10;
-      if  (_1_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK1){
+		if  (_1_source == HIDE) Tmp=0;
+		else {
+			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Min + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
+			if  (_1_source == CH_X10) Tmp=Tmp*10;
+		}
     }
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B)){
-      Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Min + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
-	  if  (_2_source ==2) Tmp=Tmp*10;
-      if  (_2_source == HIDE) Tmp=0;
+    if(Meter[i].Track == TRACK2){
+		if  (_2_source == HIDE) Tmp=0;
+		else {
+			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Min + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
+			if  (_2_source == CH_X10) Tmp=Tmp*10;
+		}
     }
     Int2Str(NumStr, Tmp, V_UNIT, 3, SIGN);
     break;
   case FRQ:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A))
+    if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = 2000*((5000000 * TaN)/TaS);
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B))
+    if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
       Tmp = 2000*((5000000 * TbN)/TbS);
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = 2000*((5000000 * TcN)/TcS);
@@ -365,9 +360,9 @@ if (FrameMode>0)      //_Mode == SCAN
 	
 	
   case CIR:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A))
+    if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = (k *TaS)/TaN;
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B))
+    if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
       Tmp = (k *TbS)/TbN;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (k *TcS)/TcN;
@@ -378,9 +373,9 @@ if (FrameMode>0)      //_Mode == SCAN
     Int2Str(NumStr, Tmp, T_UNIT, 4, UNSIGN);
     break;
   case DUT:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A))
+    if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = (100000*PaS)/TaS;
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B))
+    if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
       Tmp = (100000*PbS)/TbS;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (100000*PcS)/TcS;
@@ -389,9 +384,9 @@ if (FrameMode>0)      //_Mode == SCAN
     Int2Str(NumStr, Tmp, P_UNIT, 4, UNSIGN);
     break;
   case TH:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A))
+    if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = (k*TaS)/TaN - (k*PaS)/TaN;
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B))
+    if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
       Tmp = (100000*PbS)/TbS;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (100000*PcS)/TcS;
@@ -402,9 +397,9 @@ if (FrameMode>0)      //_Mode == SCAN
     Int2Str(NumStr, Tmp, T_UNIT, 4, UNSIGN);
     break;
   case TL:
-    if((Meter[i].Track == TRACK1)&&(_1_source == CH_A))
+    if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = (k*PaS)/TaN;
-    if((Meter[i].Track == TRACK2)&&(_2_source == CH_B))
+    if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
       Tmp = (k*PbS)/TbN;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (k*PcS)/TcN;
@@ -419,7 +414,7 @@ if (FrameMode>0)      //_Mode == SCAN
     Meter[i].XPOS2, Meter[i].YPOS,
     Y_COLOR[Meter[i].Track], 
     PRN,
-    NumStr);                              // 显示测量数值
+    NumStr);                              // display the measured values
 }
 
 void Display_Title(void)
@@ -448,7 +443,7 @@ void Display_Title(void)
 	  
   for(i = TRACK1; i <= VOLUME; ++i){
     for(j = 0; j < 4; ++j){
-      if(Title[i][j].Flag & UPDAT){   // 需要刷新的Item
+      if(Title[i][j].Flag & UPDAT){   // need to refresh the Item
         Title[i][j].Flag &= ~UPDAT;   // Clr Update flag 
         if((i == BATTERY)||(i == TRIGG)){
           if(Title[i][j].MARK & FIX){                  // ---- Under fix mode
@@ -473,6 +468,7 @@ void Display_Title(void)
               Title[i][j].Color[0],                    // Color fixed 
               PRN, 
               Title[i][j].Str                          // String fixed
+			  // battery and volume meter titles - not flashing
              );
           } else if(Title[i][j].MARK & NUM3){          // ---- Under NUM3 mode
             if(i == V_VERNIE){
@@ -486,6 +482,7 @@ void Display_Title(void)
                 Title[i][j].Color[_Meas_V_Track],      // Color fixed  
                 PRN, 
                 NumStr                                // String for numerical
+				//Delta V value
               );
             }
             if(i == T_VERNIE){
@@ -509,7 +506,7 @@ void Display_Title(void)
                 NumStr                                // String for numerical
               );
             }
-            if(i==FILE){//??????????????????????????????
+            if(i==FILE){
                u8ToDec3(Title[FILE][1].Str, Title[FILE][1].Value);
                Print_Str(
                 Title[FILE][1].XPOS, Title[FILE][1].YPOS,
@@ -520,11 +517,11 @@ void Display_Title(void)
             }
           } else if(Title[i][j].MARK == NUM2){ 
                 NumStr[0]=' ';
-            if(i == BK_LIGHT){                        // 背光百分比显示处理
+            if(i == BK_LIGHT){                        // backlight percentage
               if(Title[i][j].Value == 9){
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
                 } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
-            } else {                                  // 音量百分比显示处理
+            } else {                                  // volume percentage
               if(Title[i][j].Value == 10){
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
               } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
@@ -534,6 +531,7 @@ void Display_Title(void)
               Title[i][j].Color[0],                  // Color fixed  
               PRN, 
               NumStr                        // String for numerical
+			  //Battery and volume values
             );
           } else if(Title[i][j].MARK != NOT){
           
@@ -542,15 +540,30 @@ void Display_Title(void)
                 Title[i][j].XPOS, Title[i][j].YPOS,
                 Title[i][j].Color[_Meas_V_Track],         // Color variable 
                 PRN, 
-                Title[i][j].Str +(Title[i][j].Value * 10)// String variable
+                Title[i][j].Str +(Title[i][j].Value * 10) // String variable
+				//Delta V meter title
               ); 
             } else {
-              Print_Str(
-                Title[i][j].XPOS, Title[i][j].YPOS,
-                Title[i][j].Color[0],                    // Color fixed 
-                PRN, 
-                Title[i][j].Str +(Title[i][j].Value * 10)// String variable
-              ); 
+				if (i<=1 && j==2 && Title[i][0].Value==2){
+				
+				Print_Str(
+					Title[i][j].XPOS, Title[i][j].YPOS,
+					Title[i][j].Color[0],                    // Color fixed 
+					PRN, 
+					x10[Title[i][j].Value]// String variable
+					//ChA or ChB x10 value - not flasing
+				  );
+				  
+				} else {
+				  Print_Str(
+					Title[i][j].XPOS, Title[i][j].YPOS,
+					Title[i][j].Color[0],                    // Color fixed 
+					PRN, 
+					Title[i][j].Str +(Title[i][j].Value *10)// String variable
+					//Upper menu titles and values - not flashing
+				  );
+
+				}
             }
           } else if(i == T_VERNIE){
             Print_Str(
@@ -560,8 +573,8 @@ void Display_Title(void)
               Title[i][j].Str                          // String variable
             ); 
           }
-        }//
-      } else if((Current == i)&&(Detail[i] == j)&&(Blink)){ // 当前光标位置的Item
+        }
+      } else if((Current == i)&&(Detail[i] == j)&&(Blink)){ // current cursor position Item
         Blink = 0;
         if((i == BATTERY)||(i == TRIGG)){
           if((Title[i][j].MARK & FIX)){      // ---- Under fix mode
@@ -588,21 +601,32 @@ void Display_Title(void)
               Title[i][j].Str                          // String fixed
             );
      } else if(Title[i][j].MARK != NUM3){
-                 if(i == V_VERNIE){
-              Print_Str(
+        if(i == V_VERNIE)
+            Print_Str(
                 Title[i][j].XPOS, Title[i][j].YPOS,
-                Title[i][j].Color[_Meas_V_Track],        // Color variable=
+                Title[i][j].Color[_Meas_V_Track],        // Color variable
                 Twink, 
                 Title[i][j].Str +(Title[i][j].Value * 10)// String variable
-              ); 
-            } else {
-              Print_Str(
-                Title[i][j].XPOS, Title[i][j].YPOS,
-                Title[i][j].Color[0],                    // Color fixed 
-                Twink, 
-                Title[i][j].Str +(Title[i][j].Value * 10)// String variable
-              ); 
-      }
+				// Delta V meter title - flashing
+            ); 
+        else {
+			if (i<=1 && j==2 && Title[i][0].Value==2)
+				Print_Str(
+					Title[i][j].XPOS, Title[i][j].YPOS,
+					Title[i][j].Color[0],                    // Color fixed 
+					Twink, 
+					x10[Title[i][j].Value]// String variable
+					//ChA or ChB x10 value - flashing
+				); 
+			else
+				Print_Str(
+					Title[i][j].XPOS, Title[i][j].YPOS,
+					Title[i][j].Color[0],                    // Color fixed 
+					Twink, 
+					Title[i][j].Str +(Title[i][j].Value * 10)// String variable
+					//Upper menu titles and values - flashing
+				); 
+			}
                   }
             if((i == FILE)&&(Title[i][j].MARK & NUM3)){
               u8ToDec3(Title[i][1].Str, Title[i][1].Value);
@@ -620,7 +644,7 @@ void Display_Title(void)
 }
 
 /*******************************************************************************
- Load_Attr:  加载硬件属性
+ Load_Attr:   load the hardware properties
 *******************************************************************************/
 void Load_Attr(void)
 {
@@ -640,7 +664,7 @@ void Load_Attr(void)
   
 }
 /*******************************************************************************
- Update_Battery:  刷新电池电量指示
+ Update_Battery:  refresh the battery indicator
 *******************************************************************************/
 void Update_Battery(void)
 {

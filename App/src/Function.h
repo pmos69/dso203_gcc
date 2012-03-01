@@ -23,21 +23,11 @@
 #define UNSIGN       1
 #define STD          2
 
-/*
-typedef struct 
-{
-    u8 decPos;
-    u8 len;
-    u8 str[9];
-} I32STR_RES;
-*/
 extern u32 TestCnt;
 
 u32  Power(u8 x, u8 y); 
 void Delayms(u16 mS); 
 void Int2Str(char *p, s32 n, char *pUnit, u8 e, u8 Mode);
-//void Int32String_sign(I32STR_RES *r, s32 n);
-//void Int32String(I32STR_RES *r, u32 n, u32 e);
 u8   Str2Byte(char x,char y);
 void u16ToDec5(char *p, u16 n);
 void u8ToDec3(char *p, u8 n);

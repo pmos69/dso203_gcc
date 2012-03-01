@@ -10,15 +10,15 @@
 #include "BIOS.h"
 #include "File.h"
 
-u16 TaS, TbS, TcS, TdS;            // 周期累计
-u16 PaS, PbS, PcS, PdS;            // 脉宽累计
-u16 TaN, TbN, TcN, TdN;            // 周期计数
+u16 TaS, TbS, TcS, TdS;            // cycles accumulated
+u16 PaS, PbS, PcS, PdS;            // pulse width of the cumulative
+u16 TaN, TbN, TcN, TdN;            // Cycle Count
 u8  a_Mid_H, a_Mid_L;
 u8  b_Mid_H, b_Mid_L;
 
-s8  Kab;                                     // 模拟通道零点平衡校正系数
-u32 a_Avg, b_Avg, a_Ssq, b_Ssq;              // 平均值累计,平方和累计
-u8  a_Max, b_Max, a_Min, b_Min;              // 原始最大值,原始最小值
+s8  Kab;                                     // analog channel zero balance correction factor
+u32 a_Avg, b_Avg, a_Ssq, b_Ssq;              // the average cumulative sum of squares of the cumulative
+u8  a_Max, b_Max, a_Min, b_Min;              // the original maximum value, the original minimum value
 s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
 s16 c_Max, d_Max, A_Posi, B_Posi;
 u8  Full=1, Interlace;
@@ -35,16 +35,16 @@ G_attr *G_Attr;
 T_attr *T_Attr; 
 
 u32 DataBuf[4096];
-u8  TrackBuff  [X_SIZE * 4];         // 曲线轨迹缓存：i+0,i+1,i+2,i+3,分别存放1～4号轨迹数据
+u8  TrackBuff  [X_SIZE * 4];         // curve track: i +0, i +1, i +2, i +3, respectively, placed one on the 4th track data
 
-s8  Ka1[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // A通道低位误差校正系数
-s8  Kb1[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // B通道低位误差校正系数
-u16 Ka2[10] ={1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024}; // A通道增益误差校正系数
-u16 Kb2[10] ={1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024}; // B通道增益误差校正系数
-s8  Ka3[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // A通道高位误差校正系数
-s8  Kb3[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // B通道高位误差校正系数
+s8  Ka1[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // A channel low error correction coefficient
+s8  Kb1[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // B channel low error correction coefficient
+u16 Ka2[10] ={1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024}; // A channel gain error correction coefficient
+u16 Kb2[10] ={1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024}; // B channel gain error correction factor
+s8  Ka3[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // A channel high error correction coefficient
+s8  Kb3[10] ={   0,    0,    0,    0,    0,    0,    0,    0,    0,    0}; // B-channel high bit error correction coefficient
 
-D_tab D_Tab[23] ={  // 脉冲波形输出驱动表, 基于72MHz主频
+D_tab D_Tab[23] ={  // pulse waveform output driver table, based on the 72MHz frequency
 //    STR      PSC     ARR       DUTY% 
   {" !1Hz! ", 1800-1,  40000-1,     50},
   {" !2Hz! ", 1800-1,  20000-1,     50},
@@ -70,7 +70,7 @@ D_tab D_Tab[23] ={  // 脉冲波形输出驱动表, 基于72MHz主频
   {" 6MHz ",    1-1,     12-1,     50},
   {" 8MHz ",    1-1,      9-1,     50}};
 
-A_tab A_Tab[15] ={ // 模拟波形输出驱动表, 基于72MHz主频, 每周期36点合成
+A_tab A_Tab[15] ={ // analog waveform output driver table synthesis, based on the 72MHz frequency, per 36
 //    STR     PSC     ARR 
   {"! 1Hz !", 20-1,  50000-1},
   {"! 2Hz !", 20-1,  20000-1},
@@ -128,18 +128,18 @@ void BackGround_Reset(void)
     Title[FILE][1].Flag &= !UPDAT;
     Title[FILE][3].Flag &= !UPDAT;
   }  
-   Update = 1;                  // 返回后恢复原来的档位设置
+   Update = 1;                  // return back the jumper settings
 }
 
 /*******************************************************************************
- App_init: 显示窗口波形数据初始化
+ App_init: Displays the window waveform data initialization
 *******************************************************************************/
 void App_init(void)
 { 
   u16 i, j;
   __Set(ADC_CTRL, EN );       
-  __Set(STANDBY, DN);          // 退出省电状态
-  __Clear_Screen(BLACK);       // 清屏幕
+  __Set(STANDBY, DN);          // exit the power saving state
+  __Clear_Screen(BLACK);       // clear the screen
   Delayms(20); 
   __Set(FIFO_CLR, W_PTR); 
   for(i=0; i<13; i++) for(j=0; j<4; j++) Title[i][j].Flag |= UPDAT;
@@ -150,10 +150,10 @@ void App_init(void)
     Title[FILE][3].Flag &= !UPDAT;
   }  
   PD_Cnt = 600;
-  Update = 1;                  // 返回后恢复原来的档位设置
+  Update = 1;                  // return back the jumper settings
 }
 /*******************************************************************************
- View_init: 显示窗口波形数据初始化
+ View_init: Displays the window waveform data initialization
 *******************************************************************************/
 void View_init(void)
 { 
@@ -178,26 +178,12 @@ void Update_Range(void)
   __Set(CH_A_COUPLE, Title[TRACK1][COUPLE].Value);
   __Set(CH_A_RANGE,  Title[TRACK1][RANGE].Value);
   __Set(CH_A_OFFSET, ((1024 + Ka3[_A_Range])*_1_posi + 512)/1024);
-//  if(_1_source == HIDE){
-//    if(_T_base > 16){
-//      Interlace = 1;                      
-//      __Set(CH_A_RANGE, G_Attr[0].Yp_Max+1);        // A通道合并到B通道 
-//      __Set(ADC_CTRL, EN + 2);       
-//      __Set(ADC_MODE, INTERLACE);                   // Set Interlace mode
-//    }  
-//  }
+
   __Set(CH_B_COUPLE, Title[TRACK2][COUPLE].Value);
   __Set(CH_B_RANGE,  Title[TRACK2][RANGE].Value);
   __Set(CH_B_OFFSET, ((1024 + Kb3[_B_Range])*_2_posi + 512)/1024);
-//  if(_2_source == HIDE){
-//    if(_T_base > 16){
-//      Interlace = 1;                        
-//      __Set(CH_B_RANGE,  G_Attr[0].Yp_Max+1);      // B通道合并到A通道
-//      __Set(ADC_CTRL, EN + 2);       
-//      __Set(ADC_MODE, INTERLACE);                  // Set Interlace mode
-//    }
-//  } 
-  if(_Status == RUN) __Set(FIFO_CLR, W_PTR);       // FIFO写指针复位
+
+  if(_Status == RUN) __Set(FIFO_CLR, W_PTR);       // FIFO write pointer reset
 }
 /*******************************************************************************
  Update_Base: 
@@ -207,12 +193,12 @@ void Update_Base(void)
   u16 i;
   
   __Set(ADC_CTRL, EN);       
-  if(Interlace == 0)  i = Title[T_BASE][BASE].Value;     // 独立采样模式
-  else                i = Title[T_BASE][BASE].Value + 5; // 交替采样模式
+  if(Interlace == 0)  i = Title[T_BASE][BASE].Value;     // independent sampling mode
+  else                i = Title[T_BASE][BASE].Value + 5; // interleaved sampling mode
   __Set(T_BASE_PSC, X_Attr[i].PSC);
   __Set(T_BASE_ARR, X_Attr[i].ARR);
   Wait_Cnt = Wait[_T_base];
-  if(_Status == RUN) __Set(FIFO_CLR, W_PTR);      // FIFO写指针复位
+  if(_Status == RUN) __Set(FIFO_CLR, W_PTR);      // FIFO write pointer reset
 }
 /*******************************************************************************
  Update_Output: 
@@ -285,18 +271,18 @@ void Update_Trig(void)
   if(Title[TRIGG][SOURCE].Value == TRACK2){ 
     __Set(V_THRESHOLD, (((_Vt2-Kb1[_B_Range])*1024)/Kb2[_B_Range])&0xFF); 
   }
-  if(_Status == RUN) __Set(FIFO_CLR, W_PTR);      // FIFO写指针复位
+  if(_Status == RUN) __Set(FIFO_CLR, W_PTR);      // FIFO write pointer reset
 }
 /*******************************************************************************
- Process: 计算处理缓冲区数据 
+ Process: Calculate processing buffer data
 *******************************************************************************/
 void Process(void)
 { 
   s16 i, j = 0, k, V[8] = {0}, n = 0;
   s32 Tmp;
   u8  Ch[4], C_D;
-  s8  Sa = 2, Sb = 2, Sc = 2, Sd = 2; // 计时状态
-  u16 Ta, Tb, Tc, Td;                 // 脉宽计数
+  s8  Sa = 2, Sb = 2, Sc = 2, Sd = 2; // time status
+  u16 Ta, Tb, Tc, Td;                 // pulse width count
   u16 bag_max_buf = 4096;
   
   Ta = Tb = Tc = Td = 0;
@@ -318,8 +304,6 @@ void Process(void)
   a_Max = A_Posi; b_Max = B_Posi; 
   a_Min = A_Posi; b_Min = B_Posi;             
   
-  //a_Avg = 2048;   b_Avg = 2048;   #pmos69 - seems weird to start the average (total) counter with anything but zero when no samples have been accounted
-  //a_Ssq = 2048;   b_Ssq = 2048;   #pmos69 - seems weird to start the square (total) counter with anything but zero when no samples have been accounted
   a_Avg = 0;   b_Avg = 0; 
   a_Ssq = 0;   b_Ssq = 0;            
   
@@ -327,59 +311,38 @@ void Process(void)
   else                                c_Max = _3_posi + 20;
   if((_4_posi + 20)>= Y_BASE+Y_SIZE)  d_Max = Y_BASE+Y_SIZE-1;
   else                                d_Max = _4_posi + 20;
-  
-  if (FrameMode>0)      //_Mode == SCAN
-  	{
-    
-    if (_Mode==SCAN)
-      {
-        if (FlagMeter==0) (bag_max_buf = (390*FrameMode));
-        if (FlagMeter==1) (bag_max_buf = (305*FrameMode));
-        
-      } 
-    else
-      {
-        bag_max_buf = (300*FrameMode);  //X_SIZE
-      }
-  
-    }
-  else
-     {   
-  //	bag_max_buf = X_SIZE - 10;
-  	bag_max_buf = 4096;
-        
-       
-}
+ 
+   bag_max_buf = get_bag_max_buf();
 
-  if(Interlace == 0){                           // 独立采样模式
+  if(Interlace == 0){                           // independent sampling mode
   
-    k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value;//  // 计算插值运算后窗口位置的修正值
+    k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value;//  // window position in the calculation of the interpolation of the correction value
 	
     for(i=0; i <bag_max_buf; i++){
-      if((_T_base > 15)&&(_Status == RUN))  DataBuf[i] = __Read_FIFO(); // 读入32位FIFO数据, 读后指针+1
+      if((_T_base > 15)&&(_Status == RUN))  DataBuf[i] = __Read_FIFO(); // read into the 32-bit FIFO data reading pointer +1
       else if((__Get(FIFO_EMPTY)==0)&&(i == JumpCnt)&&(_Status == RUN)){
         JumpCnt++;
-        DataBuf[i] = __Read_FIFO();             // 读入32位FIFO数据, 读后指针+1
+        DataBuf[i] = __Read_FIFO();             // read into the 32-bit FIFO data reading pointer +1
       }
       Ch[A] = (DataBuf[i] & 0xFF );              
-      a_Avg += Ch[A];                           // 累计A通道直流平均值              
+      a_Avg += Ch[A];                           // cumulative average channel A, DC
       Tmp = Ch[A]- A_Posi;
-      a_Ssq +=(Tmp * Tmp);                      // 统计A通道平方和
+      a_Ssq +=(Tmp * Tmp);                      // statistical sum of squares of the A channel
       Ch[B] = ((DataBuf[i] >> 8) & 0xFF);       
-      b_Avg += Ch[B];                           // 累计B通道直流平均值
+      b_Avg += Ch[B];                           // cumulative average channel B, DC
       Tmp = Ch[B]- B_Posi;
-      b_Ssq +=(Tmp * Tmp);                      // 统计B通道平方和
+      b_Ssq +=(Tmp * Tmp);                      // statistical sum of squares of the B channel
 		
-		if(i == 0) {
-		    a_Max = Ch[A];
-			a_Min = a_Max;
-			b_Max = Ch[B];
-			b_Min = b_Max;
-		} else {
-			if(Ch[A] > a_Max)  a_Max = Ch[A];         // 统计A通道最大值
-			if(Ch[A] < a_Min)  a_Min = Ch[A];         // 统计A通道最小值  
-			if(Ch[B] < b_Min)  b_Min = Ch[B];         // 统计B通道最小值  
-			if(Ch[B] > b_Max)  b_Max = Ch[B];         // 统计B通道最大值
+		if(i == 0) {	// read first values - max = min = values
+		    a_Max = Ch[A];	// statistics channel A maximum
+			a_Min = a_Max;	// statistics channel A minimum
+			b_Max = Ch[B];	// statistics channel B maximum
+			b_Min = b_Max;	// statistics channel B minimum
+		} else {		// not the first values
+			if(Ch[A] > a_Max)  a_Max = Ch[A];         // statistics channel A maximum
+			if(Ch[A] < a_Min)  a_Min = Ch[A];         // statistics channel A minimum
+			if(Ch[B] < b_Min)  b_Min = Ch[B];         // statistics channel B minimum
+			if(Ch[B] > b_Max)  b_Max = Ch[B];         // statistics channel B maximum
 		}
        
       C_D = DataBuf[i] >>16;
@@ -413,13 +376,13 @@ void Process(void)
           if(Sd == 1){Sd = 0; PdS += i-TdS;} 
         }
       }
-      if(i >= k){                               // 指针到达指定窗口位置
+      if(i >= k){                               // pointer to reach the specified window position
         V[A]  = Ka1[_A_Range] +(Ka2[_A_Range] *Ch[A]+ 512)/1024;      
-        V[B]  = Kb1[_B_Range] +(Kb2[_B_Range] *Ch[B]+ 512)/1024;      //当前点的主值
+        V[B]  = Kb1[_B_Range] +(Kb2[_B_Range] *Ch[B]+ 512)/1024;      // the main value in the current point
         while(j > 0 ){
-          Send_Data( V[A_]+((V[A]-V[A_])*(1024 - j))/1024, //当前CH_A点的插值
-                     V[B_]+((V[B]-V[B_])*(1024 - j))/1024, //当前CH_B点的插值
-                     C_D,                                  //当前点数字通道值
+          Send_Data( V[A_]+((V[A]-V[A_])*(1024 - j))/1024, // the current CH_A point interpolation
+                     V[B_]+((V[B]-V[B_])*(1024 - j))/1024, // the current CH_B point interpolation
+                     C_D,                                  // current point digital channel values
                      n++);
           j -= _Kp1+5;
           if(n >= X_SIZE-TRACK_OFFSET){ k = 8192;  break;}     //300
@@ -429,59 +392,59 @@ void Process(void)
       }
     }
   } 
-  else {                            // 交替采样模式
-    k =((1024 -_Kp2)*150 + 512)/1024 + _X_posi.Value;  // 计算插值运算后窗口位置的修正值
+  else {                            // alternate sampling mode
+    k =((1024 -_Kp2)*150 + 512)/1024 + _X_posi.Value;  // calculation of the interpolation window position correction value
     for(i=0; i <bag_max_buf; i++){
-      if(_Status == RUN)  DataBuf[i] = __Read_FIFO(); // 读入32位FIFO数据, 读后指针+1
+      if(_Status == RUN)  DataBuf[i] = __Read_FIFO(); // read into the 32-bit FIFO data reading pointer +1
       C_D    = DataBuf[i] >>16;
-      if(_2_source == HIDE){                            // B通道合并到A通道时
+      if(_2_source == HIDE){                            // B channel incorporated into the A channel
         Ch[A]  = (DataBuf[i] & 0xFF );              
         Ch[B]  = ((DataBuf[i] >> 8) & 0xFF);//+ Kab;
         Tmp    = (Ch[A]- A_Posi);
         a_Ssq += (Tmp * Tmp)/2;
         Tmp    = (Ch[B]- A_Posi);
-        a_Ssq += (Tmp * Tmp)/2;                         // 统计平方和                    
-      } else {                                          // A通道合并到B通道时
+        a_Ssq += (Tmp * Tmp)/2;                         // statistical sum of squares
+      } else {                                          // A channel incorporated into the B-channel
         Ch[B]  = (DataBuf[i] & 0xFF );//- Kab;              
         Ch[A]  = ((DataBuf[i] >> 8) & 0xFF);  
         Tmp    = (Ch[A]- B_Posi);
         a_Ssq += (Tmp * Tmp)/2;
         Tmp    = (Ch[B]- B_Posi);
-        a_Ssq += (Tmp * Tmp)/2;                                    // 统计平方和                    
+        a_Ssq += (Tmp * Tmp)/2;                                    // statistical sum of squares
       }
-      a_Avg += (Ch[A]+Ch[B])/2;                                   // 累计直流平均值
+      a_Avg += (Ch[A]+Ch[B])/2;                                   // cumulative DC average
 	  
-		if(i == 0) {
-		    a_Max = Ch[A];
-			a_Min = a_Max;
-			b_Max = Ch[B];
-			b_Min = b_Max;
-		} else {
-			if(Ch[A] > a_Max)  a_Max = Ch[A];         // 统计A通道最大值
-			if(Ch[A] < a_Min)  a_Min = Ch[A];         // 统计A通道最小值  
-			if(Ch[B] < b_Min)  b_Min = Ch[B];         // 统计B通道最小值  
-			if(Ch[B] > b_Max)  b_Max = Ch[B];         // 统计B通道最大值
+		if(i == 0) {  // first value - max = min = value
+		    a_Max = Ch[A];		// statistics channel A maximum
+			a_Min = a_Max;		// statistics channel A minimum
+			b_Max = Ch[B];		// statistics channel B maximum
+			b_Min = b_Max;		// statistics channel B minimum
+		} else {  // not first value 
+			if(Ch[A] > a_Max)  a_Max = Ch[A];         // statistics channel A maximum
+			if(Ch[A] < a_Min)  a_Min = Ch[A];         // statistics channel A minimum
+			if(Ch[B] < b_Min)  b_Min = Ch[B];         // statistics channel B minimum
+			if(Ch[B] > b_Max)  b_Max = Ch[B];         // statistics channel B maximum
 		}	  
 
-      if(i >= k){                 // 第1点指针到达指定窗口位置
-        if(_2_source == HIDE){                            // B通道合并到A通道时
-          V[A] = Ka1[_A_Range] +(Ka2[_A_Range]*Ch[A]+ 512)/1024;    //计算当前第1点的主值
-          V[B] = Ka1[_A_Range] +(Ka2[_A_Range]*Ch[B]+ 512)/1024;    //计算当前第2点的主值
-        } else {                                          // A通道合并到B通道时
-          V[A] = Kb1[_B_Range] +(Kb2[_B_Range]*Ch[A]+ 512)/1024;   //计算当前第1点的主值
-          V[B] = Kb1[_B_Range] +(Kb2[_B_Range]*Ch[B]+ 512)/1024;   //计算当前第2点的主值
+      if(i >= k){                 // 1:00 pointer reaches the specified window position
+        if(_2_source == HIDE){                            // B channel incorporated into the A channel
+          V[A] = Ka1[_A_Range] +(Ka2[_A_Range]*Ch[A]+ 512)/1024;    // calculate the current principal value of 1:00
+          V[B] = Ka1[_A_Range] +(Ka2[_A_Range]*Ch[B]+ 512)/1024;    // calculate the current principal value of 2:00
+        } else {                                          // A channel incorporated into the B-channel
+          V[A] = Kb1[_B_Range] +(Kb2[_B_Range]*Ch[A]+ 512)/1024;   // calculate the current principal value of 1:00
+          V[B] = Kb1[_B_Range] +(Kb2[_B_Range]*Ch[B]+ 512)/1024;   // calculate the current principal value of 2:00
         }
         while(j > 0 ){
-          Tmp = V[B_]+((V[A]- V[B_])*(1024 - j))/1024; //当前第1点的插值
+          Tmp = V[B_]+((V[A]- V[B_])*(1024 - j))/1024; // current point interpolation
           Send_Data(Tmp, Tmp, C_D, n++);
           j -= _Kp2+5;
           if(n >= X_SIZE-TRACK_OFFSET){ k = 8192;  break;}
         }
         j += 1024;
       }
-      if(i >= k){                 // 第2点指针到达指定窗口位置
+      if(i >= k){                 // 2:00 pointer reaches the specified window position
         while(j > 0 ){
-          Tmp = V[A]+((V[B]- V[A])*(1024 - j))/1024;  //当前第2点的插值
+          Tmp = V[A]+((V[B]- V[A])*(1024 - j))/1024;  // 2:00 interpolation
           Send_Data(Tmp, Tmp, C_D, n++);
           j -= _Kp2+5;
           if(n >= X_SIZE-TRACK_OFFSET){ k = 8192;  break;}
@@ -495,8 +458,8 @@ void Process(void)
     b_Max  = a_Max;
     b_Min  = a_Min;
 
-    if(_1_source == HIDE)  a_Avg = _1_posi*4096;   // A通道合并到B通道时      
-    if(_2_source == HIDE)  b_Avg = _2_posi*4096;   // B通道合并到A通道时
+    if(_1_source == HIDE)  a_Avg = _1_posi*4096;   // A channel incorporated into the B-channel
+    if(_2_source == HIDE)  b_Avg = _2_posi*4096;   // B channel incorporated into the A channel
   }
 
   if ((FrameMode!=0) && (_Mode==SCAN)) __Set(FIFO_CLR, W_PTR);
@@ -508,14 +471,6 @@ void Process(void)
   b_Mid_L = b_Mid_H - 8;
 
   TaS -= Ta; TbS -= Tb; TcS -= Tc; TdS -= Td;
-  
-  // for(j=0; j<4; j++){                               // 消除屏幕端点连线
-//   
-//    TrackBuff[(  0)*4+ j] = TrackBuff[(  1)*4 + j];
-//   TrackBuff[(299)*4+ j] = TrackBuff[(298)*4 + j];
-//  
-//
-// }
     
  for(j=0; j<X_SIZE; j++){                               // Sposta il buffer per eliminra il problema dei primi pixel
     TrackBuff[(j)*4] = TrackBuff[(j+TRACK_OFFSET)*4];
@@ -525,7 +480,7 @@ void Process(void)
  }
 }
 
-void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  //输出显示数据
+void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
 {
   s32 Tmp = 0, i;
 
@@ -582,49 +537,42 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  //输出显示数据
   else                      TrackBuff[i + TRACK4] = Tmp;
 }
 /*******************************************************************************
- Synchro: 扫描同步处理，按设定模式显示波形 
+ Synchro: scan synchronization, waveform display by setting the mode
 *******************************************************************************/
-void Synchro(void)  //扫描同步方式共有：AUTO、NORM、SGL、NONE、SCAN 5种模式
+void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
-  //u16  i;
 
   switch (_Mode){ 
-    case X_Y_A:
   case AUTO:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
-      if(__Get(FIFO_START)!=0)
-      {
+      if(__Get(FIFO_START)!=0) {
         Process();                                 
         Wait_Cnt = Wait[_T_base];
-      } else if(Wait_Cnt==0)
-        {
+      } else if(Wait_Cnt==0) {
           if(JumpCnt >= 4095)  JumpCnt = 0; 
           Process();   
           Wait_Cnt = Wait[_T_base];
-        } break;
+      } break;
   case NORM:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
-      if(__Get(FIFO_START)!=0)
-      {
+      if(__Get(FIFO_START)!=0) {
         Process();                                 
         Wait_Cnt = Wait[_T_base];
-      } else if(Wait_Cnt==0)
-        {
-      //  for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0; // Cancella se non ha il trigger
+      } else if(Wait_Cnt==0) {
         Wait_Cnt = Wait[_T_base];
-        } break;
+      } break;
   case SGL:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
       if(__Get(FIFO_START)!=0)  Process();         
       break;
   case X_Y:
-  
+  case X_Y_A:
   case SCAN:
       __Set(TRIGG_MODE, UNCONDITION);               
       Process();                                  
    }
    
-  Draw_Window();                                  // 刷新屏幕波形显示区
+  Draw_Window();                                  // refresh the screen waveform display area
   
   if ((_Mode==SCAN) || (_Mode==X_Y)) Wait_Cnt = 1;
 
@@ -644,23 +592,27 @@ void Synchro(void)  //扫描同步方式共有：AUTO、NORM、SGL、NONE、SCAN 5种模式
 	
   if((_Status == RUN)&&(__Get(FIFO_FULL)!=0))
   {    // FIFO is full
-    __Set(FIFO_CLR, W_PTR);                       // FIFO写指针复位
+    __Set(FIFO_CLR, W_PTR);                       // FIFO write pointer reset
     Wait_Cnt = Wait[_T_base];
     JumpCnt =0;
 	
     if(_Mode == SGL)
 	{
-      _Status = HOLD;                             // 一帧完后，进入暂停
+      _Status = HOLD;                             // one finished, enter the pause
       _State.Flag |= UPDAT;
     }
-    // if(_Mode == SCAN){
-      // for(i=0; i<X_SIZE; i++){                    // 重建当前轨迹基线                   
-        // TrackBuff[i*4 + TRACK1] = _1_posi;
-        // TrackBuff[i*4 + TRACK2] = _2_posi; 
-        // TrackBuff[i*4 + TRACK3] = _3_posi; 
-        // TrackBuff[i*4 + TRACK4] = _4_posi;
-      // }
-    // }
   }    
 }  
+u16 get_bag_max_buf(void) {
+u16 out = 4096;
+if (FrameMode>0) {    //_Mode == SCAN
+    if (_Mode==SCAN) {
+        if (FlagMeter==0) (out = (390*FrameMode));
+        if (FlagMeter==1) (out = (305*FrameMode));
+    } else
+        out = (300*FrameMode);  //X_SIZE
+  
+  }
+  return out;
+}
 /******************************** END OF FILE *********************************/

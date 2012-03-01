@@ -1,6 +1,14 @@
-Just some kick&dirty fixes over marcosin 1.8 version of the DSO203 APP.
+DSO203 GCC v1.7 APP
+-------------------
 
-Win32 GCC support by gabonator1
+Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
+
+(Win32 GCC support by gabonator1)
+
+
+Contribute or simply enjoy.
+
+Pedro Simões
 
 -------------------------------------------
 
@@ -25,6 +33,12 @@ All thanks to:
 - Gabriel Valky (gabonator1)
 
 -------------------------------------------
+
+
+v1.7
+
+- Fixed x10 probe modes - Division scales and meter values
+- Calibration accuracy fix
 
 
 v1.6
