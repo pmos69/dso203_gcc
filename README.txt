@@ -9,6 +9,8 @@ Tested with:
 	- SYS 1.51
 	- FPGA 2.51
 
+PS: Do a calibration after changing firmware.
+	
 Please contribute or simply enjoy.
 
 Pedro Simões
@@ -20,6 +22,9 @@ Access source in github:
 
 or get a zip with the complete tree here:
   https://github.com/pmos69/dso203_gcc/zipball/master
+  
+To build, simply edit makefile.bat to reflect the location of your Arm toolchain and the windows drive letter of the DSO.
+The App will be built and copied to the DSO (first connect and boot the DSO in upgrade mode)
 
 -------------------------------------------
 
