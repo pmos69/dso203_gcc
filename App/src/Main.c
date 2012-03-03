@@ -57,26 +57,22 @@ APP V2.50 rewrite based on the new FAT12 file system, file read and write proced
 APP V2.51 modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.8 APP (2.51+SmTech1.8+PMOS69 fixes)"
+#define APP_VERSION       "GCC v1.9 APP (2.51+SmTech1.8+PMOS69 fixes)"
 
-//uc8 PROJECT_STR[20] = "Demo PROG. Ver 1.00";
-//u8 OldCurrent;
-//u8 OldDet;
 u8 OldMode;
-//u8 OldFrame;
 u16 OldPosi;
 u8 OldMeter;
 u8 FlagFrameMode;
 u8 FlagMeter;
 u8 TrgAuto;
 u8 TrgAutoOld;
-//u16 OldPosX;
-//u16 OldPosY;
 u16 OldTrack1X;
 u16 OldTrack2X;
 
+
 extern u8 _vectors[];
 
+u8 ShowFFT = 0;
 
 /*******************************************************************************
   main : Main routine.
@@ -87,7 +83,6 @@ int main(void)
   u16 Count_FPS = 0, Second = 0;//,Offset, Result 
   u8  UpdateMeter=0, CounterUpdate  ;
   u8 j;
-  //u8 z;
   u16 TmpVT;
   u16 Vt1Old=0;
   u16 Vt2Old=0;
@@ -110,7 +105,7 @@ int main(void)
   Load_Attr();                                 // assignment Y_Attr
   i = Load_Param(); 
   if(i == 0)  // read the default boot parameters
-    __Display_Str(6*8, 30, GRN, PRN, "     Reload parameter form disk       ");
+    __Display_Str(6*8, 30, GRN, PRN, "    Reloaded parameters form disk     ");
   else       
     __Display_Str(6*8, 30, YEL, PRN, "     Parameter record not found       ");  
 
@@ -258,22 +253,16 @@ int main(void)
     //--------------------------------------------------------------------------  FRAME MODE
     
     if (FlagFrameMode==1){
-          if (_Mode==SCAN) {
-            _X_posi.Value=0;
-              FrameMode=1;
-            
-          } 
-          else 
-          {
-              _X_posi.Value=0;
-             if (Title[T_BASE][1].Value<11) {FrameMode=2; } //2
-             else { FrameMode=0;} //0
-          }
+	
+		_X_posi.Value=0;
+        if (_Mode==SCAN) FrameMode=1;
+        else {
+            if (Title[T_BASE][1].Value<11) {FrameMode=2; } //2
+            else { FrameMode=0;} //0
+        }
     }
-    else
-    {
-      FrameMode=0;
-    }
+    else FrameMode=0;
+
  
    //--------------------------------------------------------------------------  GESTIONE TASTI MENU	
     if(Key_Buffer) { 
@@ -281,13 +270,22 @@ int main(void)
       PD_Cnt = 600;                         // 600 seconds
 	  //--------------------------------------------------------------------------------------------------------------  
       if(Key_Buffer == KEY1){
-        _State.Value = (_State.Value == 0)? 1 : 0;       						// "RUN/HOLD" state swap
-        _State.Flag |= UPDAT;                          							// set the corresponding update flag
-        if((Current == FILE)&&(_Curr[2].Value == BUF)) reset_parameter();		//
-        if(_Mode == SGL){														//
-          for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0; 							// clear the old waveform
-          __Set(FIFO_CLR, W_PTR);                      							// FIFO write pointer reset
-        }
+		Delay_Cnt = 700;                                                       // Carica il temporizzatore del tasto permuto
+		while (Delay_Cnt > 0){                                                  // Se il tempo non è arrivato a 0
+			if((__Get(KEY_STATUS)& KEY1_STATUS)!=0){ 
+				_State.Value = (_State.Value == 0)? 1 : 0;       						// "RUN/HOLD" state swap
+				_State.Flag |= UPDAT;                          							// set the corresponding update flag
+				if((Current == FILE)&&(_Curr[2].Value == BUF)) reset_parameter();		//
+				if(_Mode == SGL){														//
+				  for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0; 							// clear the old waveform
+				  __Set(FIFO_CLR, W_PTR);                      							// FIFO write pointer reset
+				}
+				break;
+			}
+			if (Delay_Cnt == 0) {
+				ShowFFT = (ShowFFT == 0)? 1 : 0;       						// Toggle show/hide FFT
+			}
+		}
       }
       //--------------------------------------------------------------------------------------------------------------
       if(Key_Buffer== KEY2){                                                    // ===--- TASTO 2 PREMUTO ---===
@@ -477,7 +475,8 @@ int main(void)
               V_Trigg[_Trigg[SOURCE].Value].Value--;
           } else if((Current == BK_LIGHT)||(Current == VOLUME)){//  adjust backlight or volume
             if(_Curr[1].Value > 0)   _Curr[1].Value--;
-          } else if((Current == T_BASE)&&(_Det == XPOSI)&& (FlagFrameMode==0)){      // X_POSI adjustment
+          //} else if((Current == T_BASE)&&(_Det == XPOSI)&& (FlagFrameMode==0)){      // X_POSI adjustment
+		  } else if((Current == T_BASE)&&(_Det == XPOSI)){      // X_POSI adjustment
             if(_Curr[_Det].Value > 30) _Curr[_Det].Value -= 30; 
             else if(_Curr[_Det].Value > 0) _Curr[_Det].Value--;
             _X_View.Flag |= UPDAT;                              // refresh X_View
@@ -489,7 +488,7 @@ int main(void)
             Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
             Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
-          if((Current == OUTPUT)&&(_Kind != PWM)){
+          if((Current == OUTPUT)&&(_Kind != PWM)&&(_Kind != NOOUT)){
              if (Title[OUTPUT][FRQN].Value > 14) 
             Title[OUTPUT][FRQN].Value = 14;            // upper limit of the analog signal frequency is 20KHz
            } 
@@ -563,7 +562,8 @@ int main(void)
               V_Trigg[_Trigg[SOURCE].Value].Value++;
           } else if ((Current == BK_LIGHT)||(Current == VOLUME)){// adjust backlight or volume
             if(_Curr[1].Value < _Curr[1].Limit)   _Curr[1].Value++;
-          } else if ((Current == T_BASE)&&(_Det == XPOSI) && (FlagFrameMode==0)){      // X_POSI adjustment
+          //} else if ((Current == T_BASE)&&(_Det == XPOSI) && (FlagFrameMode==0)){      // X_POSI adjustment
+		  } else if ((Current == T_BASE)&&(_Det == XPOSI) ){      // X_POSI adjustment
             if (_Curr[_Det].Value <30){ _Curr[_Det].Value ++; goto OkSlow; }//
             else if (_Curr[_Det].Value <(_Curr[_Det].Limit-30)) _Curr[_Det].Value += 30; //
             else if (_Curr[_Det].Value < (_Curr[_Det].Limit)) _Curr[_Det].Value ++;
@@ -590,7 +590,7 @@ int main(void)
             Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
             Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
-          if((Current == OUTPUT)&&(_Kind != PWM)){
+          if((Current == OUTPUT)&&(_Kind != PWM)&&(_Kind != NOOUT)){
             if(Title[OUTPUT][FRQN].Value > 14) 
               Title[OUTPUT][FRQN].Value = 14;          // upper limit of the analog signal frequency is 20KHz
           }

@@ -19,7 +19,6 @@ u8 FlagInCharge;
 char T_UNIT[12] ={'u','S', 0 ,'u','S', 0 ,'m','S', 0 ,'S',' ', 0 };
 char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
 char F_UNIT[12] ={'H','z', 0 ,'H','z', 0 ,'K','C', 0 ,'M','C', 0 };
-//char N_UNIT[12] ={ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
 char S_UNIT[12] ={'/','S','e','c', 0 ,'/','S','e','c', 0 , 0 , 0 };
 char P_UNIT[12] ={'%',' ', 0 ,'%',' ', 0 ,'%',' ', 0 , 0 , 0 , 0 };
 
@@ -56,7 +55,7 @@ char BaseStr[30][10];                                              // Time Base 
 char  XPOSISTR[5]    = {"XPOS"};
 uc16 XCOLOR[2]      = {(SCRN<<8)+X_POSI, (X_POSI<<8)+SCRN};        // Time Base Color
 
-char FO_TYPE[5][10]  = {"!SINUS!",  "TRIANG",  "! SAW !",  "SQUARE", "! PWM !"}; // Output Kind Str  "Kd=  %"
+char FO_TYPE[6][10]  = {"!SINUS!",  "TRIANG",  "! SAW !",  "SQUARE", "! PWM !", " NONE "}; // Output Kind Str  "Kd=  %"
 
 char FO_STR[23][10]  = {"! 1Hz !",  "! 2Hz !",  "! 5Hz !",
                         " 10Hz ",  " 20Hz ",  " 50Hz ",   "!100Hz!",
@@ -93,7 +92,6 @@ char  METER[12][5]   = {"Vbt", "FPS", "Vpp", "Vdc", "RMS",  "Max",
 
 u8   Detail[14];
 char NumStr[12];
-//u8   Current = 0, TypeA = 0, Update = 1;
 u8   Current = 0, Update = 1;
 
 char BL_Str[5]="B.L", Vol_Str[5]="Vol";
@@ -134,7 +132,7 @@ menu Title[13][4]=
     {(char*)BATT_STR,(u16*)B_COLOR,   5-1,  NOT,    0,    0,     0,   HID},
   },
   {//======================= Title Output Signal Group =========================
-    {(char*)FO_TYPE, (u16*)O_COLOR,   5-1, CIRC,  239,  228,     3, UPDAT}, //  Output Wave Kind    282 228       
+    {(char*)FO_TYPE, (u16*)O_COLOR,   6-1, CIRC,  239,  228,     3, UPDAT}, //  Output Wave Kind    282 228       
     {(char*)FO_STR,  (u16*)O_COLOR+1,23-1,    0,  239,  216,    13, UPDAT}, //  Output Frequency    282 216      
     {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  212,  216,    50, UPDAT}, //  Duty value      282,202
     {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  196,  216,    50, UPDAT}, //  Attenuazione    251,202         
@@ -251,7 +249,7 @@ void Display_Value(u8 i)
 		if  (_1_source == HIDE) Tmp=0;
 		else {
 			Tmp = (Ka2[_A_Range]*(a_Max - a_Min)+ 512)/1024;
-			if(Tmp <= 4) Tmp = 0;
+			if(Tmp <= 4) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -260,7 +258,7 @@ void Display_Value(u8 i)
 		if  (_2_source == HIDE) Tmp=0;
 		else {
 			Tmp = (Kb2[_B_Range]*(b_Max - b_Min)+ 512)/1024;
-			if(Tmp <= 4) Tmp = 0;
+			if(Tmp <= 4) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -273,7 +271,7 @@ void Display_Value(u8 i)
 		if  (_1_source == HIDE) Tmp=0;
 		else {
 			Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // use bag_max_buf as average divider
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -282,7 +280,7 @@ void Display_Value(u8 i)
 		if  (_2_source == HIDE) Tmp=0;
 		else {
 			Tmp = Kb1[_B_Range]+(Kb2[_B_Range]*(b_Avg/bag_max_buf)+ 512)/1024 - _2_posi; // use bag_max_buf as average divider
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -294,7 +292,7 @@ void Display_Value(u8 i)
 		if  (_1_source == HIDE) Tmp=0;
 		else {
 			Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024; // use bag_max_buf as average divider
-			if(Tmp <= 2) Tmp = 0;
+			if(Tmp <= 4) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -303,7 +301,7 @@ void Display_Value(u8 i)
 		if  (_2_source == HIDE) Tmp=0;
 		else {
 			Tmp = Kb1[_B_Range] +(Kb2[_B_Range]*Int_sqrt(b_Ssq/bag_max_buf)+ 512)/1024; // use bag_max_buf as average divider
-			if(Tmp <= 2) Tmp = 0;
+			if(Tmp <= 4) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -314,14 +312,18 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Max + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
+			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Max + 512)/1024 - _1_posi);
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
 	}
     if(Meter[i].Track == TRACK2){
 		if  (_2_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Max + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
+			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Max + 512)/1024 - _2_posi);
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
     }
@@ -332,14 +334,18 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Min + 512)/1024 - _1_posi)* Y_Attr[_A_Range].SCALE;
+			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Min + 512)/1024 - _1_posi);
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
     }
     if(Meter[i].Track == TRACK2){
 		if  (_2_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Min + 512)/1024 - _2_posi)* Y_Attr[_B_Range].SCALE;
+			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Min + 512)/1024 - _2_posi);
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
     }

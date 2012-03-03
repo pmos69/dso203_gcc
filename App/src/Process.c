@@ -10,6 +10,30 @@
 #include "BIOS.h"
 #include "File.h"
 
+// FFT ////////////////////////////////////////////////////////////////////
+static u16 hann[512] = {
+  0x0000, 0x0000, 0x0002, 0x0005, 0x0009, 0x000f, 0x0016, 0x001e, 0x0027, 0x0032, 0x003d, 0x004a, 0x0058, 0x0068, 0x0079, 0x008a, 0x009e, 0x00b2, 0x00c8, 0x00de, 0x00f6, 0x0110, 0x012a, 0x0146, 0x0163, 0x0181, 0x01a0, 0x01c1, 0x01e3, 0x0206, 0x022a, 0x0250, 
+  0x0276, 0x029e, 0x02c7, 0x02f2, 0x031d, 0x034a, 0x0378, 0x03a7, 0x03d7, 0x0409, 0x043c, 0x0470, 0x04a5, 0x04db, 0x0513, 0x054b, 0x0585, 0x05c0, 0x05fd, 0x063a, 0x0679, 0x06b8, 0x06f9, 0x073b, 0x077f, 0x07c3, 0x0809, 0x084f, 0x0897, 0x08e0, 0x092b, 0x0976, 
+  0x09c3, 0x0a10, 0x0a5f, 0x0aaf, 0x0b00, 0x0b52, 0x0ba6, 0x0bfa, 0x0c50, 0x0ca6, 0x0cfe, 0x0d57, 0x0db1, 0x0e0c, 0x0e68, 0x0ec6, 0x0f24, 0x0f84, 0x0fe4, 0x1046, 0x10a9, 0x110c, 0x1171, 0x11d7, 0x123e, 0x12a6, 0x1310, 0x137a, 0x13e5, 0x1451, 0x14bf, 0x152d, 
+  0x159c, 0x160d, 0x167e, 0x16f1, 0x1764, 0x17d9, 0x184e, 0x18c5, 0x193c, 0x19b5, 0x1a2e, 0x1aa8, 0x1b24, 0x1ba0, 0x1c1e, 0x1c9c, 0x1d1b, 0x1d9c, 0x1e1d, 0x1e9f, 0x1f22, 0x1fa6, 0x202b, 0x20b1, 0x2138, 0x21bf, 0x2248, 0x22d2, 0x235c, 0x23e7, 0x2474, 0x2501, 
+  0x258f, 0x261e, 0x26ad, 0x273e, 0x27cf, 0x2862, 0x28f5, 0x2989, 0x2a1e, 0x2ab3, 0x2b4a, 0x2be1, 0x2c79, 0x2d12, 0x2dac, 0x2e46, 0x2ee1, 0x2f7d, 0x301a, 0x30b8, 0x3156, 0x31f5, 0x3295, 0x3336, 0x33d7, 0x347a, 0x351c, 0x35c0, 0x3664, 0x3709, 0x37af, 0x3855, 
+  0x38fd, 0x39a4, 0x3a4d, 0x3af6, 0x3ba0, 0x3c4a, 0x3cf5, 0x3da1, 0x3e4d, 0x3efb, 0x3fa8, 0x4056, 0x4105, 0x41b5, 0x4265, 0x4316, 0x43c7, 0x4479, 0x452b, 0x45de, 0x4692, 0x4746, 0x47fb, 0x48b0, 0x4966, 0x4a1c, 0x4ad3, 0x4b8a, 0x4c42, 0x4cfa, 0x4db3, 0x4e6d, 
+  0x4f26, 0x4fe1, 0x509b, 0x5156, 0x5212, 0x52ce, 0x538b, 0x5448, 0x5505, 0x55c3, 0x5681, 0x5740, 0x57ff, 0x58be, 0x597e, 0x5a3e, 0x5afe, 0x5bbf, 0x5c80, 0x5d42, 0x5e04, 0x5ec6, 0x5f88, 0x604b, 0x610e, 0x61d2, 0x6295, 0x635a, 0x641e, 0x64e2, 0x65a7, 0x666c, 
+  0x6732, 0x67f7, 0x68bd, 0x6983, 0x6a49, 0x6b10, 0x6bd6, 0x6c9d, 0x6d64, 0x6e2b, 0x6ef3, 0x6fba, 0x7082, 0x714a, 0x7212, 0x72da, 0x73a2, 0x746b, 0x7533, 0x75fc, 0x76c4, 0x778d, 0x7856, 0x791f, 0x79e8, 0x7ab1, 0x7b7a, 0x7c43, 0x7d0c, 0x7dd6, 0x7e9f, 0x7f68, 
+  0x8031, 0x80fb, 0x81c4, 0x828d, 0x8356, 0x841f, 0x84e9, 0x85b2, 0x867b, 0x8744, 0x880d, 0x88d5, 0x899e, 0x8a67, 0x8b2f, 0x8bf8, 0x8cc0, 0x8d88, 0x8e50, 0x8f18, 0x8fe0, 0x90a8, 0x916f, 0x9236, 0x92fd, 0x93c4, 0x948b, 0x9552, 0x9618, 0x96de, 0x97a4, 0x986a, 
+  0x992f, 0x99f4, 0x9ab9, 0x9b7e, 0x9c42, 0x9d07, 0x9dca, 0x9e8e, 0x9f51, 0xa014, 0xa0d7, 0xa199, 0xa25b, 0xa31d, 0xa3de, 0xa49f, 0xa560, 0xa620, 0xa6e0, 0xa7a0, 0xa85f, 0xa91e, 0xa9dc, 0xaa9a, 0xab58, 0xac15, 0xacd2, 0xad8e, 0xae4a, 0xaf05, 0xafc0, 0xb07b, 
+  0xb135, 0xb1ee, 0xb2a7, 0xb360, 0xb418, 0xb4d0, 0xb587, 0xb63d, 0xb6f3, 0xb7a9, 0xb85e, 0xb912, 0xb9c6, 0xba79, 0xbb2c, 0xbbde, 0xbc90, 0xbd41, 0xbdf1, 0xbea1, 0xbf50, 0xbfff, 0xc0ad, 0xc15a, 0xc207, 0xc2b3, 0xc35e, 0xc409, 0xc4b3, 0xc55d, 0xc606, 0xc6ae, 
+  0xc755, 0xc7fc, 0xc8a2, 0xc947, 0xc9ec, 0xca90, 0xcb33, 0xcbd6, 0xcc77, 0xcd18, 0xcdb9, 0xce58, 0xcef7, 0xcf95, 0xd032, 0xd0cf, 0xd16a, 0xd205, 0xd29f, 0xd339, 0xd3d1, 0xd469, 0xd500, 0xd596, 0xd62b, 0xd6bf, 0xd753, 0xd7e6, 0xd878, 0xd909, 0xd999, 0xda28, 
+  0xdab6, 0xdb44, 0xdbd1, 0xdc5c, 0xdce7, 0xdd71, 0xddfa, 0xde83, 0xdf0a, 0xdf90, 0xe016, 0xe09a, 0xe11e, 0xe1a0, 0xe222, 0xe2a3, 0xe322, 0xe3a1, 0xe41f, 0xe49c, 0xe518, 0xe593, 0xe60d, 0xe686, 0xe6fe, 0xe775, 0xe7eb, 0xe860, 0xe8d4, 0xe947, 0xe9b9, 0xea2a, 
+  0xea9a, 0xeb08, 0xeb76, 0xebe3, 0xec4f, 0xecba, 0xed23, 0xed8c, 0xedf3, 0xee5a, 0xeebf, 0xef24, 0xef87, 0xefe9, 0xf04a, 0xf0aa, 0xf109, 0xf167, 0xf1c4, 0xf220, 0xf27a, 0xf2d4, 0xf32c, 0xf383, 0xf3d9, 0xf42e, 0xf482, 0xf4d5, 0xf527, 0xf577, 0xf5c6, 0xf615, 
+  0xf662, 0xf6ae, 0xf6f9, 0xf742, 0xf78b, 0xf7d2, 0xf818, 0xf85d, 0xf8a1, 0xf8e4, 0xf925, 0xf966, 0xf9a5, 0xf9e3, 0xfa20, 0xfa5b, 0xfa96, 0xfacf, 0xfb07, 0xfb3e, 0xfb74, 0xfba8, 0xfbdc, 0xfc0e, 0xfc3f, 0xfc6f, 0xfc9d, 0xfccb, 0xfcf7, 0xfd22, 0xfd4b, 0xfd74, 
+  0xfd9b, 0xfdc1, 0xfde6, 0xfe0a, 0xfe2c, 0xfe4d, 0xfe6d, 0xfe8c, 0xfeaa, 0xfec6, 0xfee1, 0xfefb, 0xff14, 0xff2b, 0xff41, 0xff56, 0xff6a, 0xff7d, 0xff8e, 0xff9e, 0xffad, 0xffba, 0xffc7, 0xffd2, 0xffdc, 0xffe4, 0xffec, 0xfff2, 0xfff7, 0xfffb, 0xfffd, 0xfffe
+};
+
+short arrin[512];
+short arrout[512];
+////////////////////////////////////////////////////////////////////////////
+
 u16 TaS, TbS, TcS, TdS;            // cycles accumulated
 u16 PaS, PbS, PcS, PdS;            // pulse width of the cumulative
 u16 TaN, TbN, TcN, TdN;            // Cycle Count
@@ -21,7 +45,7 @@ u32 a_Avg, b_Avg, a_Ssq, b_Ssq;              // the average cumulative sum of sq
 u8  a_Max, b_Max, a_Min, b_Min;              // the original maximum value, the original minimum value
 s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
 s16 c_Max, d_Max, A_Posi, B_Posi;
-//u8  Full=1;
+
 u8 Interlace;
 u16 JumpCnt;
 u8 FrameMode;
@@ -210,18 +234,20 @@ void Update_Output(void)
   
   u8 att;
 
-  if(_Kind == SINE){
-    for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(SIN_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
-     DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
-      __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
-      __Set(ANALOG_CNT, 72);
-      __Set(ANALOG_PTR, (u32)ATT_DATA);
+  switch (_Kind) {
+  
+  case SINE:
+	for(att=0; att <72; att++){ 
+		ATT_DATA[att]=(SIN_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
+    DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
+    __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
+    __Set(ANALOG_CNT, 72);
+    __Set(ANALOG_PTR, (u32)ATT_DATA);
     DMA2_Channel4->CCR |= DMA_CCR1_EN;
-      __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-    
-  }
-  if(_Kind == SAW){
+    __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
+	break;
+  
+  case SAW:
    for(att=0; att <72; att++){ 
      ATT_DATA[att]=(SAW_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
      DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
@@ -230,8 +256,9 @@ void Update_Output(void)
       __Set(ANALOG_PTR, (u32)ATT_DATA);
      DMA2_Channel4->CCR |= DMA_CCR1_EN;
       __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-  }
-  if(_Kind == TRIANG){
+	  break;
+ 
+  case TRIANG:
     for(att=0; att <72; att++){ 
      ATT_DATA[att]=(TRG_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
      DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
@@ -240,9 +267,9 @@ void Update_Output(void)
       __Set(ANALOG_PTR, (u32)ATT_DATA);
     DMA2_Channel4->CCR |= DMA_CCR1_EN;
       __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-  }
+	  break;
   
-  if(_Kind == DIGI){
+  case DIGI:
     for(att=0; att <72; att++){ 
      ATT_DATA[att]=(DIGI_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
      DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
@@ -251,14 +278,23 @@ void Update_Output(void)
       __Set(ANALOG_PTR, (u32)ATT_DATA);
     DMA2_Channel4->CCR |= DMA_CCR1_EN;
       __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-  }
+	break;
 
-  if(_Kind == PWM){
+ case PWM:
     __Set(DIGTAL_PSC, D_Tab[_Frqn].PSC);
     __Set(DIGTAL_ARR, D_Tab[_Frqn].ARR);
     __Set(DIGTAL_CCR, ((D_Tab[_Frqn].ARR+1)*(100-Title[OUTPUT][DUTYPWM].Value))/100);
+	break;
+	
+case NOOUT:
+    __Set(DIGTAL_PSC, D_Tab[_Frqn].PSC);
+    __Set(DIGTAL_ARR, D_Tab[_Frqn].ARR);
+    __Set(DIGTAL_CCR, (D_Tab[_Frqn].ARR+1));
+	break;
   }
+  
 }
+
 /*******************************************************************************
  Update_Trig: 
 *******************************************************************************/
@@ -275,6 +311,7 @@ void Update_Trig(void)
   }
   if(_Status == RUN) __Set(FIFO_CLR, W_PTR);      // FIFO write pointer reset
 }
+
 /*******************************************************************************
  Process: Calculate processing buffer data
 *******************************************************************************/
@@ -346,6 +383,13 @@ void Process(void)
 			if(Ch[B] < b_Min)  b_Min = Ch[B];         // statistics channel B minimum
 			if(Ch[B] > b_Max)  b_Max = Ch[B];         // statistics channel B maximum
 		}
+		
+		// FFT ///////////////////////////////////////
+		if ((i < 256) && ShowFFT) {
+              arrin[i<<1] = Ch[A]<<8;
+              arrin[(i<<1)|1] = 0;
+        }
+		////////////////////////////////////// FFT ///
        
       C_D = DataBuf[i] >>16;
       if((i>1)&&(i<4094)){
@@ -392,11 +436,7 @@ void Process(void)
         j += 1024;
         V[A_] = V[A];  V[B_] = V[B];     
       }	  
-	  
-	  
     }
-
-
   } 
   else {                            // alternate sampling mode
     k =((1024 -_Kp2)*150 + 512)/1024 + _X_posi.Value;  // calculation of the interpolation window position correction value
@@ -432,6 +472,13 @@ void Process(void)
 			if(Ch[B] > b_Max)  b_Max = Ch[B];         // statistics channel B maximum
 		}	  
 
+		// FFT ///////////////////////////////////////
+		if ((i < 256) && ShowFFT) {
+              arrin[i<<1] = (Ch[A]+Ch[B])/2<<8;
+              arrin[(i<<1)|1] = 0;
+        }
+		////////////////////////////////////// FFT ///
+		
       if(i >= k){                 // 1:00 pointer reaches the specified window position
         if(_2_source == HIDE){                            // B channel incorporated into the A channel
           V[A] = Ka1[_A_Range] +(Ka2[_A_Range]*Ch[A]+ 512)/1024;    // calculate the current principal value of 1:00
@@ -542,12 +589,12 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
   else if(Tmp <= Y_BASE+1)  TrackBuff[i + TRACK4] = Y_BASE+1;
   else                      TrackBuff[i + TRACK4] = Tmp;
 }
+
 /*******************************************************************************
  Synchro: scan synchronization, waveform display by setting the mode
 *******************************************************************************/
 void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
-
   switch (_Mode){ 
   case AUTO:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
@@ -577,7 +624,14 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
       __Set(TRIGG_MODE, UNCONDITION);               
       Process();                                  
    }
-   
+  
+  // FFT /////////////////////////////
+  if (ShowFFT) {
+	  fft_window(arrin, 256);
+	  fftR4(arrout, arrin, 256);
+  }
+  //////////////////////////// FFT ///
+  
   Draw_Window();                                  // refresh the screen waveform display area
   
   if ((_Mode==SCAN) || (_Mode==X_Y)) Wait_Cnt = 1;
@@ -613,6 +667,15 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 
 u16 get_bag_max_buf(void) {
 u16 out = 4096;
+
+	if (FlagFrameMode==1){
+          if (_Mode==SCAN) { FrameMode=1; } 
+          else {
+             if (Title[T_BASE][1].Value<11) {FrameMode=2; } //2
+             else { FrameMode=0;} //0
+          }
+    } else { FrameMode=0; }
+	
 if (FrameMode>0) {    //_Mode == SCAN
     if (_Mode==SCAN) {
         if (FlagMeter==0) (out = (390*FrameMode));
@@ -624,4 +687,26 @@ if (FrameMode>0) {    //_Mode == SCAN
   }
   return out;
 }
+
+// FFT //////////////////////////////////////////////////////////////////
+void fft_window(short* arr, int n)
+  {
+    short *p = arr;
+    u32 tmp;
+	int i;
+    for (i=0; i<n; i++)
+    {
+      tmp = *p;
+      if (i<n/2)
+        tmp *= hann[i];
+      else
+        tmp *= hann[n-i-1];
+      tmp >>= 16;
+      *p = tmp;
+      p+= 2;
+    }
+    
+  }
+///////////////////////////////////////////////////////////// FFT ///////
+
 /******************************** END OF FILE *********************************/

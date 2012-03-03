@@ -45,7 +45,7 @@ set LDFLAGS=-nostartfiles -mcpu=cortex-m3 -mthumb -march=armv7 -mfix-cortex-m3-l
 
 set OBJS=Calibrat.o Draw.o Files.o Function.o Ident.o ^
          Interrupt.o Main.o Menu.o Process.o startup.o ^
-         stm32f10x_nvic.o cortexm3_macro.o
+         stm32f10x_nvic.o cortexm3_macro.o fftcm3.o
 
 set SRCS= !SRC_SRC!\Calibrat.c !SRC_SRC!\Draw.c !SRC_SRC!\Files.c !SRC_SRC!\Function.c !SRC_SRC!\Ident.c !SRC_SRC!\Interrupt.c ^
           !SRC_SRC!\Main.c !SRC_SRC!\Menu.c !SRC_SRC!\Process.c !SRC_SRC!\startup.c ^
@@ -60,7 +60,9 @@ if not exist !INTERMEDIATE! mkdir !INTERMEDIATE!
 cd !INTERMEDIATE!
 !CC! !AFLAGS! -c !STM_ASM!\cortexm3_macro.s -o cortexm3_macro.o
 !CC! !AFLAGS! -c !SRC_ASM!\bios.S -o bios.o
+!CC! !AFLAGS! -c !SRC_SRC!\fftcm3.S -o fftcm3.o
 !CC! !CFLAGS! -c !SRCS!
+
 echo Linking...
 !CC! -o !TFILE!_!APP!.elf !LDFLAGS! -T !SRC_LDS!\app!APP!.lds !OBJS! 
 !OBJCOPY! -O binary !TFILE!_!APP!.elf !TFILE!.bin

@@ -80,11 +80,7 @@ typedef struct  // 脉冲波形输出驱动表
 extern u8  Interlace;
 extern u8  TrackBuff [X_SIZE * 4];          //  i +0 ~ 3, a 4 track data were stored
 extern u32 a_Avg, b_Avg, a_Ssq, b_Ssq;
-//extern u8  a_Vpp, b_Vpp;           
-//extern s16 a_Vdc, b_Vdc;            
 extern u8  a_Max, b_Max, a_Min, b_Min;                // statistics of intermediate variables
-
-//extern u16 Tcs, Tcnt;
 
 extern u16 TaS, TbS, TcS, TdS;            // cycles accumulated
 extern u16 PaS, PbS, PcS, PdS;            // pulse width of the cumulative
@@ -109,6 +105,16 @@ void Process(void);
 void Synchro(void);
 void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n);
 u16 get_bag_max_buf();
+
+// FFT ////////////////////////////////////////////////////////////////////
+extern void fftR4(short *y, short *x, int N);
+void fft_window(short* arr, int n);
+
+extern short arrin[512];
+extern short arrout[512];
+
+extern u8 ShowFFT;
+///////////////////////////////////////////////////////////// FFT ///////
 
 #endif
 /******************************** END OF FILE *********************************/

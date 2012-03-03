@@ -172,7 +172,6 @@ typedef struct
 
 extern menu Title[13][4];
 extern meter Meter[9];
-//extern u8 Current, TypeA, Update;
 extern u8 Current, Update;
 extern u8 Detail[14];
 extern char NumStr[12];

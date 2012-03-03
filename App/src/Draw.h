@@ -37,6 +37,7 @@ typedef struct
 #define SAW        2
 #define DIGI       3
 #define PWM        4
+#define NOOUT	   5
 
 #define PRN        0   // No inverse Display
 #define INV        1   // Inverse Display
@@ -91,6 +92,9 @@ void Draw_Mark(u16 m, u16 n);
 void Update_Mark(void);						
 void Update_View_Area(void);
 void Clear_Meter_Area(void);
+
+// void DrawBar(u16 x1, u16 y1, u16 x2, u16 y2, u16 clr);
+// void DrawPixel(u16 x, u16 y, u16 clr);
 
 #endif
 

@@ -17,6 +17,23 @@ Pedro Simões
 
 -------------------------------------------
 
+Main button functions:
+
+- Button 1 (>||)
+	- Short press:	Toggle Run/Hold status
+	- Long press:	Toggle dysplay of Channel A FFT on/off
+- Button 2 (square)
+	- Short press:	Select auto trigger level preset
+	- Long press:	Calibrate (select channel A or B first)
+- Button 3 (circle)
+	- Short press:	Toggle FullScreen mode on/off
+	- Long press:	Save settings
+- Button 4 (triangle)
+	- Short press:	Change between meters presets
+	- Long press:	Toggle between full buffer mode (4096 samples) and short buffer mode (just enough samples to fill LCD)
+
+-------------------------------------------
+
 Access source in github:
   https://github.com/pmos69/dso203_gcc 
 
@@ -44,6 +61,17 @@ All thanks to:
 
 Revisions:
 
+v1.9
+- (crude) FFT spectrum analyzer
+		256 points
+		channel A
+		activate/deactivate with long press in button 1 (>||)
+- corrections in RMS, Vpp, Min and Max (Vpp calculation wasn't consistent with min and max)
+		added noise threshold to Min and Max
+		adjusted noise threshold of fRMS
+- no output option for generator
+- Correct representation of the XPOS box relative size (view window size <-> capture buffer size)
+
 v1.8
 - Fixed horizontal display (previous blunder with X_SIZE)
 - Minor code clean up (and code size reduction)
@@ -54,7 +82,7 @@ v1.7
 
 v1.6
 - Fixed X_Y modes - now operational again
-- Fixed Min, Max and Vpp readings
+- Fixed Min, Max and Vpp readings (initialization values)
 
 v1.5
 - Re-did a complete code merge of marcosin 1.8 & fixes into 2.51 by hand. - Now compiles with -Os
