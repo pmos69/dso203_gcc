@@ -63,7 +63,7 @@ All thanks to:
 Revisions:
 
 v1.10
-- Improved(/fixed) FFT calculation and dysplay.
+- Improved(/fixed) FFT calculation and display.
 
 v1.9
 - (crude) FFT spectrum analyzer (optimized Arm FFT code by Ivan Mellen)
