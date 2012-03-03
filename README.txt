@@ -56,13 +56,17 @@ All thanks to:
 - The original firmware developers
 - Marco Sinatti (marcosin)
 - Gabriel Valky (gabonator1)
+- Ivan Mellen
 
 -------------------------------------------
 
 Revisions:
 
+v1.10
+- Improved(/fixed) FFT calculation and dysplay.
+
 v1.9
-- (crude) FFT spectrum analyzer
+- (crude) FFT spectrum analyzer (optimized Arm FFT code by Ivan Mellen)
 		256 points
 		channel A
 		activate/deactivate with long press in button 1 (>||)

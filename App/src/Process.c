@@ -595,6 +595,7 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
 *******************************************************************************/
 void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
+int X,Y,i;
   switch (_Mode){ 
   case AUTO:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
@@ -629,6 +630,13 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
   if (ShowFFT) {
 	  fft_window(arrin, 256);
 	  fftR4(arrout, arrin, 256);
+	  
+	  for (i=0; i < 256; i++)
+	  {
+		X= (arrout[i]<<16)>>16; /* Real */
+		Y= (arrout[i] >> 16);   /* Imag */    
+		arrout[ i ]= Int_sqrt(X*X+ Y*Y);    
+	  }
   }
   //////////////////////////// FFT ///
   
@@ -707,6 +715,7 @@ void fft_window(short* arr, int n)
     }
     
   }
+
 ///////////////////////////////////////////////////////////// FFT ///////
 
 /******************************** END OF FILE *********************************/
