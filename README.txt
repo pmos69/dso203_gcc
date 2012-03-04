@@ -1,4 +1,4 @@
-DSO203 GCC v1.10 APP
+DSO203 GCC v1.11 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
@@ -61,6 +61,14 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.11
+- Corrections in TH and TL readings:
+		TH calculations for channels B, C and D were wrong.
+		TH and TL readings were swapped for all channels.
+- Fixed Frequency unit for K and M
+		was: Hz - KC - MC
+		now: Hz - KHz - MHz
 
 v1.10
 - Improved(/fixed) FFT calculation and display.

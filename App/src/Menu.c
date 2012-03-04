@@ -18,7 +18,7 @@ u8 FlagInCharge;
 
 char T_UNIT[12] ={'u','S', 0 ,'u','S', 0 ,'m','S', 0 ,'S',' ', 0 };
 char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
-char F_UNIT[12] ={'H','z', 0 ,'H','z', 0 ,'K','C', 0 ,'M','C', 0 };
+char F_UNIT[12] ={'H','z', 0 ,'H','z', 0 ,'K','@', 0 ,'M','@', 0 };
 char S_UNIT[12] ={'/','S','e','c', 0 ,'/','S','e','c', 0 , 0 , 0 };
 char P_UNIT[12] ={'%',' ', 0 ,'%',' ', 0 ,'%',' ', 0 , 0 , 0 , 0 };
 
@@ -391,20 +391,20 @@ void Display_Value(u8 i)
       Tmp = (100000*PdS)/TdS;
     Int2Str(NumStr, Tmp, P_UNIT, 4, UNSIGN);
     break;
-  case TH:
+  case TL:
     if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = (k*TaS)/TaN - (k*PaS)/TaN;
     if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
-      Tmp = (100000*PbS)/TbS;
+      Tmp = (k*TbS)/TbN - (k*PbS)/TbN;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
-      Tmp = (100000*PcS)/TcS;
+      Tmp = (k*TcS)/TcN - (k*PcS)/TcN;
     if((Meter[i].Track == TRACK4)&&(_4_source == CH_D))
-      Tmp = (100000*PdS)/TdS;
+      Tmp = (k*TdS)/TdN - (k*PdS)/TdN;
     if(Tmp <= 0x7FFFFFFF/m) Tmp = 1024*((m*Tmp)/Kp)/n;
     else                    Tmp = 0x80000000;
     Int2Str(NumStr, Tmp, T_UNIT, 4, UNSIGN);
     break;
-  case TL:
+  case TH:
     if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = (k*PaS)/TaN;
     if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
