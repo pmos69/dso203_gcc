@@ -636,10 +636,17 @@ short PeakFreq;
 	  fft_window(arrin, 256);
 	  fftR4(arrout, arrin, 256);
 	  
-	  for (i=0; i < 256; i++)
+	  // for (i=0; i < 256; i++)
+	  // {
+		// X= (arrout[i]<<16)>>16; /* Real */
+		// Y= (arrout[i] >> 16);   /* Imag */    
+		// arrout[ i ]= Int_sqrt(X*X+ Y*Y);    
+	  // }
+	  
+	  for (i=0; i < 256; i+=2)
 	  {
-		X= (arrout[i]<<16)>>16; /* Real */
-		Y= (arrout[i] >> 16);   /* Imag */    
+		X= arrout[i]; /* Real */
+		Y= arrout[i+1];   /* Imag */    
 		arrout[ i ]= Int_sqrt(X*X+ Y*Y);    
 	  }
 	  
@@ -652,7 +659,14 @@ short PeakFreq;
 	  PeakFreq = 0;
 	  imax = 0;
 	
-	  for (i=0; i < (256); i++) {
+	  // for (i=0; i < (256); i++) {
+		// if (PeakFreq < arrout[i]) {  
+			// PeakFreq= arrout[i] ; 
+			// imax = i;
+		// }
+      // }
+	  
+	  for (i=0; i < (256); i+=2) {
 		if (PeakFreq < arrout[i]) {  
 			PeakFreq= arrout[i] ; 
 			imax = i;

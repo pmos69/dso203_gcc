@@ -5,7 +5,7 @@ rem DS203 Win32 GCC support by valky.eu
 rem USER DEFINED VALUES
 rem ===================================================
 set CBASE=C:\arm_toolchain\arm-2011.03\bin\
-set TARGET=E:\
+set TARGET=G:\
 set TFILE=APP_G251
 set APP=1
 rem ===================================================

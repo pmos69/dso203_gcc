@@ -1,4 +1,4 @@
-DSO203 GCC v1.12 APP
+DSO203 GCC v1.13 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
@@ -63,6 +63,10 @@ All thanks to:
 
 Revisions:
 
+v1.13
+- Corrections in the FFT calculations
+		(was making a mess, as usual)
+		
 v1.12
 - Display of FFT data (over the buffer position box)
 		on the left: Peak frequency detected in the FFT

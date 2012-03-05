@@ -366,7 +366,9 @@ void Draw_Row(u16 Row)
 		
 		// FFT ///////
 	    if ((Row - MIN_X < 256) && ShowFFT) {
-			val = arrout[Row - MIN_X];
+			// val = arrout[Row - MIN_X];
+			if ((Row - MIN_X) & 1) val = arrout[(Row - MIN_X - 1)]; //odd
+			else val = arrout[(Row - MIN_X)]; // even
 			if (val < 0) val = 0;
             if (val >= 200) val = 199;
 			for (i=0; i<val; i++) LCD_Buffer2[i] |= RED; //0x0ff0;
@@ -486,7 +488,9 @@ void Draw_Row(u16 Row)
     
 		// FFT ///////
 	    if ((Row - MIN_X < 256) && ShowFFT) {
-			val = arrout[Row - MIN_X];
+			//val = arrout[Row - MIN_X];
+			if ((Row - MIN_X) & 1) val = arrout[(Row - MIN_X - 1)]; //odd
+			else val = arrout[(Row - MIN_X)]; // even
 			if (val < 0) val = 0;
             if (val >= 200) val = 199;
 			for (i=0; i<val; i++) LCD_Buffer1[i] |= RED; //0x0ff0;
