@@ -3,3 +3,10 @@
 *.elf binary
 *.o binary
 *.d binary
+
+*.c eol=crlf
+*.h eol=crlf
+*.bat eol=crlf
+*.txt eol=crlf
+*.S eol=crlf
+*.s eol=crlf

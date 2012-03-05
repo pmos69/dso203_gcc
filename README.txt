@@ -4,7 +4,7 @@ DSO203 GCC v1.13 APP
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
 
 (Win32 GCC support by gabonator1)
-
+ 
 Tested with:
 	- SYS 1.51
 	- FPGA 2.61

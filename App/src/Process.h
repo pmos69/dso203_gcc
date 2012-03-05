@@ -13,7 +13,7 @@
 #define B                 1
 #define A_                2
 #define B_                3
-
+ 
 //================== Structure variables, macro definitions ==================
 #define _1_source  Title[TRACK1][SOURCE].Value
 #define _2_source  Title[TRACK2][SOURCE].Value

@@ -6,7 +6,7 @@
 #define __MENU_H
 
 #include "stm32f10x_lib.h"
-
+ 
 //----------- The Detail menu constants MARK defined -----------
 #define NUM2    0x01   // display the Value of two values in the specified location
 #define NUM3    0x02   // in the specified location to display the floating point value of the Value of 3

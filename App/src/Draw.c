@@ -6,7 +6,7 @@
 #include "Draw.h"
 #include "Menu.h"
 #include "BIOS.h"
-
+ 
 u16 MAX_X;
 uc16 RULE_BASE[8] ={0x020,0x040,0x080,0x040,0x020,0x010,0x008,0x010};
 u8 OffsetX;

@@ -9,7 +9,7 @@
 #include "Menu.h"
 #include "Draw.h"
 #include "BIOS.h"
-
+ 
 u16 Result_FPS;
 u8 Cnt_InCharge;
 u8 Cnt_Charged;

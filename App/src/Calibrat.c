@@ -9,7 +9,7 @@
 #include "File.h"
 #include "BIOS.h"
 #include "Menu.h"
-
+ 
 char VS_STR[9][12]  ={"250-300mV", "!0.5-0.6V!","!1.0-1.2V!","!2.5-3.0V!",
                      "!5.0-6.0V!"," !10-12V! "," !25-30V! "," !50-60V! "};
 // char ExitStr[3][50] ={" PRESS (#) KEY TO Exit WITH RESTORE DEFAULTS ",

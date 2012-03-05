@@ -6,7 +6,7 @@ Free Personal, Non-Commercial Use License.
 The Software is licensed to you for your personal, NON-COMMERCIAL USE.
 If you have questions about this license or would like a different license
 please email : imellen(at)embeddedsignals(dot)com
-
+ 
  - Radix 4 FFT - supported sizes: N=4,16,64,256,1024,4096
  - N>4096 possible with custom coefficients  
  - 16 bit complex arithmetic, 1Q15 coefficients
