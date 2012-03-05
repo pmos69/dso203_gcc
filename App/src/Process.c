@@ -596,6 +596,11 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
 void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
 int X,Y,i;
+char NumStr[12];
+u32 NFreq;
+int imax;
+short PeakFreq;
+
   switch (_Mode){ 
   case AUTO:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
@@ -637,6 +642,26 @@ int X,Y,i;
 		Y= (arrout[i] >> 16);   /* Imag */    
 		arrout[ i ]= Int_sqrt(X*X+ Y*Y);    
 	  }
+	  
+	  NFreq = (1000000000 / (_T_Scale)) / 2;
+	  NFreq *= 1000;
+	  
+	  Int2Str(NumStr, NFreq, F_UNIT, 4, UNSIGN);
+	  Print_Str(  248, 0, 0x0005, PRN, NumStr);
+	  
+	  PeakFreq = 0;
+	  imax = 0;
+	
+	  for (i=0; i < (256); i++) {
+		if (PeakFreq < arrout[i]) {  
+			PeakFreq= arrout[i] ; 
+			imax = i;
+		}
+      }
+  
+	  Int2Str(NumStr, ((NFreq / 256) * imax), F_UNIT, 4, UNSIGN);
+      Print_Str(  92, 0, 0x0005, PRN, NumStr);
+	  
   }
   //////////////////////////// FFT ///
   

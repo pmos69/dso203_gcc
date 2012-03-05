@@ -70,7 +70,7 @@ char  TRIGSTR[8][10] = {"TRG A", "TRG B", "TRG C", "TRG D"};      // Trigger sou
                           
 char  TR_TYPE[8][10] = {":!\\!", ":!^!", "<Vt", ">Vt",            // Trigger Type Str
                        "<TL",   ">TL",  "<TH", ">TH"};
-char  VT_STR[3]  =  "LEV";                                // Trigg Voltage Str
+char  VT_STR[4]  =  "LEV";                                // Trigg Voltage Str
                           
 char  VERNIE1[5]     = {"!V1!"};          // V1 Vernie Str
 char  VERNIE2[5]     = {"!V2!"};          // V2 Vernie Str

@@ -1,4 +1,4 @@
-DSO203 GCC v1.11 APP
+DSO203 GCC v1.12 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
@@ -61,6 +61,12 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.12
+- Display of FFT data (over the buffer position box)
+		on the left: Peak frequency detected in the FFT
+		on the right: The max frequency of the FFT graph scale
+- Fixed trigger level display (Thanks Marco)
 
 v1.11
 - Corrections in TH and TL readings:
