@@ -1,0 +1,5 @@
+*.hex binary
+*.bin binary
+*.elf binary
+*.o binary
+*.d binary

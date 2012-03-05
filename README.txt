@@ -7,7 +7,8 @@ Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation 
 
 Tested with:
 	- SYS 1.51
-	- FPGA 2.51
+	- FPGA 2.61
+	- HW 2.6
 
 PS: Do a calibration after changing firmware.
 	
