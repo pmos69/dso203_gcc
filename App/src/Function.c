@@ -35,9 +35,9 @@ void Delayms(u16 mS)
  Sign_int2Str: 32-digit switch to e-bit effective number of strings + dimensionless string
 ******************************************************************************/
 
-void Int2Str(char *p, s32 n, char *pUnit, u8 e, u8 Mode)
+void Int2Str(char *p, long n, char *pUnit, u8 e, u8 Mode)
 {
-  s32 i, j, m, c;
+  long i, j, m, c;
   char  *k;
   u8  v=0;
   
@@ -330,4 +330,55 @@ u8 Read_Keys(void)
   return KeyCode;
 } 
 
+char * long2str(long val)
+{
+	static char numbuf[32];
+	static char vec[] = "0123456789ABCDEF";
+	u8 base = 10;
+	char *p = &numbuf[32];
+	int sign = (base > 0);
+
+	*--p = '\0';		/* null-terminate string	*/
+	if (val) {
+		if (base > 0) {
+			if (val < 0L) {
+				long v1 = -val;
+				if (v1 == val)
+					goto overflow;
+				val = v1;
+			}
+			else
+				sign = 0;
+		}
+		else
+		if (base < 0) {			/* unsigned */
+			base = -base;
+			if (val < 0L) {	/* taken from Amoeba src */
+				int mod, i;
+			overflow:
+				mod = 0;
+				for (i = 0; i < 8 * sizeof val; i++) {
+					mod <<= 1;
+					if (val < 0)
+						mod++;
+					val <<= 1;
+					if (mod >= base) {
+						mod -= base;
+						val++;
+					}
+				}
+				*--p = vec[mod];
+			}
+		}
+		do {
+			*--p = vec[(int) (val % base)];
+			val /= base;
+		} while (val != 0L);
+		if (sign)
+			*--p = '-';	/* don't forget it !!	*/
+	}
+	else
+		*--p = '0';		/* just a simple 0	*/
+	return p;
+}
 /********************************* END OF FILE ********************************/

@@ -27,7 +27,7 @@
 
 u32  Power(u8 x, u8 y); 
 void Delayms(u16 mS); 
-void Int2Str(char *p, s32 n, char *pUnit, u8 e, u8 Mode);
+void Int2Str(char *p, long n, char *pUnit, u8 e, u8 Mode);
 u8   Str2Byte(char x,char y);
 void u16ToDec5(char *p, u16 n);
 void u8ToDec3(char *p, u8 n);
@@ -38,6 +38,7 @@ void Word2Hex(char *p, u32 n);
 u32  Int_sqrt(u32 n);
 u8   Read_Keys(void);
 void s8ToPercen(char *p, s8 n);
+char * long2str(long val);
 
 #endif
 /********************************* END OF FILE ********************************/
