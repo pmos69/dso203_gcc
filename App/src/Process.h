@@ -62,6 +62,11 @@
 #define _Vt1       V_Trigg[TRACK1].Value
 #define _Vt2       V_Trigg[TRACK2].Value
 
+// FFT /////////////////////////////////////////////////////////
+#define FFTSize		256
+#define FFTSize2	512
+////////////////////////////////////////////////////////////////
+
 typedef struct  // analog waveform output driver table
 {
   uc8  STR[8];   // stall identification string
@@ -110,8 +115,8 @@ u16 get_bag_max_buf();
 extern void fftR4(short *y, short *x, int N);
 void fft_window(short* arr, int n);
 
-extern short arrin[512];
-extern short arrout[512];
+extern short arrin[];
+extern short arrout[];
 
 extern u8 ShowFFT;
 ///////////////////////////////////////////////////////////// FFT ///////

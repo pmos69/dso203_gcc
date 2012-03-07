@@ -63,6 +63,9 @@ All thanks to:
 
 Revisions:
 
+v1.16
+- Replaced Hanning window lookup table with function (memory optimization)
+
 v1.15
 - Small optimizations in some FFT operations
 - Fixed FFT max frequency and scale max frequency display for time scales less than 10uS/Div

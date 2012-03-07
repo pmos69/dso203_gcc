@@ -39,6 +39,7 @@ u32  Int_sqrt(u32 n);
 u8   Read_Keys(void);
 void s8ToPercen(char *p, s8 n);
 char * long2str(long val);
+double cosine(double radians);
 
 #endif
 /********************************* END OF FILE ********************************/

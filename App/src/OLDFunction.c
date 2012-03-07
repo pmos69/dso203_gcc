@@ -398,6 +398,102 @@ char * long2str(long val)
 	return p;
 }
 
+float sine(float x)
+{
+    const float B = 4/3.14159265358979;
+    const float C = -4/(3.14159265358979*3.14159265358979);
+
+    float y = B * x + C * x * absf(x);
+
+    #ifdef EXTRA_PRECISION
+     //const float Q = 0.775;
+        const float P = 0.225;
+
+        y = P * (y * absf(y) - y) + y;   // Q * y + P * y * abs(y)
+    #endif
+	
+	return y;
+}
+
+int flog2(long x)
+{
+    int log2low = 0;
+    int log2high = 62;
+
+    if (x <= 0)
+    {
+        return -1;
+    }
+
+    while ((log2high-log2low) > 1)
+    {
+        /*
+         * invariant: 2**log2low <= x <= 2**log2high
+         */
+        int log2mid = (log2low + log2high) / 2;
+        long mid = 1L << log2mid;
+        if (x > mid)
+        {
+            log2low = log2mid;
+        }
+        else if (x < mid)
+        {
+            log2high = log2mid;
+        }
+        else // x is a power of 2
+        {
+            return log2mid;
+        }
+    }
+    return (x == (1<<log2low)) ? log2low : log2high;
+}
+
+float absf(float g)
+{
+unsigned int *gg;
+gg=(unsigned int*)&g;
+*(gg)&=2147483647u;
+return g;
+}
+
+// long factorial(long N )
+// {
+
+
+
+    // if ( n <= 1 )
+        // return 1;
+    // else
+        // return  n * factorial( n-1 );
+
+		
+		
+		
+		
+	// long c,p,b;
+	// c = N - 1;
+	// p = 1;
+	// while(c>0) 
+	// {
+		// p = 0;
+		// b = c;
+			// while(b>0) {
+	
+					// if ( b & 1 )
+					// {
+					// p += N; // p = p + N;
+					// }
+			//// if you would like to use double choose the alternative forms instead shifts 
+			//// the code is fast even!
+			//// you can use the same tips on double or 64 bit int etc.... but you must... ;-)
+			// b >>=1; // b/=2; (b = b / 2;) ( b >> 1; a.s.r. is more efficent for int or long..!)
+			// N <<=1; // N += N; N = N + N; N = N * 2; (N <<=1; a.s.l. is more efficent for int or long..!)
+			// }
+			// N = p;
+			// c--;
+	// }
+	// return p;
+// }
 
 double cosine(double radians) //if you look at my redefining sine snippet, 
 //you'll see how remarkably similar the two functions are
@@ -409,6 +505,152 @@ double cosine(double radians) //if you look at my redefining sine snippet,
 	return cosine;
 }
 
+// double powd(double base, int exp)
+// {
+    // double result = 1;
+    // while (exp)
+    // {
+        // if (exp & 1)
+            // result *= base;
+        // exp >>= 1;
+        // base *= base;
+    // }
 
+    // return result;
+// }
+
+void rfft(float X[],int N)
+{
+int I,I0,I1,I2,I3,I4,I5,I6,I7,I8, IS,ID;
+int J,K,M,N2,N4,N8;
+float A,A3,CC1,SS1,CC3,SS3,E,R1,XT;
+float T1,T2,T3,T4,T5,T6;  
+
+M=(int)(flog2(N)/flog2(2.0));               /* N=2^M */
+
+/* ----Digit reverse counter--------------------------------------------- */
+J = 1;
+for(I=1;I<N;I++)
+        {
+        if (I<J)
+                {
+                XT    = X[J];
+                X[J]  = X[I];
+                X[I]  = XT;
+                }
+        K = N/2;
+        while(K<J)
+                {
+                J -= K;
+                K /= 2;
+                }
+        J += K;
+        }
+
+/* ----Length two butterflies--------------------------------------------- */
+IS = 1;
+ID = 4;
+do
+        {
+        for(I0 = IS;I0<=N;I0+=ID)
+                {
+                I1    = I0 + 1;
+                R1    = X[I0];
+                X[I0] = R1 + X[I1];
+                X[I1] = R1 - X[I1];
+                }
+        IS = 2 * ID - 1;
+        ID = 4 * ID;
+        }while(IS<N);
+/* ----L shaped butterflies----------------------------------------------- */
+N2 = 2;
+for(K=2;K<=M;K++)
+        {
+        N2    = N2 * 2;
+        N4    = N2/4;
+        N8    = N2/8;
+        E     = (float) 6.2831853071719586f/N2;
+        IS    = 0;
+        ID    = N2 * 2;
+        do
+                {
+                for(I=IS;I<N;I+=ID)
+                        {
+                        I1 = I + 1;
+                        I2 = I1 + N4;
+                        I3 = I2 + N4;
+                        I4 = I3 + N4;
+                        T1 = X[I4] +X[I3];
+                        X[I4] = X[I4] - X[I3];
+                        X[I3] = X[I1] - T1;
+                        X[I1] = X[I1] + T1;
+                        if(N4!=1)
+                                {
+                                I1 += N8;
+                                I2 += N8;
+                                I3 += N8;
+                                I4 += N8;
+                                T1 = (X[I3] + X[I4])*.7071067811865475244f;
+                                T2 = (X[I3] - X[I4])*.7071067811865475244f;
+                                X[I4] = X[I2] - T1;
+                                X[I3] = -X[I2] - T1;
+                                X[I2] = X[I1] - T2;
+                                X[I1] = X[I1] + T2;
+                                }
+                        }
+                        IS = 2 * ID - N2;
+                        ID = 4 * ID;
+                }while(IS<N);
+        A = E;
+        for(J= 2;J<=N8;J++)
+                {
+                A3 = 3.0 * A;
+                CC1   = cosine(A);
+                SS1   = sine(A);  /*typo A3--really A?*/
+                CC3   = cosine(A3); /*typo 3--really A3?*/
+                SS3   = sine(A3);
+                A = (float)J * E;
+                IS = 0;
+                ID = 2 * N2;
+                do        
+                        {
+                        for(I=IS;I<N;I+=ID)
+                                {
+                                I1 = I + J;
+                                I2 = I1 + N4;
+                                I3 = I2 + N4;
+                                I4 = I3 + N4;
+                                I5 = I + N4 - J + 2;
+                                I6 = I5 + N4;
+                                I7 = I6 + N4;
+                                I8 = I7 + N4;
+                                T1 = X[I3] * CC1 + X[I7] * SS1;
+                                T2 = X[I7] * CC1 - X[I3] * SS1;
+                                T3 = X[I4] * CC3 + X[I8] * SS3;
+                                T4 = X[I8] * CC3 - X[I4] * SS3;
+                                T5 = T1 + T3;
+                                T6 = T2 + T4;
+                                T3 = T1 - T3;
+                                T4 = T2 - T4;
+                                T2 = X[I6] + T6;
+                                X[I3] = T6 - X[I6];
+                                X[I8] = T2;
+                                T2    = X[I2] - T3;
+                                X[I7] = -X[I2] - T3;
+                                X[I4] = T2;
+                                T1    = X[I1] + T5;
+                                X[I6] = X[I1] - T5;
+                                X[I1] = T1;
+                                T1    = X[I5] + T4;
+                                X[I5] = X[I5] - T4;
+                                X[I2] = T1;
+                                }
+                        IS = 2 * ID - N2;
+                        ID = 4 * ID;
+                        }while(IS<N);
+                }
+        }
+return;
+}
 
 /********************************* END OF FILE ********************************/

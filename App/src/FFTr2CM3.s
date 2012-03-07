@@ -1,4 +1,5 @@
-/* Complex 16 bit Radix 4 FFT and Inverse FFT for Cortex-M3    version 1.0
+
+/* Complex 16 bit Radix 2 FFT (odd powers of 2) for Cortex-M3    version 1.0 17Nov08
 --------------------------------------------------------------------------
 (c) 2008 Ivan Mellen   
 --------------------------------------------------------------------------
@@ -6,11 +7,12 @@ Free Personal, Non-Commercial Use License.
 The Software is licensed to you for your personal, NON-COMMERCIAL USE.
 If you have questions about this license or would like a different license
 please email : imellen(at)embeddedsignals(dot)com
- 
- - Radix 4 FFT - supported sizes: N=4,16,64,256,1024,4096
- - N>4096 possible with custom coefficients  
+
+ - complex FFT for odd power of 2 - supported sizes: N=8,32,128,512,2048 points
+ - constant size FFT - defined in source file (speed optimization)
+ - complementary to radix 4 FFT  
  - 16 bit complex arithmetic, 1Q15 coefficients
- - input data remains unmodified
+ - input data modified to achieve faster execution speed
  - decimation-in-time with auto scale after each stage - no overflow 
  - GCC version (Code Sourcery G++ Lite 2007q3-53), requires C preprocessor
  - hand optimized THUMB2 assembly for Cortex-M3 (e.g. STM32)
@@ -18,80 +20,92 @@ please email : imellen(at)embeddedsignals(dot)com
  - single function for multiple FFT sizes
  - functions are both "C" and assembly callable
 
-Modifications in version 2.0:
- - Constant size FFT (faster execution, but N is constant)
- - purely real input (almost 2x faster)
- - radix 2 stage (for N= 8, 32, 128, 512, 2048, 8192...)
- - RAM based coefficients with size optimized generator (for high flash latency)
- - speed optimized windowing function(Bartlett,Blackman, Hamming, Hanning, Kaiser)
-
+TBD: format (nput corrupted?)  17Nov 2008 update
+ solve hard fault of fft2048
+ verify against matlab on real hw
+ pack nicely
 
 STM32 FFT benchmarks in CPU cycles based on real hardware measurements:
 
  N - FFT size
  L - Flash latency
  F,R - coefficients in Flash or RAM
+ * LATENCY2 option defined
 
-    N    L=0 F/R    L=1 F   L=1 r*   L=2 F*     L=2 r*   ARM7TDMI  ARM9E  dsPIC
-   64     3575      3797     3636     4588      4007       -        2701   3739
-  256    19425     20685    19743    25144     21685  38461-43920  13740  19055
- 1024    98541    105113   100074   128070    109634       -       68534    N/A
+  N      L=0 F/R    L=1 F   L=1 r   L=2 F*     L=2 r*
+  8       289       309     309       335        335
+  32      1659      1752    1737      2007      1935
+  128     9027      9536    9409      11227     10650
+  512     46298     49206   48439     58390     54932
+  2048   TBD - not enough RAM on test hardware
 
-Notes:ARM9E - DSP enhanced arm9 core, based on STR910 @96 MHz, RAM coefficients
-      dsPIC - dsPIC30x / dsPIC33x - results based on Microchip's DSP library 
-      ARM7TDMI - 3rd party, web based benchmark results
-      *STM32 results for latency L=2 or  - source compiled with LATENCY2 defined
-
-IFFT benchmarks (calculated and verified by measurement):
-  add 6+N/4 to FFT benchmark {22,70,262} for N={64,256,1024}
 
 Code size:
-FFT only:  480 bytes
-FFT+IFFT:  682 bytes
-
+               N: 8   32  128 512 2048
+Unique part code: 170 170 176 186 186  bytes
+Shared part code: 480 byte for all
 Coefficient size (Flash or RAM):
-   N: 16  64  256  1024  4096
-size: 48 240 1008  4080 16368  bytes
+   N: 32 128  512  2048
+size: 48 240 1008  4080  bytes
 
+Example: only fft32 and fft128 used. Code size= 170+176+480 bytes; coeff size=240 bytes
 ------------------------------------------------------------------------------
 Usage example: add this file to your project. In C code:
 
-//declare functions
-void fftR4(short *y, short *x, int N);
-void ifftR4(short *y, short *x, int N);
+Usage example: add this file to your project. In C code:
 
-// prepare test input data
-short x[512]; // input data 16 bit, 4 byte aligned  x0r,x0i,x1r,x1i,....
-short y[512]; // output data 16 bit,4 byte aligned  y0r,y0i,y1r,y1i,....
-short z[512]; // same format...
+//declare functions (declare only used size)
+void fft8(short *y, short *x); // complex FFT 8 points
+void fft32(short *y, short *x); // complex FFT 32 points
+void fft128short *y, short *x); // complex FFT 128 points
+void fft512(short *y, short *x); // complex FFT 512 points
+void fft2048(short *y, short *x); // complex FFT 2048 points
 
-for (i=0;i<512;i++) x[i]=0;
-for (i=0;i<512;i=i+8)
-  { x[i+0]=16384; x[i+2]=16384;	x[i+4]=-16384;  x[i+6]=-16384;}
-// x = [ 16384,16384,-16384,-16384,16384,...]  1/4 Fsampling
+// prepare test input data for size 512
+short x[1024]; // input data 16 bit, 4 byte aligned x0r,x0i,x1r,x1i,....
+short y[1024]; // output data 16 bit,4 byte aligned y0r,y0i,y1r,y1i,....
 
-//call functions
-fftR4(y, x, 256);   // y is in frequency domain y[128]=
-ifftR4(z, y, 256);  // z should be x/N + noise introduced by 16 bit truncating 
- 
 
-// expected results:
-//y[128]is 8191; y[129] is -8190   y[384]is 8191; y[385]is 8191 rest 0 + noise
-//z[2n] is 64 64 -64 -64 ..  z[2n+1] is 0    all +- 1 (noise)
+for (i=0;i<1024;i++) x[i]=0;
+for (i=0;i<1024;i=i+8)
+{ x[i+0]=16384; x[i+2]=16384; x[i+4]=-16384; x[i+6]=-16384;}
+// x = [ 16384,16384,-16384,-16384,16384,...] 1/4 Fsampling
+
+//call functions.
+fft512(y, x ); // y is frequency domain output. Please note that input array x is not preserved.
+
 ------------------------------------------------------------------------------
 */
 
- // This file contains two functions :
+ // This file contains 1 to 5 functions (depending on the definitions below) :
 
- // void fftR4(short *y, short *x, int N);   // radix 4 FFT
- // void ifftR4(short *y, short *x, int N);  // radix 4 inverse FFT
+// void fft8(short *y, short *x);   // complex FFT 8 points
+// void fft32(short *y, short *x);   // complex FFT 32 points
+// void fft128short *y, short *x);   // complex FFT 128 points
+// void fft512(short *y, short *x);   // complex FFT 512 points
+// void fft2048(short *y, short *x);   // complex FFT 2048 points
          
         .syntax unified
-	.thumb
-        .global fftR4  
-        .global ifftR4   
+	.thumb  
+        .global fft8
+        .global fft32   
+        .global fft128 
+        .global fft512
+        .global fft2048
+        .global fftR2   //tmp
+// define only sizes that are used to save code  memory (cca 160  byte per FFT size)
+//#define N8
+//#define N32
+//#define N128
+#define N512
+//#define N2048
 
 //#define LATENCY2  //comment this line if flash latency lower than 2
+
+// do not modify behing this line
+
+
+//--------------------------------------------------------------------------------------------
 
 #define y      R0    // short *y -output complex array  
 #define x      R1    // short *x -input complex array  
@@ -128,11 +142,6 @@ ifftR4(z, y, 256);  // z should be x/N + noise introduced by 16 bit truncating
 		sxth  \xr,\xr			//re extract
       .endm
    
-        // coefficient complex load, c=[a], a=a+ 4   ; Wk  from RAM (0 wait states)
-//    .macro  LOADCF  xr,xi, a   //4 (or 3?) cycles
-//          ldrsh   \xi, [$a, #2]
-//	    ldrsh   \xr, [$a],#4  //ldrsh not pipelined in STM32, macro not used
-//    .endm
   
   // complex load, xc=[a], a=a-register offset
        .macro   LOADCMi   xr,xi, a, offset   //5 cycles
@@ -192,54 +201,184 @@ ifftR4(z, y, 256);  // z should be x/N + noise introduced by 16 bit truncating
         add     y3i, x1i, x3r, asr#(1+\s)
        .endm
         
-
-/* 
 //----------------------------------------------------------------------------
-// inverse FFT 
-// void ifftR4(short *y, short *x, int N) 
-// custom first stage reorders input data: x(n)=x(N-n) n=0:N-1  x(N)=x(0)
-// extra cost to fft: 6+N/4 cycles
-        .thumb_func
-        .align 3  //speed optimization in STM32
-        nop.n //alignment optimization
+#define yh      R8
+#define tmp     r4
+#define maxxpL     R10 
+#define wp      R11
 
-ifftR4: stmfd   sp!, {r4-r11, lr}
-        mov     tmp0, #0            // bit reversed counter
-        movs 	tmp1,N     //; first tmp1=N  
-	.word 0xF3A2FA92  //RBIT R3,R2	//RBIT R,N
-	lsl     R,#3
+#define xLr      R0
+#define xLi      R1
+#define xHr      r2
+#define xHi      R3
+#define wr      R9
+#define wi      R5
+#define xpL     R6
+#define xpH     R7
 
-	adds    tmp1,  x, tmp1, lsl#2 // tmp1=&x[tmp1==N] 
-        ldrsh   x0i, [x, #2]   // replaces  C_LDRmi x[N] by _LDRmi x[0] 
-        ldrsh   x0r, [x]
-        subs  tmp1,N     //tmp1 still needs to be decremented for 2nd C_LDRmi
-        b L2  // continue with second load
 
-ifirstStage:
-        // first stage load and bit reverse
-        adds    tmp1,  x, tmp1, lsl#2 // tmp1=&x[tmp1] 
-        LOADCMi   x0r,x0i, tmp1, N
-L2:     LOADCMi   x2r,x2i, tmp1, N
-        LOADCMi   x1r,x1i, tmp1, N
-        LOADCMi   x3r,x3i, tmp1, N
-         BFFT4  0
-        STRC   x0r,x0i, y, #4
-        STRC   x1r,x1i, y, #4
-        STRC   x2r,x2i, y, #4
-        STRC   y3r,y3i, y, #4
-   		
-       adds tmp0,R
-       .word 0xFEACFA9C // rbit r14,r12//rbit tmp1,tmp0
-       sub tmp1,N,tmp1  //tmp1=N-tmp1    
-       bne     ifirstStage // loop if count non zero  
-       b firstStageFinished
-        // rest same as normal fft
-*/
+//#define NN  32
+          
+
+
+// void fftOddP(short *y, short *x, short *wp)   N=odd power of 2:  8 32 128 512 2048
+      .macro fftOddP NN
+       //.thumb_func
+       // .align 1  //speed optimization in STM32
  
+     
+//fftOddP:
+      stmfd   sp!, {r4-r11, lr}
+      adds maxxpL,r1,#4*\NN/4  //  
+      mov yh,r0  //save y to high register
+      mov xpL,r1  //copy x to high register
+      add xpH,r1,#4*\NN/2
+
+      adr wp,w8+8
+      add wp,wp,w\NN-w8
+      //adr wp,w\NN+8 //replace previous 2 lines with this when NN==2048 not used
+   
+// Stage0:
+1:      ldr xLr,[xpL]     //read xL
+      asrs xLi,xLr,#16
+      sxth xLr,xLr
+
+      ldr xHr,[xpH]    //read xH, 
+      asrs xHi,xHr,#16
+      sxth xHr,xHr
+
+      ldr wi,[wp],#4*3    // read w = [wp++]  @@@@@@@@@2 #4 if dedicated coeff table
+      sxth wr,wi
+      asrs wi,wi,#16
+
+      adds tmp,xLi,xHi  //top =  (xL+xH)/2
+      asrs tmp,tmp,#1
+      strh  tmp,[xpL,#2]
+      
+      adds tmp,xLr,xHr         
+      asrs tmp,tmp,#1
+      strh tmp,[xpL],#4    // increment xpL by complex word
+
+      subs xLr,xLr,xHr   //xL=(xL-xH)/2
+     // asrs xLr,xLr,#1
+      subs xLi,xLi,xHi
+      //asrs xLi,xLi,#1
+
+#define t0 xHi
+#define t1 xLi
+
+      mul   t0, xLi, wr             // t0=xLi*wr
+      muls  t1, xLi, wi             // t1=xLi*wi
+      mls   xHi, xLr, wi,t0       // xHi=t0-xLr*wi  =  xLi*wr - xLr*wi
+      mla   xHr, xLr, wr,t1       // xHr=t1+xLr*wr  =  xLr*wr + xLi*wi
+      
+    asrs xHr,xHr,#16
+   // asrs xHi,xHi,#16
+      //strh  xHi,[xpH,#2]           //xH =(xL-xH)/2 *[wr, wi]
+      str  xHi,[xpH]      //lsb h     //xH =(xL-xH)/2 *[wr, wi]
+      
+      strh  xHr,[xpH],#4           // increment xpH by complex word
+
+//--------- 2nd butterfly N/4 shifted, reuse rotated W
+      negs wi,wi  //new wr = - ol wi
+
+      ldr xLr,[xpL,#4*\NN/4-4]      //read xL   offset -4 because xpL already incr
+      asrs xLi,xLr,#16
+      sxth xLr,xLr
+
+      ldr xHr,[xpH,#4*\NN/4-4]  //read xH  offset -4 because xpL already incr
+      asrs xHi,xHr,#16
+      sxth xHr,xHr
+
+      adds tmp,xLr,xHr  //top =  (xL+xH)/2       
+      asrs tmp,tmp,#1
+      strh  tmp,[xpL,#4*\NN/4-4]  //re
+      adds tmp,xLi,xHi
+      asrs tmp,tmp,#1
+      strh  tmp,[xpL,#4*\NN/4+2-4] //im
+
+      subs xLr,xLr,xHr   //xL=(xL-xH)/2
+      //asrs xLr,xLr,#1
+      subs xLi,xLi,xHi
+      //asrs xLi,xLi,#1
+
+      //4 inst. bellow:wr replaced by -wi, wi replaced by wr
+      mul  t0, xLi, wr             // t0=xLi*wr
+      muls   t1, xLi, wi           // t1=xLi*(-wi)
+      mla   xHr, xLr, wi,t0       // xHr=t1+xLr*(-wi)  =  xLr*(-wi) + xLi*wr
+      mls   xHi, xLr, wr,t1       // xHi=t0-xLr*wr  =  xLi*(-wi) - xLr*wr  
+
+    asrs xHr,xHr,#16
+   // asrs xHi,xHi,#16  //
+
+
+        cmp xpL,maxxpL //for latency2 move down to see impact on speed
+      str  xHi,[xpH,#4*\NN/4-4]  //im
+      strh  xHr,[xpH,#4*\NN/4-4]    //re       //xH =(xL-xH)/2 *[-wi, wr]
+      bne 1b//Stage0
+    
+//*********** call fft4 twice *************
+      mov r0,yh                 //y= yh original
+      subs r1,maxxpL,#4*\NN/4    //x= x original
+      movs r2,#\NN/2             // half size
+      bl fftR2  //call fft4    //preserve yh,maxxpL,LR only
+
+      adds r0,yh,#4           //y= yh originasl + 4  byte
+      adds r1,maxxpL,#4*\NN/4    //x= x original + N/2 complex elements
+      movs r2,#\NN/2
+      bl fftR2  //call fft4
+
+
+
+      ldm sp!, {r4-r11, pc}	 // return from function
+      .endm
+
  //----------------------------------------------------------------------------
+
+
+
+#ifdef N8         
+         .thumb_func
+fft8:   fftOddP 8
+#endif
+#ifdef N32         
+         .thumb_func
+                  
+          .align 3
+          nop
+        
+fft32:   fftOddP 32 
+#endif
+#ifdef N128         
+         .thumb_func
+          .align 3
+          nop
+          nop
+fft128: 
+        fftOddP 128 
+#endif
+#ifdef N512         
+         .thumb_func
+         
+          .align 3
+          nop
+      fft512:   fftOddP 512 
+#endif
+
+
+#ifdef N2048         
+         .thumb_func
+fft2048:   fftOddP 2048 
+#endif
+
+ 
  // void fftR4(short *y, short *x, int N)
       .thumb_func
-fftR4:   stmfd   sp!, {r4-r11, lr}
+//   TBD no ifft  
+       .align 3  //speed optimization in STM32
+        nop
+        nop
+fftR2:   stmfd   sp!, {r8,r10, lr}
         mov     tmp0, #0            // bit reversed counter
         mov 	tmp1, #0
         .word 0xF3A2FA92  //rbit R3,R2	//RBIT R,N
@@ -253,21 +392,21 @@ firstStage:
         LOADC   x1r,x1i, tmp1, N
         LOADC   x3r,x3i, tmp1, N
         BFFT4  0
-        STRC   x0r,x0i, y, #4
-        STRC   x1r,x1i, y, #4
-        STRC   x2r,x2i, y, #4
-        STRC   y3r,y3i, y, #4
+        STRC   x0r,x0i, y, #8
+        STRC   x1r,x1i, y, #8
+        STRC   x2r,x2i, y, #8
+        STRC   y3r,y3i, y, #8
    		
        adds tmp0,R
        .word 0xFEACFA9C // rbit r14,r12//rbit tmp1,tmp0
        bne     firstStage // loop if count non zero
    
 firstStageFinished:        // finished the first stage
-        sub     x, y, N, lsl #2   // x = working buffer
-        mov     R, #16
+        sub     x, y, N, lsl #3   // x = working buffer
+        mov     R, #32
         lsrs Bl,N,4  
         it eq
-        ldmeq sp!, {r4-r11, pc}	 // for N==4 return from function
+        ldmeq sp!, {r8,r10, pc}	 // for N==4 return from function
         adr     c, coef_table	//change if table in RAM 
                 
 nextStage:
@@ -285,7 +424,7 @@ nextStage:
 #endif
         sub     Bl, Bl, #1<<16
 nextBlock:
-        add     Bl, Bl, R, lsl#(16-2)
+        add     Bl, Bl, R, lsl#(16-2-1)
 
 nextButterfly:
         // Bl=((number butterflies left-1)<<16) + (number of blocks left)
@@ -303,7 +442,7 @@ nextButterfly:
         STRCR  x0r,x0i, x, R
         STRCR  x1r,x1i, x, R
         STRCR  x2r,x2i, x, R
-        STRC   y3r,y3i, x, #4
+        STRC   y3r,y3i, x, #8
         subs    Bl, Bl, #1<<16
         bge     nextButterfly
         add     tmp0, R, R, lsl#1
@@ -311,15 +450,17 @@ nextButterfly:
         sub     Bl, Bl, #1
         movs    tmp1, Bl, lsl#16
         it ne
-        subne   c, c, tmp0
+        subne   c, c, tmp0,ASR #1 //c still expects original R
         bne     nextBlock
         
         pop {r1-r2}   //LDM sp!, {x, Bl}
         mov     R, R, lsl#2     // block size *=4
         lsrs Bl,Bl,2            //# of blocks /=4
         bne     nextStage
-        ldmfd   sp!, {r4-r11, pc}	 //return
+        ldmfd   sp!, {r8,r10, pc}	 //return
       
+
+
         .align 2 //32 bit access acceleration
 
 // Note: unused portion of coef_table can be commented to reduce size
@@ -327,12 +468,12 @@ coef_table:
         // FFT twiddle table of triplets E(3t), E(t), E(2t)
         // Where E(t)=cos(t)+i*sin(t) at 1Q15
         // N=16 t=2*PI*k/N for k=0,1,2,..,N/4-1
-        .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
+w8:     .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
         .hword 0x30fc,0x7642, 0x7642,0x30fc, 0x5a82,0x5a82
         .hword 0xa57e,0x5a82, 0x5a82,0x5a82, 0x0000,0x7fff
         .hword 0x89be,0xcf04, 0x30fc,0x7642, 0xa57e,0x5a82
         // N=64 t=2*PI*k/N for k=0,1,2,..,N/4-1
-        .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
+w32:    .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
         .hword 0x7a7d,0x2528, 0x7f62,0x0c8c, 0x7d8a,0x18f9
         .hword 0x6a6e,0x471d, 0x7d8a,0x18f9, 0x7642,0x30fc
         .hword 0x5134,0x62f2, 0x7a7d,0x2528, 0x6a6e,0x471d
@@ -349,7 +490,7 @@ coef_table:
         .hword 0xb8e3,0x9592, 0x18f9,0x7d8a, 0x89be,0x30fc
         .hword 0xdad8,0x8583, 0x0c8c,0x7f62, 0x8276,0x18f9
         // N=256 t=2*PI*k/N for k=0,1,2,..,N/4-1
-        .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
+w128:   .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
         .hword 0x7fa7,0x096b, 0x7ff6,0x0324, 0x7fd9,0x0648
         .hword 0x7e9d,0x12c8, 0x7fd9,0x0648, 0x7f62,0x0c8c
         .hword 0x7ce4,0x1c0c, 0x7fa7,0x096b, 0x7e9d,0x12c8
@@ -413,8 +554,8 @@ coef_table:
         .hword 0xe3f4,0x831c, 0x096b,0x7fa7, 0x8163,0x12c8
         .hword 0xed38,0x8163, 0x0648,0x7fd9, 0x809e,0x0c8c
         .hword 0xf695,0x8059, 0x0324,0x7ff6, 0x8027,0x0648
-/*        // N=1024 t=2*PI*k/N for k=0,1,2,..,N/4-1
-        .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
+        // N=1024 t=2*PI*k/N for k=0,1,2,..,N/4-1
+w512:   .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
         .hword 0x7ffa,0x025b, 0x7fff,0x00c9, 0x7ffe,0x0192
         .hword 0x7fea,0x04b6, 0x7ffe,0x0192, 0x7ff6,0x0324
         .hword 0x7fce,0x0711, 0x7ffa,0x025b, 0x7fea,0x04b6
@@ -670,8 +811,8 @@ coef_table:
         .hword 0xf8ef,0x8032, 0x025b,0x7ffa, 0x8016,0x04b6
         .hword 0xfb4a,0x8016, 0x0192,0x7ffe, 0x800a,0x0324
         .hword 0xfda5,0x8006, 0x00c9,0x7fff, 0x8002,0x0192
-        // N=4096 t=2*PI*k/N for k=0,1,2,..,N/4-1
-        .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
+/*        // N=4096 t=2*PI*k/N for k=0,1,2,..,N/4-1
+w2048:  .hword 0x7fff,0x0000, 0x7fff,0x0000, 0x7fff,0x0000
         .hword 0x7fff,0x0097, 0x7fff,0x0032, 0x7fff,0x0065
         .hword 0x7fff,0x012e, 0x7fff,0x0065, 0x7fff,0x00c9
         .hword 0x7ffd,0x01c4, 0x7fff,0x0097, 0x7fff,0x012e
@@ -1695,5 +1836,5 @@ coef_table:
         .hword 0xfe3c,0x8003, 0x0097,0x7fff, 0x8001,0x012e
         .hword 0xfed2,0x8001, 0x0065,0x7fff, 0x8001,0x00c9
         .hword 0xff69,0x8000, 0x0032,0x7fff, 0x8000,0x0065
-
 */
+
