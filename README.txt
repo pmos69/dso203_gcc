@@ -1,4 +1,4 @@
-DSO203 GCC v1.14 APP
+DSO203 GCC v1.15 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
@@ -63,10 +63,15 @@ All thanks to:
 
 Revisions:
 
+v1.15
+- Small optimizations in some FFT operations
+- Fixed FFT max frequency and scale max frequency display for time scales less than 10uS/Div
+
 v1.14
 - More (clueless) FFT tweakings
 		Replaced the Hanning Window
 		Applied dumb automatic scaling to the bars (based on max frequency)
+		Removed "bluring"
 
 v1.13
 - Corrections in the FFT calculations

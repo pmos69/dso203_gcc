@@ -287,12 +287,28 @@ void Word2Hex(char *p, u32 n)
  Int_sqrt: unsigned int square root
 *******************************************************************************/
 u32 Int_sqrt(u32 n)
+
 { u32 k;
   if ( n == 0 ) return 0;
   k = 2*Int_sqrt(n/4)+1;
   if ( k*k > n ) return k-1;
   else return k;
 }
+
+// {
+    // unsigned int c = 0x8000;
+    // unsigned int g = 0x8000;
+
+    // for(;;) {
+        // if(g*g > n)
+            // g ^= c;
+        // c >>= 1;
+        // if(c == 0)
+            // return g;
+        // g |= c;
+    // }
+// }
+
 /*******************************************************************************
 Read_Keys:    Key status process                                Return: KeyCode
 *******************************************************************************/

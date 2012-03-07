@@ -328,7 +328,7 @@ void Draw_Row(u16 Row)
 { 
   u8  i, y[8], Dot_Hide[8]; 
   s16 Tmp, m, n ;
-  int val= 0;
+  int fftx, val= 0;
   
   if((Row > MIN_X)&&(Row <= MAX_X)){               // waveform display data preprocessing
     m = (Row - MIN_X-1)* 4;
@@ -365,14 +365,12 @@ void Draw_Row(u16 Row)
     if((Row > MIN_X)&&(Row < MAX_X)){        
 		
 		// FFT ///////
-	    if ((Row - MIN_X < 256) && ShowFFT) {
-			// val = arrout[Row - MIN_X];
-			if (!((Row - MIN_X) & 1)) val = arrout[Row - MIN_X];
-			// if ((Row - MIN_X) & 1) val = arrout[(Row - MIN_X - 1)]; //odd
-			// else val = arrout[(Row - MIN_X)]; // even
-			if (val < 0) val = 0;
-            if (val >= 200) val = 199;
-			for (i=0; i<val; i++) LCD_Buffer2[i] |= RED; //0x0ff0;
+		fftx = Row - MIN_X;
+	    if ((fftx < 256) && ShowFFT) {
+			if (!(fftx & 1)) val = arrout[fftx];
+			//if (val < 0) val = 0;
+            //if (val >= 200) val = 199;
+			for (i=Y_BASE+1; i<val; i++) LCD_Buffer2[i] |= RED; //0x0ff0;
 		}
 		/////////////	
 		
@@ -488,14 +486,12 @@ void Draw_Row(u16 Row)
     if((Row > MIN_X)&&(Row < MAX_X)){          
     
 		// FFT ///////
-	    if ((Row - MIN_X < 256) && ShowFFT) {
-			// val = arrout[Row - MIN_X];
-			if (!((Row - MIN_X) & 1)) val = arrout[Row - MIN_X];
-			// if ((Row - MIN_X) & 1) val = arrout[(Row - MIN_X - 1)]; //odd
-			// else val = arrout[(Row - MIN_X)]; // even
-			if (val < 0) val = 0;
-            if (val >= 200) val = 199;
-			for (i=0; i<val; i++) LCD_Buffer1[i] |= RED; //0x0ff0;
+		fftx = Row - MIN_X;
+	    if ((fftx < 256) && ShowFFT) {
+			if (!(fftx & 1)) val = arrout[fftx];
+			//if (val < 0) val = 0;
+            //if (val >= 200) val = 199;
+			for (i=Y_BASE+1; i<val; i++) LCD_Buffer1[i] |= RED; //0x0ff0;
 		}
 		/////////////
 		

@@ -494,8 +494,8 @@ void Process(void)
 
 		// FFT ///////////////////////////////////////
 		if ((i < 256) && ShowFFT) {
-              arrin[i<<1] = (Ch[A]+Ch[B])/2<<8;
-              arrin[(i<<1)|1] = 0;
+              arrin[i<<1] = (Ch[A]+Ch[B])/2<<8;		//i*2
+              arrin[(i<<1)|1] = 0;					//(i*2)+1
         }
 		////////////////////////////////////// FFT ///
 		
@@ -664,28 +664,29 @@ short PeakFreq;
 		// arrout[ i ]= Int_sqrt(X*X+ Y*Y);    
 	  // }
 	  
-	  for (i=0; i < 256; i+=2)
+	  for (i=0; i < 256; i++)
 	  {
-		X= arrout[i]; /* Real */
-		Y= arrout[i+1];   /* Imag */    
-		arrout[ i ]= Int_sqrt(X*X+ Y*Y);    
+		X= arrout[i<<1]; /* Real */
+		Y= arrout[(i<<1)|1];   /* Imag */    
+		arrout[ i<<1 ]= Int_sqrt(X*X+ Y*Y);    
 	  }
 	  
-	  NFreq = (1000000000 / (_T_Scale *2 ));
-	  NFreq *= 1000;
-
-	  Int2Str(NumStr, NFreq, F_UNIT, 4, UNSIGN);
-	  Print_Str(  248, 0, 0x0005, PRN, NumStr);
+	  
+	  if(_T_Scale < 333) {		// Avoid datatype overflow
+		NFreq = (1000000 / (_T_Scale *2 ));
+		
+		Int2Str(NumStr, NFreq, FM_UNIT, 4, UNSIGN);
+		Print_Str(  248, 0, 0x0005, PRN, NumStr);
+	  } else {
+		NFreq = (1000000000 / (_T_Scale *2 ));
+		NFreq *= 1000;
+		
+		Int2Str(NumStr, NFreq, F_UNIT, 4, UNSIGN);
+		Print_Str(  248, 0, 0x0005, PRN, NumStr);
+	  }
 	  
 	  PeakFreq = 0;
 	  imax = 0;
-	
-	  // for (i=0; i < (256); i++) {
-		// if (PeakFreq < arrout[i]) {  
-			// PeakFreq= arrout[i] ; 
-			// imax = i;
-		// }
-      // }
 	  
 	  for (i=0; i < (256); i+=2) {
 		if (PeakFreq < arrout[i]) {  
@@ -694,10 +695,16 @@ short PeakFreq;
 		}
       }
 	  
-	  Scaller = arrout[imax] / 200;
-	  for (i=0; i < (256); i++) arrout[i] /= Scaller;
-  
-	  Int2Str(NumStr, ((NFreq / 256) * imax), F_UNIT, 4, UNSIGN);
+	  if(arrout[imax]>200){ 
+		Scaller = arrout[imax] / 200;
+		for (i=0; i < (256); i++) arrout[i] /= Scaller;		// dumb auto-scaling
+	}
+	  
+	  if(_T_Scale < 333) {		// Avoid datatype overflow
+		Int2Str(NumStr, ((NFreq / 256) * imax), FM_UNIT, 4, UNSIGN);
+	  } else {
+		Int2Str(NumStr, ((NFreq / 256) * imax), F_UNIT, 4, UNSIGN);
+	  }
       Print_Str(  92, 0, 0x0005, PRN, NumStr);
 	  
   }

@@ -176,7 +176,7 @@ extern u8 Current, Update;
 extern u8 Detail[14];
 extern char NumStr[12];
 extern u16 Result_FPS;
-extern char T_UNIT[12], S_UNIT[12], P_UNIT[12], V_UNIT[12], F_UNIT[12];
+extern char T_UNIT[12], S_UNIT[12], P_UNIT[12], V_UNIT[12], F_UNIT[12], FM_UNIT[12];
 
 extern uc16 Y_COLOR[5];                     // Track Color 2
 
