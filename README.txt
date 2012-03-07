@@ -1,4 +1,4 @@
-DSO203 GCC v1.15 APP
+DSO203 GCC v1.16 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
