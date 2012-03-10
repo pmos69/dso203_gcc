@@ -7,6 +7,7 @@
 
 #include "stm32f10x_lib.h"
 #include "Draw.h"
+#include "Function.h"
 
 //====================================================
 #define A                 0
@@ -62,11 +63,6 @@
 #define _Vt1       V_Trigg[TRACK1].Value
 #define _Vt2       V_Trigg[TRACK2].Value
 
-// FFT /////////////////////////////////////////////////////////
-#define FFTSize		256
-#define FFTSize2	512
-////////////////////////////////////////////////////////////////
-
 typedef struct  // analog waveform output driver table
 {
   uc8  STR[8];   // stall identification string
@@ -112,11 +108,9 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n);
 u16 get_bag_max_buf();
 
 // FFT ////////////////////////////////////////////////////////////////////
-extern void fftR4(short *y, short *x, int N);
-void fft_window(short* arr, int n);
 
-extern short arrin[];
-extern short arrout[];
+extern short fr[];
+extern short fi[];
 
 extern u8 ShowFFT;
 ///////////////////////////////////////////////////////////// FFT ///////

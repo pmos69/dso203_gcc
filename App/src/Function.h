@@ -23,6 +23,8 @@
 #define UNSIGN       1
 #define STD          2
 
+#define PI			 3.14159265358979
+
 // extern u32 TestCnt;
 
 u32  Power(u8 x, u8 y); 
@@ -40,6 +42,14 @@ u8   Read_Keys(void);
 void s8ToPercen(char *p, s8 n);
 char * long2str(long val);
 double cosine(double radians);
+
+#define N_WAVE				512    // full length of Sinewave[]
+#define LOG2_N_WAVE			9      // log2(N_WAVE)
+
+#define FFTSize				512
+#define LOG2_FFTSize		9
+
+extern void fix_fft(short fr[], short fi[], short m);
 
 #endif
 /********************************* END OF FILE ********************************/

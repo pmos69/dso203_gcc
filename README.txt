@@ -1,4 +1,4 @@
-DSO203 GCC v1.16 APP
+DSO203 GCC v1.17 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
@@ -62,6 +62,14 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.17
+- Complete FFT re-implementation: (still has bugs)
+		- FFT assembly routines replaced with "no nonsense" integer C code
+		- All calculations made in-place (half the memory used)
+		- Now using 512 samples (256 buckets)
+		- FFT range boundary painted in blue
+- Project cleanup (code size reduction)
 
 v1.16
 - Replaced Hanning window lookup table with function (memory optimization)

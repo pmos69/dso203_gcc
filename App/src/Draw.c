@@ -6,6 +6,7 @@
 #include "Draw.h"
 #include "Menu.h"
 #include "BIOS.h"
+#include "Function.h"
  
 u16 MAX_X;
 uc16 RULE_BASE[8] ={0x020,0x040,0x080,0x040,0x020,0x010,0x008,0x010};
@@ -366,14 +367,14 @@ void Draw_Row(u16 Row)
 		
 		// FFT ///////
 		fftx = Row - MIN_X;
-		if(FFTSize>256) fftx<<=1;
-	    if ((fftx < FFTSize) && ShowFFT) {
-			if (!(fftx & 1)) {
-				val = arrout[fftx];
+	    if ((fftx < FFTSize/2) && ShowFFT && (fftx>1)) {
+				//val = arrin[fftx];
+				val = fr[fftx];
 				if (val >= 200) val = 199;
 				for (i=Y_BASE+1; i<val; i++) LCD_Buffer2[i] |= RED; //0x0ff0;
-			}
-		}
+		} else if (ShowFFT)
+			for (i=Y_BASE+1; i<200; i++)
+				LCD_Buffer2[i] |= BLUE;
 		/////////////	
 		
       if((Dot_Hide[0] == 0)&&(Title[TRACK1][SOURCE].Value != HIDE)){
@@ -489,14 +490,14 @@ void Draw_Row(u16 Row)
     
 		// FFT ///////
 		fftx = (Row - MIN_X);
-		if(FFTSize>256) fftx<<=1;
-	    if ((fftx < FFTSize) && ShowFFT) {
-			if (!(fftx & 1)) {
-				val = arrout[fftx];
+	    if ((fftx < FFTSize/2) && ShowFFT && (fftx>1)) {
+				//val = arrin[fftx];
+				val = fr[fftx];
 				if (val >= 200) val = 199;
 				for (i=Y_BASE+1; i<val; i++) LCD_Buffer1[i] |= RED; //0x0ff0;
-			}
-		}
+		} else if (ShowFFT)
+			for (i=Y_BASE+1; i<200; i++)
+				LCD_Buffer1[i] |= BLUE;
 		/////////////
 		
       if((Dot_Hide[0] == 0)&&(Title[TRACK1][SOURCE].Value != HIDE)){
@@ -582,6 +583,13 @@ void Draw_Window(void)
   u16 Row;
    u16 h;
    
+   int X,Y,i;
+//char NumStr[12];
+u32 NFreq;
+int imax;
+// float Scaller;
+short PeakFreq;
+   
   __Row_DMA_Ready();
   __Row_Copy(Row_Base1, LCD_Buffer2);
   __Row_DMA_Ready();
@@ -590,7 +598,59 @@ void Draw_Window(void)
   if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK1][SOURCE].Value == HIDE)) for (h = 0; h <= X_SIZE; ++h) TrackBuff[h*4]=105;		//#pmos69 limit by X_SIZE, instead of 400
   if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK2][SOURCE].Value == HIDE)) for (h = 0; h <= X_SIZE; ++h) TrackBuff[(h*4)+1]=100;	//#pmos69 limit by X_SIZE, instead of 400
   
-  if ((_Mode!=X_Y) && (_Mode!=X_Y_A)) for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row(Row); //Modo oscilloscopio
+	if ((_Mode!=X_Y) && (_Mode!=X_Y_A)) {
+	
+	  // FFT /////////////////////////////
+		if (ShowFFT) {
+			  for(i=0; i<FFTSize;i++)	fi[i] = 0;
+			  fix_fft(fr, fi, FFTSize);
+			  
+			  for (i=0; i < FFTSize/2; i++)
+			  {
+				X= fr[i]; /* Real */
+				Y= fi[i];   /* Imag */    
+				fr[ i ] = Int_sqrt(X*X+ Y*Y);    
+			  }
+			  
+			  if(_T_Scale < 333) {		// Avoid datatype overflow
+				NFreq = (1000000 / (_T_Scale *2 ));
+				
+				Int2Str(NumStr, NFreq, FM_UNIT, 4, UNSIGN);
+				Print_Str(  248, 0, 0x0005, PRN, NumStr);
+			  } else {
+				NFreq = (1000000000 / (_T_Scale *2 ));
+				NFreq *= 1000;
+				
+				Int2Str(NumStr, NFreq, F_UNIT, 4, UNSIGN);
+				Print_Str(  248, 0, 0x0005, PRN, NumStr);
+			  }
+			  
+			  PeakFreq = 0;
+			  imax = 0;
+			  
+			  for (i=2; i < FFTSize/2; i++) {
+				if (PeakFreq < fr[i]) {  
+					PeakFreq= fr[i] ; 
+					imax = i;
+				}
+			  }
+			  
+			  if (imax>1) {
+			  if(_T_Scale < 333) {		// Avoid datatype overflow
+				Int2Str(NumStr, ((NFreq / FFTSize) * imax * 2), FM_UNIT, 4, UNSIGN);
+			  } else {
+				Int2Str(NumStr, ((NFreq / FFTSize) * imax * 2), F_UNIT, 4, UNSIGN);
+			  }
+			  Print_Str(  92, 0, 0x0005, PRN, NumStr);
+			  }
+			  
+		}
+  //////////////////////////// FFT ///
+	
+	
+	
+		for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row(Row); //Modo oscilloscopio
+	}
   if ((_Mode==X_Y) || (_Mode==X_Y_A)) for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row_XY(Row); //Modo X Y
 
   __LCD_DMA_Ready();

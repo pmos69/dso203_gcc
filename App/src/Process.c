@@ -3,7 +3,6 @@
  Version   : DS203_APP Ver 2.3x                                  Author : bure
 *******************************************************************************/
 #include "Interrupt.h"
-#include "Function.h"
 #include "Process.h"
 #include "Draw.h"
 #include "Menu.h"
@@ -11,8 +10,8 @@
 #include "File.h"
  
 // FFT ////////////////////////////////////////////////////////////////////
-short arrin[FFTSize2];
-short arrout[FFTSize2];
+short fr[FFTSize];
+short fi[FFTSize];
 ////////////////////////////////////////////////////////////////////////////
 
 u16 TaS, TbS, TcS, TdS;            // cycles accumulated
@@ -334,10 +333,6 @@ void Process(void)
  
    bag_max_buf = get_bag_max_buf();
    
-   // FFT /////////////////////////////////////////////////////
-   for(i=0; i<FFTSize2; i++) arrin[i]=0;
-   ////////////////////////////////////////////////////////////
-
   if(Interlace == 0){                           // independent sampling mode
   
     k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value;//  // window position in the calculation of the interpolation of the correction value
@@ -371,8 +366,7 @@ void Process(void)
 		
 		// FFT ///////////////////////////////////////
 		if ((i < FFTSize) && ShowFFT) {
-              arrin[i<<1] = Ch[A]<<8;
-              arrin[(i<<1)|1] = 0;
+			  fr[i] = Ch[A]<<3;
         }
 		////////////////////////////////////// FFT ///
        
@@ -459,8 +453,7 @@ void Process(void)
 
 		// FFT ///////////////////////////////////////
 		if ((i < FFTSize) && ShowFFT) {
-              arrin[i<<1] = (Ch[A]+Ch[B])/2<<8;		//i*2
-              arrin[(i<<1)|1] = 0;					//(i*2)+1
+			  fr[i] = (Ch[A]+Ch[B])/2<<3;
         }
 		////////////////////////////////////// FFT ///
 		
@@ -515,7 +508,7 @@ void Process(void)
     TrackBuff[(j)*4+1] = TrackBuff[(j+TRACK_OFFSET)*4+1];
     TrackBuff[(j)*4+2] = TrackBuff[(j+TRACK_OFFSET)*4+2];
     TrackBuff[(j)*4+3] = TrackBuff[(j+TRACK_OFFSET)*4+3];
- }
+ } 
 }
 
 void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
@@ -580,12 +573,7 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
 *******************************************************************************/
 void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
-int X,Y,i;
-char NumStr[12];
-u32 NFreq;
-int imax;
-float Scaller;
-short PeakFreq;
+
 
   switch (_Mode){ 
   case AUTO:
@@ -617,56 +605,7 @@ short PeakFreq;
       Process();                                  
    }
   
-  // FFT /////////////////////////////
-  if (ShowFFT) {
-	  fft_window(arrin, FFTSize);
-	  fftR4(arrout, arrin, FFTSize);
-	  
-	  for (i=0; i < FFTSize; i++)
-	  {
-		X= arrout[i<<1]; /* Real */
-		Y= arrout[(i<<1)|1];   /* Imag */    
-		arrout[ i<<1 ]= Int_sqrt(X*X+ Y*Y);    
-	  }
-	  
-	  
-	  if(_T_Scale < 333) {		// Avoid datatype overflow
-		NFreq = (1000000 / (_T_Scale *2 ));
-		
-		Int2Str(NumStr, NFreq, FM_UNIT, 4, UNSIGN);
-		Print_Str(  248, 0, 0x0005, PRN, NumStr);
-	  } else {
-		NFreq = (1000000000 / (_T_Scale *2 ));
-		NFreq *= 1000;
-		
-		Int2Str(NumStr, NFreq, F_UNIT, 4, UNSIGN);
-		Print_Str(  248, 0, 0x0005, PRN, NumStr);
-	  }
-	  
-	  PeakFreq = 0;
-	  imax = 0;
-	  
-	  for (i=0; i < (FFTSize); i+=2) {
-		if (PeakFreq < arrout[i]) {  
-			PeakFreq= arrout[i] ; 
-			imax = i;
-		}
-      }
-	  
-	  if(arrout[imax]>200){ 
-		Scaller = arrout[imax] / 200;
-		for (i=0; i < (FFTSize); i++) arrout[i] /= Scaller;		// dumb auto-scaling
-	  }
-	  
-	  if(_T_Scale < 333) {		// Avoid datatype overflow
-		Int2Str(NumStr, ((NFreq / FFTSize) * imax), FM_UNIT, 4, UNSIGN);
-	  } else {
-		Int2Str(NumStr, ((NFreq / FFTSize) * imax), F_UNIT, 4, UNSIGN);
-	  }
-      Print_Str(  92, 0, 0x0005, PRN, NumStr);
-	  
-  }
-  //////////////////////////// FFT ///
+
   
   Draw_Window();                                  // refresh the screen waveform display area
   
@@ -724,19 +663,5 @@ if (FrameMode>0) {    //_Mode == SCAN
   return out;
 }
 
-// FFT //////////////////////////////////////////////////////////////////
-
-  void fft_window(short* arr, int n)
-  {
-	int i;
-	double hann;
-    for (i=0; i<n/2; i++)
-    {
-		hann = (0.5-0.5*cosine(2*3.14159265358979*i/n));
-        arr[i] *= hann;
-		arr[n-1-i] *= hann;
-    }
-  }
-///////////////////////////////////////////////////////////// FFT ///////
 
 /******************************** END OF FILE *********************************/
