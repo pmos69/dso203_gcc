@@ -607,5 +607,4 @@ void fix_fft(short fr[], short fi[], short size)		// m = number of bits of the F
 }
 	
 		
-
 /********************************* END OF FILE ********************************/

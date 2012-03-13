@@ -1,4 +1,4 @@
-DSO203 GCC v1.17 APP
+DSO203 GCC v1.18 APP
 -------------------
 
 Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
@@ -62,6 +62,19 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.18
+- More FFT fixes
+		- Better timming (less flicker)
+		- Drawn over the curve (instead of merge)
+		- Accurate scalling (was of by one bit)
+		- All valid FFT buckets now displayed (bucket 1 is back from a vacation)
+		- Peak frequency marker (chip ripoff)
+		- Show FFT meters in the upper right corner:
+			- Nyquist (max range)
+			- Max: Predominant frequency in the sample
+			- Div: Frequency range per divison
+			- T1 : Frequecy at marker T1
 
 v1.17
 - Complete FFT re-implementation: (still has bugs)

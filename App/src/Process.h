@@ -113,6 +113,13 @@ extern short fr[];
 extern short fi[];
 
 extern u8 ShowFFT;
+extern u32 NFreq;
+extern char NFreqStr[];
+extern int imax;
+extern short PeakFreq;
+extern char PeakFreqStr[];
+extern char FreqDivStr[];
+extern char FreqT1Str[];
 ///////////////////////////////////////////////////////////// FFT ///////
 
 #endif

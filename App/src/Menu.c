@@ -271,7 +271,8 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // use bag_max_buf as average divider
+			//Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // use bag_max_buf as average divider
+			Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*((a_Avg/bag_max_buf)- _1_posi)+ 512)/1024 ; // use bag_max_buf as average divider
 			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;

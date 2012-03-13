@@ -12,6 +12,14 @@
 // FFT ////////////////////////////////////////////////////////////////////
 short fr[FFTSize];
 short fi[FFTSize];
+
+u32 NFreq;
+char NFreqStr[12];
+int imax;
+short PeakFreq;
+char PeakFreqStr[12];
+char FreqDivStr[12];
+char FreqT1Str[12];
 ////////////////////////////////////////////////////////////////////////////
 
 u16 TaS, TbS, TcS, TdS;            // cycles accumulated
@@ -304,6 +312,9 @@ void Process(void)
   u16 Ta, Tb, Tc, Td;                 // pulse width count
   u16 bag_max_buf = 4096;
   
+     int X,Y;
+
+  
   Ta = Tb = Tc = Td = 0;
   
   PaS = 0; PbS = 0; PcS = 0; PdS = 0; 
@@ -366,7 +377,7 @@ void Process(void)
 		
 		// FFT ///////////////////////////////////////
 		if ((i < FFTSize) && ShowFFT) {
-			  fr[i] = Ch[A]<<3;
+			  fr[i] = Ch[A]<<2;
         }
 		////////////////////////////////////// FFT ///
        
@@ -453,7 +464,7 @@ void Process(void)
 
 		// FFT ///////////////////////////////////////
 		if ((i < FFTSize) && ShowFFT) {
-			  fr[i] = (Ch[A]+Ch[B])/2<<3;
+			  fr[i] = (Ch[A]+Ch[B])/2<<2;
         }
 		////////////////////////////////////// FFT ///
 		
@@ -509,6 +520,56 @@ void Process(void)
     TrackBuff[(j)*4+2] = TrackBuff[(j+TRACK_OFFSET)*4+2];
     TrackBuff[(j)*4+3] = TrackBuff[(j+TRACK_OFFSET)*4+3];
  } 
+ 
+ 
+ 	  // FFT /////////////////////////////
+		if (ShowFFT) {
+			  for(i=0; i<FFTSize;i++)	fi[i] = 0;
+			  fix_fft(fr, fi, FFTSize);
+			  
+			  for (i=0; i < FFTSize/2; i++)
+			  {
+				X= fr[i]; /* Real */
+				Y= fi[i];   /* Imag */    
+				fr[ i ] = Int_sqrt(X*X+ Y*Y);    
+			  }
+			  
+			  if(_T_Scale < 333) {		// Avoid datatype overflow
+				NFreq = (1000000 / (_T_Scale *2 ));
+				
+				Int2Str(NFreqStr, NFreq, FM_UNIT, 4, UNSIGN);
+				Int2Str(FreqT1Str, ((NFreq / FFTSize) * _T1 * 2), FM_UNIT, 4, UNSIGN);
+				Int2Str(FreqDivStr, ((NFreq / FFTSize) * 30 * 2), FM_UNIT, 4, UNSIGN);
+			  } else {
+				NFreq = (1000000000 / (_T_Scale *2 ));
+				NFreq *= 1000;
+				
+				Int2Str(NFreqStr, NFreq, F_UNIT, 4, UNSIGN);	
+				Int2Str(FreqT1Str, ((NFreq / FFTSize) * _T1 * 2), F_UNIT, 4, UNSIGN);
+				Int2Str(FreqDivStr, ((NFreq / FFTSize) * 30 * 2), F_UNIT, 4, UNSIGN);
+			  }
+			  
+			  PeakFreq = 0;
+			  imax = 0;
+			  
+			  for (i=2; i < FFTSize/2; i++) {
+				if (PeakFreq < fr[i]) {  
+					PeakFreq= fr[i] ; 
+					imax = i;
+				}
+			  }
+			  
+			  if (imax>1) {
+					if(_T_Scale < 333) 		// Avoid datatype overflow
+						Int2Str(PeakFreqStr, ((NFreq / FFTSize) * imax * 2), FM_UNIT, 4, UNSIGN);
+					else
+						Int2Str(PeakFreqStr, ((NFreq / FFTSize) * imax * 2), F_UNIT, 4, UNSIGN);
+			  }
+		}
+  //////////////////////////// FFT ///
+ 
+ 
+ 
 }
 
 void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data

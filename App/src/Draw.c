@@ -322,6 +322,7 @@ void Print_Str(u16 x0, u16 y0, u16 Type, u8 Mode, char *s)
   }
   __LCD_Set_Block(LCD_X1,LCD_X2,LCD_Y1,LCD_Y2);  // restore the full-size window
 }
+
 /*******************************************************************************
  Draw_Row : to ease the DMA conflict, in two buffers alternately
 *******************************************************************************/
@@ -365,17 +366,7 @@ void Draw_Row(u16 Row)
 //------------------------- Draw the Curve data --------------------------------
     if((Row > MIN_X)&&(Row < MAX_X)){        
 		
-		// FFT ///////
-		fftx = Row - MIN_X;
-	    if ((fftx < FFTSize/2) && ShowFFT && (fftx>1)) {
-				//val = arrin[fftx];
-				val = fr[fftx];
-				if (val >= 200) val = 199;
-				for (i=Y_BASE+1; i<val; i++) LCD_Buffer2[i] |= RED; //0x0ff0;
-		} else if (ShowFFT)
-			for (i=Y_BASE+1; i<200; i++)
-				LCD_Buffer2[i] |= BLUE;
-		/////////////	
+
 		
       if((Dot_Hide[0] == 0)&&(Title[TRACK1][SOURCE].Value != HIDE)){
         if((y[1]-y[0])>5){
@@ -405,6 +396,25 @@ void Draw_Row(u16 Row)
           for(i=y[6]; i<=y[7]; ++i) LCD_Buffer2[i] |=Color[TR_4];        // normal brightness
         }
       }
+	  
+	  		// FFT ///////
+		fftx = Row - MIN_X; // starts at 1
+	    if ((fftx < FFTSize/2) && ShowFFT ) {
+				//val = arrin[fftx];
+				val = fr[fftx];
+				if (val >= 200) val = 199;
+				for (i=Y_BASE+1; i<val; i++) LCD_Buffer2[i] = RED; //0x0ff0;
+				
+				if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++) LCD_Buffer2[i] = WHT;
+				else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer2[PeakFreq] = WHT;
+				else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer2[i] = WHT;
+					
+		} else if (ShowFFT)
+			for (i=Y_BASE+1; i<200; i++)
+				LCD_Buffer2[i] |= BLUE;
+				
+		/////////////	
+		
 //------------------------- Draw the Trigg Vernie data -------------------------
       if(Title[TRIGG][SOURCE].Value == TRACK1) 
         LCD_Buffer2[V_Trigg[TRACK1].Value] |= Color[TR_1];
@@ -488,17 +498,7 @@ void Draw_Row(u16 Row)
 //------------------------- Draw the Curve data --------------------------------
     if((Row > MIN_X)&&(Row < MAX_X)){          
     
-		// FFT ///////
-		fftx = (Row - MIN_X);
-	    if ((fftx < FFTSize/2) && ShowFFT && (fftx>1)) {
-				//val = arrin[fftx];
-				val = fr[fftx];
-				if (val >= 200) val = 199;
-				for (i=Y_BASE+1; i<val; i++) LCD_Buffer1[i] |= RED; //0x0ff0;
-		} else if (ShowFFT)
-			for (i=Y_BASE+1; i<200; i++)
-				LCD_Buffer1[i] |= BLUE;
-		/////////////
+
 		
       if((Dot_Hide[0] == 0)&&(Title[TRACK1][SOURCE].Value != HIDE)){
         if((y[1]-y[0])>5){
@@ -529,6 +529,24 @@ void Draw_Row(u16 Row)
         }
       }
 	  }
+	  
+	  		// FFT ///////
+		fftx = (Row - MIN_X); //starts at 1
+	    if ((fftx < FFTSize/2) && ShowFFT) {
+				//val = arrin[fftx];
+				val = fr[fftx];
+				if (val >= 200) val = 199;
+				for (i=Y_BASE+1; i<val; i++) LCD_Buffer1[i] = RED; //0x0ff0;
+				
+				if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++) LCD_Buffer1[i] = WHT;
+				else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer1[PeakFreq] = WHT;
+				else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer1[i] = WHT;
+				
+		} else if (ShowFFT)
+			for (i=Y_BASE+1; i<200; i++)
+				LCD_Buffer1[i] |= BLUE;
+		/////////////
+		
 //------------------------- Draw the X Vernie data -----------------------------
       Tmp =(MIN_X + 150)- _X_posi.Value;
       if(Tmp > MIN_X) {
@@ -583,13 +601,6 @@ void Draw_Window(void)
   u16 Row;
    u16 h;
    
-   int X,Y,i;
-//char NumStr[12];
-u32 NFreq;
-int imax;
-// float Scaller;
-short PeakFreq;
-   
   __Row_DMA_Ready();
   __Row_Copy(Row_Base1, LCD_Buffer2);
   __Row_DMA_Ready();
@@ -600,61 +611,21 @@ short PeakFreq;
   
 	if ((_Mode!=X_Y) && (_Mode!=X_Y_A)) {
 	
-	  // FFT /////////////////////////////
-		if (ShowFFT) {
-			  for(i=0; i<FFTSize;i++)	fi[i] = 0;
-			  fix_fft(fr, fi, FFTSize);
-			  
-			  for (i=0; i < FFTSize/2; i++)
-			  {
-				X= fr[i]; /* Real */
-				Y= fi[i];   /* Imag */    
-				fr[ i ] = Int_sqrt(X*X+ Y*Y);    
-			  }
-			  
-			  if(_T_Scale < 333) {		// Avoid datatype overflow
-				NFreq = (1000000 / (_T_Scale *2 ));
-				
-				Int2Str(NumStr, NFreq, FM_UNIT, 4, UNSIGN);
-				Print_Str(  248, 0, 0x0005, PRN, NumStr);
-			  } else {
-				NFreq = (1000000000 / (_T_Scale *2 ));
-				NFreq *= 1000;
-				
-				Int2Str(NumStr, NFreq, F_UNIT, 4, UNSIGN);
-				Print_Str(  248, 0, 0x0005, PRN, NumStr);
-			  }
-			  
-			  PeakFreq = 0;
-			  imax = 0;
-			  
-			  for (i=2; i < FFTSize/2; i++) {
-				if (PeakFreq < fr[i]) {  
-					PeakFreq= fr[i] ; 
-					imax = i;
-				}
-			  }
-			  
-			  if (imax>1) {
-			  if(_T_Scale < 333) {		// Avoid datatype overflow
-				Int2Str(NumStr, ((NFreq / FFTSize) * imax * 2), FM_UNIT, 4, UNSIGN);
-			  } else {
-				Int2Str(NumStr, ((NFreq / FFTSize) * imax * 2), F_UNIT, 4, UNSIGN);
-			  }
-			  Print_Str(  92, 0, 0x0005, PRN, NumStr);
-			  }
-			  
-		}
-  //////////////////////////// FFT ///
-	
-	
-	
 		for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row(Row); //Modo oscilloscopio
+		
 	}
   if ((_Mode==X_Y) || (_Mode==X_Y_A)) for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row_XY(Row); //Modo X Y
 
   __LCD_DMA_Ready();
   __Row_DMA_Ready();
+  
+  if (ShowFFT) {
+			Print_Str(  220-((FlagMeter-1)*86), 188, 0x0005, PRN, "Nyq:" ); Print_Str(  252-((FlagMeter-1)*86), 188, 0x0005, PRN, NFreqStr);
+			Print_Str(  220-((FlagMeter-1)*86), 200, 0x0005, PRN, "Max:" ); Print_Str(  252-((FlagMeter-1)*86), 200, 0x0005, PRN, PeakFreqStr);
+			Print_Str(  220-((FlagMeter-1)*86), 176, 0x0005, PRN, "Div:" ); Print_Str(  252-((FlagMeter-1)*86), 176, 0x0005, PRN, FreqDivStr);
+			Print_Str(  220-((FlagMeter-1)*86), 164, 0x0005, PRN, " T1:" ); Print_Str(  252-((FlagMeter-1)*86), 164, 0x0005, PRN, FreqT1Str);
+		}
+		
 }
 /*******************************************************************************
  Draw_Mark :  Routine per un marcatore laterale
