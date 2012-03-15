@@ -1,7 +1,8 @@
-DSO203 GCC v1.18 APP
+DSO203 GCC v1.19 APP - Community Edition
 -------------------
 
-Just some fixes over marcosin 1.8 version of the DSO203 APP and GCC compilation support.
+Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
+Hopefully, the users community can get involved and contribute more fixes and enhancements.
 
 (Win32 GCC support by gabonator1)
  
@@ -22,7 +23,7 @@ Main button functions:
 
 - Button 1 (>||)
 	- Short press:	Toggle Run/Hold status
-	- Long press:	Toggle dysplay of Channel A FFT on/off
+	- Long press:	Toggle display of Channel A FFT on/off
 - Button 2 (square)
 	- Short press:	Select auto trigger level preset
 	- Long press:	Calibrate (select channel A or B first)
@@ -62,6 +63,11 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.19
+- Fixed incorrect Nyquist in FFT at higher sample rates - Now uses the timebase interpolation coefficient.
+- Fixed Vdc overflow bug introduced in v1.18
+- Simple Spectogram (Test version) - Select it from in the trigger mode/X_Y menu.
 
 v1.18
 - More FFT fixes

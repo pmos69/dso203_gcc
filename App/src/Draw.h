@@ -87,6 +87,7 @@ void Print_Clk(u16 x0, u16 y0, u16 Type, u8 Phase);
 void Print_Str(u16 x0, u16 y0, u16 Color, u8 Mode, char *s);
 void Draw_Row(u16 Row);
 void Draw_Row_XY(u16 Row);
+void Draw_Row_Spec(u16 Row);
 void Draw_Window(void);						
 void Draw_Mark(u16 m, u16 n);						
 void Update_Mark(void);						

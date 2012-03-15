@@ -12,6 +12,8 @@ u16 MAX_X;
 uc16 RULE_BASE[8] ={0x020,0x040,0x080,0x040,0x020,0x010,0x008,0x010};
 u8 OffsetX;
 u8 OffsetY;
+u16 SpecRow = 0;
+u16 colors[200];
 
 uc8  Mark_TAB[5][7] ={{0x00,0x00,0x42,0xFE,0x02,0x00,0x00},    // Mark 1
                       {0x00,0x46,0x8A,0x92,0x92,0x62,0x00},    // Mark 2
@@ -528,9 +530,8 @@ void Draw_Row(u16 Row)
           for(i=y[6]; i<=y[7]; ++i) LCD_Buffer1[i] |=Color[TR_4];        // normal brightness
         }
       }
-	  }
 	  
-	  		// FFT ///////
+	  	  		// FFT ///////
 		fftx = (Row - MIN_X); //starts at 1
 	    if ((fftx < FFTSize/2) && ShowFFT) {
 				//val = arrin[fftx];
@@ -546,6 +547,9 @@ void Draw_Row(u16 Row)
 			for (i=Y_BASE+1; i<200; i++)
 				LCD_Buffer1[i] |= BLUE;
 		/////////////
+	  }
+	  
+
 		
 //------------------------- Draw the X Vernie data -----------------------------
       Tmp =(MIN_X + 150)- _X_posi.Value;
@@ -602,7 +606,8 @@ void Draw_Window(void)
    u16 h;
    
   __Row_DMA_Ready();
-  __Row_Copy(Row_Base1, LCD_Buffer2);
+  if (_Mode == SPEC)	__Row_Copy(Row_Base2, LCD_Buffer2);
+  else  				__Row_Copy(Row_Base1, LCD_Buffer2);
   __Row_DMA_Ready();
   __Row_Copy(Row_Base2, LCD_Buffer1);
  
@@ -611,8 +616,13 @@ void Draw_Window(void)
   
 	if ((_Mode!=X_Y) && (_Mode!=X_Y_A)) {
 	
-		for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row(Row); //Modo oscilloscopio
-		
+		if (_Mode != SPEC)
+			for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row(Row); //Modo oscilloscopio
+		else {
+			if (SpecRow > MAX_X) SpecRow = 0;
+			Draw_Row_Spec(SpecRow); //Spectogram
+			SpecRow++;
+		}
 	}
   if ((_Mode==X_Y) || (_Mode==X_Y_A)) for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row_XY(Row); //Modo X Y
 
@@ -624,6 +634,7 @@ void Draw_Window(void)
 			Print_Str(  220-((FlagMeter-1)*86), 200, 0x0005, PRN, "Max:" ); Print_Str(  252-((FlagMeter-1)*86), 200, 0x0005, PRN, PeakFreqStr);
 			Print_Str(  220-((FlagMeter-1)*86), 176, 0x0005, PRN, "Div:" ); Print_Str(  252-((FlagMeter-1)*86), 176, 0x0005, PRN, FreqDivStr);
 			Print_Str(  220-((FlagMeter-1)*86), 164, 0x0005, PRN, " T1:" ); Print_Str(  252-((FlagMeter-1)*86), 164, 0x0005, PRN, FreqT1Str);
+			//Print_Str(  220-((FlagMeter-1)*86), 152, 0x0005, PRN, "TMP:" ); Print_Str(  252-((FlagMeter-1)*86), 152, 0x0005, PRN, TempStr);
 		}
 		
 }
@@ -925,6 +936,106 @@ void Draw_Row_XY(u16 Row)
     __LCD_Copy(LCD_Buffer1, Y_SIZE+1);             // Even row Transitive
   }
 }
+
+
+
+  u16 to565( u32 clr )
+  {
+    u8 r = clr>>16;
+    u8 g = clr>>8;
+    u8 b = clr;
+    r >>= 3; // 8->5 bitov
+    g >>= 2;
+    b >>= 3;
+    u16 ret = r;
+    ret |= g<<5;
+    ret |= b<<11; // 5+6
+    return ret;
+  }
+
+u32 interpolate(u32 clra, u32 clrb, u8 ratio)
+  {
+    u8 ra = clra>>16;
+    u8 ga = clra>>8;
+    u8 ba = clra;
+
+    u8 rb = clrb>>16;
+    u8 gb = clrb>>8;
+    u8 bb = clrb;
+
+    u16 r = ra + (((rb-ra)*ratio)>>8);
+    u16 g = ga + (((gb-ga)*ratio)>>8);
+    u16 b = ba + (((bb-ba)*ratio)>>8);
+    r &= 0xff;
+    g &= 0xff;
+    b &= 0xff;
+    return (r<<16) | (g<<8) | b;
+  }
+
+  void InitColors()
+  {
+    static const u32 baseclr[] = {0x000080, 0x0000ff, 0x00ffff, 0xffffff, 0xff0000};
+	u8 i;
+	
+    for (i=0; i<200; i++)
+    {
+      u8 base = i/50;
+      u16 rem = (i%50)*255/50;
+      colors[i] = to565( interpolate(baseclr[base], baseclr[base+1], rem) );
+    }
+  }
+
+/*******************************************************************************
+ Draw_Row_Spec : to ease the DMA conflict, in two buffers alternately
+*******************************************************************************/
+void Draw_Row_Spec(u16 Row)
+{ 
+  u8  i;
+  int val= 0;
+   
+  __Row_DMA_Ready();
+  __Point_SCR(Row, MIN_Y);
+  
+  InitColors();
+  
+  if(Row & 1){                                       // Odd row process
+//----------------------- Fill the row base data -------------------------------
+    __Row_Copy(Row_Base2, LCD_Buffer1);
+//------------------------- Draw the Curve data --------------------------------
+    if(Row < MAX_X){        
+	  
+		
+		for (i=Y_BASE+1; i<200; i++) {
+			val = fr[i-Y_BASE];
+			if (val >= 200) val = 199;
+			LCD_Buffer2[i] = colors[val];
+		}
+     
+    } 
+
+    __LCD_Copy(LCD_Buffer2, Y_SIZE+1);               // Odd row Transitive
+
+	} else {                                           // Even row process
+//----------------------- Fill the row base data -------------------------------
+     __Row_Copy(Row_Base2, LCD_Buffer2);
+//------------------------- Draw the Curve data --------------------------------
+    if(Row < MAX_X){          
+	  
+		
+		for (i=Y_BASE+1; i<200; i++) {
+			val = fr[i-Y_BASE];
+			if (val >= 200) val = 199;
+			LCD_Buffer1[i] = colors[val];
+		}
+	  }
+	  
+    __LCD_Copy(LCD_Buffer1, Y_SIZE+1);             // Even row Transitive
+  }
+}
+
+
+
+
 
 // void DrawPixel(u16 x, u16 y, u16 clr) {
     // __Point_SCR(x, y);

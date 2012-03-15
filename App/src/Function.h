@@ -47,6 +47,7 @@ double cosine(double radians);
 #define LOG2_N_WAVE			9      // log2(N_WAVE)
 
 #define FFTSize				512
+#define FFTBins				256
 #define LOG2_FFTSize		9
 
 extern void fix_fft(short fr[], short fi[], short m);

@@ -57,7 +57,7 @@ APP V2.50 rewrite based on the new FAT12 file system, file read and write proced
 APP V2.51 modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.18 APP (2.51+SmTech1.8+PMOS69 fixes)"
+#define APP_VERSION       "GCC v1.19 APP (2.51+SmTech1.8+PMOS69 fixes)"
 
 u8 OldMode;
 u16 OldPosi;
@@ -166,7 +166,7 @@ int main(void)
        
       }
          
-      if ((_Mode<4) &&(OldMode>3)){     // esce da XY_S o XY_A
+      if ((_Mode<4 || _Mode==SPEC) &&(OldMode>3 && OldMode != SPEC)){     // esce da XY_S o XY_A
         Title[TRACK1][POSI].Value = OldTrack1X;
         Title[TRACK2][POSI].Value = OldTrack2X;
         BackGround_Reset();
@@ -220,7 +220,7 @@ int main(void)
         Update_Base();
         Update_Output();
         if (_Mode!=X_Y)  Update_Trig();
-        if ((_Mode!=X_Y) && (_Mode!=X_Y_A)) Update_Mark();
+        if ((_Mode!=X_Y) && (_Mode!=X_Y_A) && (_Mode!=SPEC)) Update_Mark();
         __Set(BACKLIGHT, 10*(Title[BK_LIGHT][CLASS].Value+1));
         if(Current != FILE) Update_View_Area();
 		if (FlagMeter==1) {

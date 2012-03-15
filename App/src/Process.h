@@ -120,6 +120,7 @@ extern short PeakFreq;
 extern char PeakFreqStr[];
 extern char FreqDivStr[];
 extern char FreqT1Str[];
+//extern char TempStr[];
 ///////////////////////////////////////////////////////////// FFT ///////
 
 #endif

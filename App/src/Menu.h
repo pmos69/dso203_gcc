@@ -81,6 +81,7 @@
 #define SCAN       3
 #define X_Y        4
 #define X_Y_A      5
+#define SPEC	   6
 //-------------- OUTPUT sub-menu item number defined -------------
 #define KIND       0
 #define FRQN       1
@@ -146,6 +147,7 @@
 #define _Delta_T        Title[T_VERNIE][3]
 #define _T_Range        (Title[T_BASE][1].Value)
 #define _T_Scale        (X_Attr[_T_Range].SCALE)
+#define _T_KP        (X_Attr[_T_Range].KP)
 
 typedef struct 
 {

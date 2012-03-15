@@ -20,6 +20,7 @@ short PeakFreq;
 char PeakFreqStr[12];
 char FreqDivStr[12];
 char FreqT1Str[12];
+//char TempStr[12];
 ////////////////////////////////////////////////////////////////////////////
 
 u16 TaS, TbS, TcS, TdS;            // cycles accumulated
@@ -535,18 +536,18 @@ void Process(void)
 			  }
 			  
 			  if(_T_Scale < 333) {		// Avoid datatype overflow
-				NFreq = (1000000 / (_T_Scale *2 ));
+				NFreq = 500000 / (_T_Scale / ((double)_T_KP / 1024));
 				
 				Int2Str(NFreqStr, NFreq, FM_UNIT, 4, UNSIGN);
-				Int2Str(FreqT1Str, ((NFreq / FFTSize) * _T1 * 2), FM_UNIT, 4, UNSIGN);
-				Int2Str(FreqDivStr, ((NFreq / FFTSize) * 30 * 2), FM_UNIT, 4, UNSIGN);
+				Int2Str(FreqT1Str, ((NFreq / FFTBins) * _T1), FM_UNIT, 4, UNSIGN);
+				Int2Str(FreqDivStr, ((NFreq / FFTBins) * 30), FM_UNIT, 4, UNSIGN);
 			  } else {
-				NFreq = (1000000000 / (_T_Scale *2 ));
+				NFreq = 500000000 / (_T_Scale / ((double)_T_KP / 1024));
 				NFreq *= 1000;
 				
 				Int2Str(NFreqStr, NFreq, F_UNIT, 4, UNSIGN);	
-				Int2Str(FreqT1Str, ((NFreq / FFTSize) * _T1 * 2), F_UNIT, 4, UNSIGN);
-				Int2Str(FreqDivStr, ((NFreq / FFTSize) * 30 * 2), F_UNIT, 4, UNSIGN);
+				Int2Str(FreqT1Str, ((NFreq / FFTBins) * _T1), F_UNIT, 4, UNSIGN);
+				Int2Str(FreqDivStr, ((NFreq / FFTBins) * 30), F_UNIT, 4, UNSIGN);
 			  }
 			  
 			  PeakFreq = 0;
@@ -561,9 +562,9 @@ void Process(void)
 			  
 			  if (imax>1) {
 					if(_T_Scale < 333) 		// Avoid datatype overflow
-						Int2Str(PeakFreqStr, ((NFreq / FFTSize) * imax * 2), FM_UNIT, 4, UNSIGN);
+						Int2Str(PeakFreqStr, ((NFreq / FFTBins) * imax), FM_UNIT, 4, UNSIGN);
 					else
-						Int2Str(PeakFreqStr, ((NFreq / FFTSize) * imax * 2), F_UNIT, 4, UNSIGN);
+						Int2Str(PeakFreqStr, ((NFreq / FFTBins) * imax), F_UNIT, 4, UNSIGN);
 			  }
 		}
   //////////////////////////// FFT ///
@@ -637,6 +638,7 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 
 
   switch (_Mode){ 
+  case SPEC:
   case AUTO:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
       if(__Get(FIFO_START)!=0) {

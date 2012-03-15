@@ -51,7 +51,7 @@ uc16 Y_COLOR[5]     = {(TR_1<<8)+SCRN, (TR_2<<8)+SCRN,
                        (TR_3<<8)+SCRN, (TR_4<<8)+SCRN,
                        (VERNIE<<8)+SCRN};                          // Track Color 2
 
-char MODESTR[10][10]  = {"!AUTO!", "!NORM!","SINGL","!SCAN!","X_Y S","X_Y A"};        // Sync Mode Str
+char MODESTR[10][10]  = {"!AUTO!", "!NORM!","SINGL","!SCAN!","X_Y S","X_Y A","SPECT"};        // Sync Mode Str
 char BaseStr[30][10];                                              // Time Base b Str
 char  XPOSISTR[5]    = {"XPOS"};
 uc16 XCOLOR[2]      = {(SCRN<<8)+X_POSI, (X_POSI<<8)+SCRN};        // Time Base Color
@@ -139,7 +139,7 @@ menu Title[13][4]=
     {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  196,  216,    50, UPDAT}, //  Attenuazione    251,202         
   },
   {//========================= Title Time Base Group ===========================
-    {(char*)MODESTR, (u16*)XCOLOR,    6-1, CIRC,  290,  228,     0, UPDAT}, //  Sync Mode    5 numero modi  239  228
+    {(char*)MODESTR, (u16*)XCOLOR,    7-1, CIRC,  290,  228,     0, UPDAT}, //  Sync Mode    5 numero modi  239  228
     {(char*)BaseStr, (u16*)XCOLOR+1, 27-1,    0,  290,  216,    17, UPDAT}, //  Time Base Range             239 216
     {(char*)XPOSISTR,(u16*)XCOLOR,   3695,  FIX,  366,    0,     0, UPDAT}, //  Adj. X position  3795
     {(char*)XPOSISTR,(u16*)XCOLOR,   3695,  NOT,   80,    0,     0, UPDAT}, //  View window rule  3795
@@ -271,8 +271,8 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			//Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // use bag_max_buf as average divider
-			Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*((a_Avg/bag_max_buf)- _1_posi)+ 512)/1024 ; // use bag_max_buf as average divider
+			Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // use bag_max_buf as average divider
+			//Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*((a_Avg/bag_max_buf)- _1_posi)+ 512)/1024 ; // use bag_max_buf as average divider
 			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
