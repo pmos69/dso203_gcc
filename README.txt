@@ -67,7 +67,7 @@ Revisions:
 v1.19
 - Fixed incorrect Nyquist in FFT at higher sample rates - Now uses the timebase interpolation coefficient.
 - Fixed Vdc overflow bug introduced in v1.18
-- Simple Spectogram (Test version) - Select it from in the trigger mode/X_Y menu.
+- Simple Spectrogram (Test version) - Select it from in the trigger mode/X_Y menu.
 
 v1.18
 - More FFT fixes
