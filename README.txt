@@ -1,4 +1,4 @@
-DSO203 GCC v1.20 APP - Community Edition
+DSO203 GCC v1.21 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
