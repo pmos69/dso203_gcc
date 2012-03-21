@@ -66,6 +66,9 @@ All thanks to:
 
 Revisions:
 
+v1.21
+- SGL Trigger fix (JackTheVendicator)
+
 v1.20
 - Improvements in the FFT (Marco Sinatti):
 	- The FFT function and FFT source can be selected from the track4 menù, it's possible to select the ch A or ch B.

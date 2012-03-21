@@ -9,6 +9,8 @@
 #include "BIOS.h"
 #include "File.h"
  
+u8 HoldOnNext=0;  
+ 
 // FFT ////////////////////////////////////////////////////////////////////
 short fr[FFTSize];
 short fi[FFTSize];
@@ -350,7 +352,7 @@ void Process(void)
     k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value;//  // window position in the calculation of the interpolation of the correction value
 	
     for(i=0; i <bag_max_buf; i++){
-      if((_T_base > 15)&&(_Status == RUN))  DataBuf[i] = __Read_FIFO(); // read into the 32-bit FIFO data reading pointer +1
+      if(((_T_base > 15)||(_Mode == SGL))&&(_Status == RUN))  DataBuf[i] = __Read_FIFO(); // read into the 32-bit FIFO data reading pointer +1
       else if((__Get(FIFO_EMPTY)==0)&&(i == JumpCnt)&&(_Status == RUN)){
         JumpCnt++;
         DataBuf[i] = __Read_FIFO();             // read into the 32-bit FIFO data reading pointer +1
@@ -576,7 +578,7 @@ break;
 *******************************************************************************/
 void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
-u8 HoldOnNext=0;  
+
 
   switch (_Mode){ 
   case SPEC:
