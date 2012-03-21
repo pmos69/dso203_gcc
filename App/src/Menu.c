@@ -35,9 +35,9 @@ uc16 B_COLOR[5]     = {(NOTE1<<8)+SCRN, (SIDE <<8)+SCRN,
 char CH_A_STR[4][10]  = {" -NO- ", "!CH(A)!", "x10(A)"};
 char CH_B_STR[4][10]  = {" -NO- ", "!CH(B)!", "x10(B)"};
 char CH_C_STR[2][10]  = {" -NO- ", "!CH(C)!"};
-char CH_D_STR[10][10] = {" -NO- ", "!CH(D)!", "!(A+B)!", "!(A-B)!",  
+char CH_D_STR[12][10] = {" -NO- ", "!CH(D)!", "!(A+B)!", "!(A-B)!",  
                      "!(C&D)!", "!(C|D)!", "!REC_A!",  "!REC_B!",
-                        "!REC_C!",  "!REC_D!"};                      // Track source Str
+                        "!REC_C!",  "!REC_D!", "!FFT_A!", "!FFT_B!"};                      // Track source Str
 char NO_RANGE[5]      = "";//" -- ";                       
 char NO_DEF[5]        = "";//"--";                       
 
@@ -121,7 +121,7 @@ menu Title[13][4]=
     {(char*)YPOSISTR,(u16*)Y_INV+2, 200-1,  FIX,    0,    0,    60, UPDAT}, //  Adj. Track Position
   },
   {//============================ Title Track4 Group ===========================
-    {(char*)CH_D_STR,(u16*)Y_INV+3,  10-1, CIRC,  188,  228,     1, UPDAT}, //  Track source
+    {(char*)CH_D_STR,(u16*)Y_INV+3,  12-1, CIRC,  188,  228,     1, UPDAT}, //  Track source
     {(char*)NO_DEF , (u16*)Y_COLOR+3, 1-1, CIRC,  188,  216,     0, UPDAT}, //  Track Couple        
     {(char*)NO_RANGE,(u16*)Y_COLOR+3, 1-1,    0,  204,  216,     0, UPDAT}, //  Track Range
     {(char*)YPOSISTR,(u16*)Y_INV+3, 200-1,  FIX,    0,    0,    20, UPDAT}, //  Adj. Track Position
@@ -176,7 +176,7 @@ menu Title[13][4]=
   },
   {//============================ Title Volume Group ===========================
     {(char*)Vol_Str, (u16*)V_INV,     1-1,  FIX,  314,  152,     0, UPDAT}, //  Volume        
-    {(char*)NumStr,  (u16*)V_COLOR,  11-1, NUM2,  342,  152,     5, UPDAT}, //  Class     
+    {(char*)NumStr,  (u16*)V_COLOR,  10-1, NUM2,  342,  152,     5, UPDAT}, //  Class (Jerson was 11-1 now 10-1)     
     {(char*)NumStr,  (u16*)V_INV,       0,  NOT,    0,    0,     0,   HID},    
     {(char*)NumStr,  (u16*)V_INV,       0,  NOT,    0,    0,     0,   HID},    
   },
@@ -228,8 +228,8 @@ void Display_Value(u8 i)
   u32 k, n, m;
   u16 bag_max_buf = 4096;   // store sample buffer size
   
-  if(Interlace == 0) Kp = _Kp1; // independent sampling mode
-  else               Kp = _Kp2; // interleaved sampling mode
+  Kp = _Kp1; // independent sampling mode
+  
   
   k = _T_Range; m = 1;  n = 1;
   if(k < 9)  m = Power(10, (11-k)/3); //9 //11
@@ -532,7 +532,9 @@ void Display_Title(void)
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
                 } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
             } else {                                  // volume percentage
-              if(Title[i][j].Value == 10){
+             
+              if(Title[i][j].Value >= Title[i][j].Limit){     // Jerson (was ==10, made >=Limit)
+
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
               } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
             }

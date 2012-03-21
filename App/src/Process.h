@@ -78,7 +78,7 @@ typedef struct  // 脉冲波形输出驱动表
   u16  Duty;    // duty cycle coefficient
 } D_tab ; 
 
-extern u8  Interlace;
+
 extern u8  TrackBuff [X_SIZE * 4];          //  i +0 ~ 3, a 4 track data were stored
 extern u32 a_Avg, b_Avg, a_Ssq, b_Ssq;
 extern u8  a_Max, b_Max, a_Min, b_Min;                // statistics of intermediate variables

@@ -57,7 +57,7 @@ APP V2.50 rewrite based on the new FAT12 file system, file read and write proced
 APP V2.51 modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.19 APP (2.51+SmTech1.8+PMOS69 fixes)"
+#define APP_VERSION       "GCC v1.20 APP (2.51+SmTech1.8+PMOS69 fixes)"
 
 u8 OldMode;
 u16 OldPosi;
@@ -188,6 +188,10 @@ int main(void)
       _Vt1=200;
     }
 	
+if ((_4_source==FFT_A) || (_4_source==FFT_B))
+   { ShowFFT=1;}
+else
+{ ShowFFT=0;}
     //-------------------------------------------------------------------------- ********* LIFE *************    
     if(PD_Cnt == 0){
       __Set(BACKLIGHT, 0);     // turn off the backlight
@@ -283,7 +287,7 @@ int main(void)
 				break;
 			}
 			if (Delay_Cnt == 0) {
-				ShowFFT = (ShowFFT == 0)? 1 : 0;       						// Toggle show/hide FFT
+	//			ShowFFT = (ShowFFT == 0)? 1 : 0;       						// Toggle show/hide FFT
 			}
 		}
       }

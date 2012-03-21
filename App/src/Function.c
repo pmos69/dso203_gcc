@@ -386,8 +386,10 @@ u8 Read_Keys(void)
       if((Key_Wait_Cnt || Key_Repeat_Cnt)==0){
         if(Key_Status_Now & K_INDEX_D_STATUS)  KeyCode = K_INDEX_DEC;    // K5 
         if(Key_Status_Now & K_INDEX_I_STATUS)  KeyCode = K_INDEX_INC;    // K6
-        if(Key_Status_Now & K_ITEM_D_STATUS)   KeyCode = K_ITEM_DEC;     // K9 
-        if(Key_Status_Now & K_ITEM_I_STATUS)   KeyCode = K_ITEM_INC;     // K8 
+        
+        /* removed by Jerson.  Was causing selections to jump around (bounce) */
+      //  if(Key_Status_Now & K_ITEM_D_STATUS)   KeyCode = K_ITEM_DEC;     // K9 
+      //  if(Key_Status_Now & K_ITEM_I_STATUS)   KeyCode = K_ITEM_INC;     // K8 
         Key_Repeat_Cnt = 2;                 // Auto repeat per 5= 100mS
       }
     }

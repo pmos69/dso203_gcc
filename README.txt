@@ -1,4 +1,4 @@
-DSO203 GCC v1.19 APP - Community Edition
+DSO203 GCC v1.20 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
@@ -7,7 +7,7 @@ Hopefully, the users community can get involved and contribute more fixes and en
 (Win32 GCC support by gabonator1)
  
 Tested with:
-	- SYS 1.51
+	- SYS 1.50 1.6 from Marco Sinatti
 	- FPGA 2.61
 	- HW 2.6
 
@@ -59,10 +59,21 @@ All thanks to:
 - Marco Sinatti (marcosin)
 - Gabriel Valky (gabonator1)
 - Ivan Mellen
+- JackTheVendicator
+- Jerson (http://jerson.co.in)
 
 -------------------------------------------
 
 Revisions:
+
+v1.20
+- Improvements in the FFT (Marco Sinatti):
+	- The FFT function and FFT source can be selected from the track4 menù, it's possible to select the ch A or ch B.
+		They are displayed as track4 math results.
+	- Changed some colors
+	- Changed the FFT meter positions, the max meter moves along the peak position
+- Trigger fixes (JackTheVendicator)
+- Fixed volume control + selection bounce (Jerson)
 
 v1.19
 - Fixed incorrect Nyquist in FFT at higher sample rates - Now uses the timebase interpolation coefficient.

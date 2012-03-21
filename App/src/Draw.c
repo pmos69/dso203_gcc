@@ -14,6 +14,7 @@ u8 OffsetX;
 u8 OffsetY;
 u16 SpecRow = 0;
 u16 colors[200];
+u16 RowMem;
 
 uc8  Mark_TAB[5][7] ={{0x00,0x00,0x42,0xFE,0x02,0x00,0x00},    // Mark 1
                       {0x00,0x46,0x8A,0x92,0x92,0x62,0x00},    // Mark 2
@@ -400,22 +401,25 @@ void Draw_Row(u16 Row)
       }
 	  
 	  		// FFT ///////
-		fftx = Row - MIN_X; // starts at 1
-	    if ((fftx < FFTSize/2) && ShowFFT ) {
-				//val = arrin[fftx];
-				val = fr[fftx];
-				if (val >= 200) val = 199;
-				for (i=Y_BASE+1; i<val; i++) LCD_Buffer2[i] = RED; //0x0ff0;
-				
-				if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++) LCD_Buffer2[i] = WHT;
-				else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer2[PeakFreq] = WHT;
-				else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer2[i] = WHT;
-					
-		} else if (ShowFFT)
-			for (i=Y_BASE+1; i<200; i++)
-				LCD_Buffer2[i] |= BLUE;
-				
-		/////////////	
+      fftx = Row - MIN_X; // starts at 1
+       if ((fftx < FFTSize/2) && ShowFFT ) {
+            //val = arrin[fftx];
+            val = fr[fftx];
+            if (val >= 200) val = 199;
+            for (i=Y_BASE+1; i<val; i++) LCD_Buffer2[i] = GRN; //0x0ff0;
+
+            
+            if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++)  {LCD_Buffer2[i] = RED;RowMem=Row; }
+            else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer2[PeakFreq] = RED;
+            else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer2[i] = RED;
+
+               
+      } else if (ShowFFT)
+         for (i=Y_BASE+1; i<200; i++)
+            LCD_Buffer2[i] |= BLACK;
+
+            
+      /////////////   
 		
 //------------------------- Draw the Trigg Vernie data -------------------------
       if(Title[TRIGG][SOURCE].Value == TRACK1) 
@@ -532,25 +536,29 @@ void Draw_Row(u16 Row)
       }
 	  
 	  	  		// FFT ///////
-		fftx = (Row - MIN_X); //starts at 1
-	    if ((fftx < FFTSize/2) && ShowFFT) {
-				//val = arrin[fftx];
-				val = fr[fftx];
-				if (val >= 200) val = 199;
-				for (i=Y_BASE+1; i<val; i++) LCD_Buffer1[i] = RED; //0x0ff0;
-				
-				if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++) LCD_Buffer1[i] = WHT;
-				else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer1[PeakFreq] = WHT;
-				else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer1[i] = WHT;
-				
-		} else if (ShowFFT)
-			for (i=Y_BASE+1; i<200; i++)
-				LCD_Buffer1[i] |= BLUE;
-		/////////////
-	  }
-	  
+      fftx = (Row - MIN_X); //starts at 1
+       if ((fftx < FFTSize/2) && ShowFFT) {
+            //val = arrin[fftx];
+            val = fr[fftx];
+            if (val >= 200) val = 199;
+            for (i=Y_BASE+1; i<val; i++) LCD_Buffer1[i] = GRN; //0x0ff0;
 
-		
+            
+            if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++){ LCD_Buffer1[i] = RED; RowMem=Row;}
+            else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer1[PeakFreq] = RED;
+            else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer1[i] = RED;
+
+
+
+
+			
+			
+
+      } else if (ShowFFT)
+         for (i=Y_BASE+1; i<200; i++)
+            LCD_Buffer1[i] |=BLACK;
+      /////////////
+	  }
 //------------------------- Draw the X Vernie data -----------------------------
       Tmp =(MIN_X + 150)- _X_posi.Value;
       if(Tmp > MIN_X) {
@@ -630,12 +638,22 @@ void Draw_Window(void)
   __Row_DMA_Ready();
   
   if (ShowFFT) {
-			Print_Str(  220-((FlagMeter-1)*86), 188, 0x0005, PRN, "Nyq:" ); Print_Str(  252-((FlagMeter-1)*86), 188, 0x0005, PRN, NFreqStr);
-			Print_Str(  220-((FlagMeter-1)*86), 200, 0x0005, PRN, "Max:" ); Print_Str(  252-((FlagMeter-1)*86), 200, 0x0005, PRN, PeakFreqStr);
-			Print_Str(  220-((FlagMeter-1)*86), 176, 0x0005, PRN, "Div:" ); Print_Str(  252-((FlagMeter-1)*86), 176, 0x0005, PRN, FreqDivStr);
-			Print_Str(  220-((FlagMeter-1)*86), 164, 0x0005, PRN, " T1:" ); Print_Str(  252-((FlagMeter-1)*86), 164, 0x0005, PRN, FreqT1Str);
-			//Print_Str(  220-((FlagMeter-1)*86), 152, 0x0005, PRN, "TMP:" ); Print_Str(  252-((FlagMeter-1)*86), 152, 0x0005, PRN, TempStr);
-		}
+
+
+        ; Print_Str( 252, 15, 0xFFFF, INV, NFreqStr);
+     //    Print_Str(  RowMem, PeakFreq, 0x0005, PRN, "Max:" );
+      if ( PeakFreq>5)
+      {
+         if  ( RowMem<35)   RowMem=35;
+        Print_Str(  RowMem-20,  PeakFreq+25, 0xFFFF, INV, PeakFreqStr);
+      }
+         Print_Str( 15, 200, 0xFFFF, INV, "Div:" ); Print_Str( 50,200, 0xFFFF, INV, FreqDivStr);
+
+
+
+
+         Print_Str( 200,200, 0xFFFF, INV, " T1:" ); Print_Str( 235,200,0xFFFF, INV, FreqT1Str);
+      }
 		
 }
 /*******************************************************************************

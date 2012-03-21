@@ -35,7 +35,7 @@ u8  a_Max, b_Max, a_Min, b_Min;              // the original maximum value, the 
 s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
 s16 c_Max, d_Max, A_Posi, B_Posi;
 
-u8 Interlace;
+ 
 u16 JumpCnt;
 u8 FrameMode;
 
@@ -187,7 +187,7 @@ void View_init(void)
 *******************************************************************************/
 void Update_Range(void) 
 {
-  Interlace = 0;
+
   __Set(ADC_CTRL, EN);       
   __Set(ADC_MODE, SEPARATE);                        // Set Separate mode ((Range + 1)*25)
   __Set(CH_A_COUPLE, Title[TRACK1][COUPLE].Value);
@@ -208,8 +208,8 @@ void Update_Base(void)
   u16 i;
   
   __Set(ADC_CTRL, EN);       
-  if(Interlace == 0)  i = Title[T_BASE][BASE].Value;     // independent sampling mode
-  else                i = Title[T_BASE][BASE].Value + 5; // interleaved sampling mode
+  i = Title[T_BASE][BASE].Value;     // independent sampling mode
+
   __Set(T_BASE_PSC, X_Attr[i].PSC);
   __Set(T_BASE_ARR, X_Attr[i].ARR);
   Wait_Cnt = Wait[_T_base];
@@ -345,7 +345,7 @@ void Process(void)
  
    bag_max_buf = get_bag_max_buf();
    
-  if(Interlace == 0){                           // independent sampling mode
+
   
     k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value;//  // window position in the calculation of the interpolation of the correction value
 	
@@ -377,8 +377,18 @@ void Process(void)
 		}
 		
 		// FFT ///////////////////////////////////////
-		if ((i < FFTSize) && ShowFFT) {
+      if (_4_source==FFT_A)
+		{if ((i < FFTSize) && ShowFFT) {
 			  fr[i] = Ch[A]<<2;
+        }
+}
+
+
+         if (_4_source==FFT_B)
+        {
+           if ((i < FFTSize) && ShowFFT) {
+              fr[i] = Ch[B]<<2;
+             }
         }
 		////////////////////////////////////// FFT ///
        
@@ -427,83 +437,10 @@ void Process(void)
         j += 1024;
         V[A_] = V[A];  V[B_] = V[B];     
       }	  
-    }
-  } 
-  else {                            // alternate sampling mode
-    k =((1024 -_Kp2)*150 + 512)/1024 + _X_posi.Value;  // calculation of the interpolation window position correction value
-    for(i=0; i <bag_max_buf; i++){
-      if(_Status == RUN)  DataBuf[i] = __Read_FIFO(); // read into the 32-bit FIFO data reading pointer +1
-      C_D    = DataBuf[i] >>16;
-      if(_2_source == HIDE){                            // B channel incorporated into the A channel
-        Ch[A]  = (DataBuf[i] & 0xFF );              
-        Ch[B]  = ((DataBuf[i] >> 8) & 0xFF);//+ Kab;
-        Tmp    = (Ch[A]- A_Posi);
-        a_Ssq += (Tmp * Tmp)/2;
-        Tmp    = (Ch[B]- A_Posi);
-        a_Ssq += (Tmp * Tmp)/2;                         // statistical sum of squares
-      } else {                                          // A channel incorporated into the B-channel
-        Ch[B]  = (DataBuf[i] & 0xFF );//- Kab;              
-        Ch[A]  = ((DataBuf[i] >> 8) & 0xFF);  
-        Tmp    = (Ch[A]- B_Posi);
-        a_Ssq += (Tmp * Tmp)/2;
-        Tmp    = (Ch[B]- B_Posi);
-        a_Ssq += (Tmp * Tmp)/2;                                    // statistical sum of squares
+ 
       }
-      a_Avg += (Ch[A]+Ch[B])/2;                                   // cumulative DC average
+
 	  
-		if(i == 0) {  // first value - max = min = value
-		    a_Max = Ch[A];		// statistics channel A maximum
-			a_Min = a_Max;		// statistics channel A minimum
-			b_Max = Ch[B];		// statistics channel B maximum
-			b_Min = b_Max;		// statistics channel B minimum
-		} else {  // not first value 
-			if(Ch[A] > a_Max)  a_Max = Ch[A];         // statistics channel A maximum
-			if(Ch[A] < a_Min)  a_Min = Ch[A];         // statistics channel A minimum
-			if(Ch[B] < b_Min)  b_Min = Ch[B];         // statistics channel B minimum
-			if(Ch[B] > b_Max)  b_Max = Ch[B];         // statistics channel B maximum
-		}	  
-
-		// FFT ///////////////////////////////////////
-		if ((i < FFTSize) && ShowFFT) {
-			  fr[i] = (Ch[A]+Ch[B])/2<<2;
-        }
-		////////////////////////////////////// FFT ///
-		
-      if(i >= k){                 // 1:00 pointer reaches the specified window position
-        if(_2_source == HIDE){                            // B channel incorporated into the A channel
-          V[A] = Ka1[_A_Range] +(Ka2[_A_Range]*Ch[A]+ 512)/1024;    // calculate the current principal value of 1:00
-          V[B] = Ka1[_A_Range] +(Ka2[_A_Range]*Ch[B]+ 512)/1024;    // calculate the current principal value of 2:00
-        } else {                                          // A channel incorporated into the B-channel
-          V[A] = Kb1[_B_Range] +(Kb2[_B_Range]*Ch[A]+ 512)/1024;   // calculate the current principal value of 1:00
-          V[B] = Kb1[_B_Range] +(Kb2[_B_Range]*Ch[B]+ 512)/1024;   // calculate the current principal value of 2:00
-        }
-        while(j > 0 ){
-          Tmp = V[B_]+((V[A]- V[B_])*(1024 - j))/1024; // current point interpolation
-          Send_Data(Tmp, Tmp, C_D, n++);
-          j -= _Kp2+5;
-          if(n >= X_SIZE-TRACK_OFFSET){ k = 8192;  break;}
-        }
-        j += 1024;
-      }
-      if(i >= k){                 // 2:00 pointer reaches the specified window position
-        while(j > 0 ){
-          Tmp = V[A]+((V[B]- V[A])*(1024 - j))/1024;  // 2:00 interpolation
-          Send_Data(Tmp, Tmp, C_D, n++);
-          j -= _Kp2+5;
-          if(n >= X_SIZE-TRACK_OFFSET){ k = 8192;  break;}
-        }
-        j += 1024;
-        V[B_] = V[B];       
-      }
-    }
-    b_Avg  = a_Avg;
-    b_Ssq  = a_Ssq;
-    b_Max  = a_Max;
-    b_Min  = a_Min;
-
-    if(_1_source == HIDE)  a_Avg = _1_posi*4096;   // A channel incorporated into the B-channel
-    if(_2_source == HIDE)  b_Avg = _2_posi*4096;   // B channel incorporated into the A channel
-  }
 
   if ((FrameMode!=0) && (_Mode==SCAN)) __Set(FIFO_CLR, W_PTR);
   
@@ -536,8 +473,9 @@ void Process(void)
 			  }
 			  
 			  if(_T_Scale < 333) {		// Avoid datatype overflow
-				NFreq = 500000 / (_T_Scale / ((double)_T_KP / 1024));
-				
+
+			  NFreq = 500000 / (_T_Scale / ((double)_T_KP / 1024));
+			
 				Int2Str(NFreqStr, NFreq, FM_UNIT, 4, UNSIGN);
 				Int2Str(FreqT1Str, ((NFreq / FFTBins) * _T1), FM_UNIT, 4, UNSIGN);
 				Int2Str(FreqDivStr, ((NFreq / FFTBins) * 30), FM_UNIT, 4, UNSIGN);
@@ -590,17 +528,17 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
   
   switch (_4_source){                       
   case A_add_B:
-    if(Interlace == 0) Tmp = Posi_412 + Va + Vb;
-    else{
-      if(_1_source != HIDE) Tmp = Posi_41  + Va;
-      if(_2_source != HIDE) Tmp = Posi_42  + Vb;
-    } break;
+    Tmp = Posi_412 + Va + Vb;
+    
+	
+	
+	break;
   case A_sub_B:
-    if(Interlace == 0) Tmp = Posi_412 + Va - Vb;
-    else{
-      if(_1_source != HIDE) Tmp = Posi_41  + Va;
-      if(_2_source != HIDE) Tmp = Posi_4_2 - Vb;
-    } break;
+    Tmp = Posi_412 + Va - Vb;
+    
+	
+	
+	break;
   case C_and_D:
     if((~C_D)& 3) Tmp = d_Max; 
     else          Tmp = _4_posi;
@@ -621,6 +559,9 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
   case REC_4:
     Tmp = Posi_4F4 +  FileBuff[n+1200];  
     break;
+ case FFT_A:
+ case FFT_B:
+break;
   default:
     if(C_D & 2)  Tmp = d_Max;
     else         Tmp = _4_posi;
@@ -635,7 +576,7 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
 *******************************************************************************/
 void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
-
+u8 HoldOnNext=0;  
 
   switch (_Mode){ 
   case SPEC:
@@ -688,16 +629,33 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
       }
     }
 	
-  if((_Status == RUN)&&(__Get(FIFO_FULL)!=0))
-  {    // FIFO is full
-    __Set(FIFO_CLR, W_PTR);                       // FIFO write pointer reset
+//   if((_Status == RUN)&&(__Get(FIFO_FULL)!=0))
+//   {    // FIFO is full
+//     __Set(FIFO_CLR, W_PTR);                       // FIFO write pointer reset
+//     Wait_Cnt = Wait[_T_base];
+//     JumpCnt =0;
+// 	
+//     if(_Mode == SGL)
+// 	{
+//       _Status = HOLD;                             // one finished, enter the pause
+//       _State.Flag |= UPDAT;
+//     }
+//   }
+  if(HoldOnNext==1) {
+    _State.Value = HOLD;                             // one finished, enter the pause
+    _State.Flag |= UPDAT;
+    HoldOnNext=0;
+    return;
+  }
+
+  if((_Status == RUN)&&(__Get(FIFO_FULL)!=0)){    // FIFO is full
+    if((_Mode != SGL)) {
+      __Set(FIFO_CLR, W_PTR);                       // FIFO write pointer reset
+    }
     Wait_Cnt = Wait[_T_base];
     JumpCnt =0;
-	
-    if(_Mode == SGL)
-	{
-      _Status = HOLD;                             // one finished, enter the pause
-      _State.Flag |= UPDAT;
+    if(_Mode == SGL){
+      HoldOnNext=1;
     }
   }    
 }  

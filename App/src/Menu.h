@@ -60,6 +60,8 @@
 #define REC_3      8
 #define REC_4      9
 
+#define FFT_A      10
+#define FFT_B      11
 //------------- RUNNING sub-menu item number defined -------------
 #define STATE      0
 #define STATUS     1

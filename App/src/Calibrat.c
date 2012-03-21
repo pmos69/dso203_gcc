@@ -61,7 +61,7 @@ void Calibrat(u8 Channel)
   __Set(BACKLIGHT, 10*(Title[BK_LIGHT][CLASS].Value+1));
   __Clear_Screen(BLACK);                                // clear the screen
   
-  Interlace = 0;
+ 
   __Set(ADC_MODE, SEPARATE);                            // Set Separate mode
   __Set(ADC_CTRL, EN);       
   __Set(TRIGG_MODE, UNCONDITION);                       // set any trigger
@@ -134,7 +134,7 @@ void Calibrat(u8 Channel)
     __Set(FIFO_CLR, W_PTR);
     Delayms(20); 
     //a_Avg = 2048;  b_Avg = 2048;               
-	a_Avg = 0;  b_Avg = 0;
+   a_Avg = 0;  b_Avg = 0;
     for(i=0; i <4096; i++){
       DataBuf[i] = __Read_FIFO();         // read into the 32-bit FIFO data
       a_Avg += (DataBuf[i] & 0xFF );      // cumulative DC average
