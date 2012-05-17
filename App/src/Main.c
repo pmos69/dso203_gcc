@@ -57,7 +57,7 @@ APP V2.50 rewrite based on the new FAT12 file system, file read and write proced
 APP V2.51 modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "GCC v1.21 APP (2.51+SmTech1.8+PMOS69 fixes)"
+#define APP_VERSION       "GCC v1.22 APP (2.51+SmTech1.8+PMOS69 fixes)"
 
 u8 OldMode;
 u16 OldPosi;
@@ -493,8 +493,8 @@ else
             Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
           if((Current == OUTPUT)&&(_Kind != PWM)&&(_Kind != NOOUT)){
-             if (Title[OUTPUT][FRQN].Value > 14) 
-            Title[OUTPUT][FRQN].Value = 14;            // upper limit of the analog signal frequency is 20KHz
+             if (Title[OUTPUT][FRQN].Value > 13) 
+            Title[OUTPUT][FRQN].Value = 13;            // upper limit of the analog signal frequency is 20KHz
            } 
           if((Current == FILE)&&(_Curr[0].Value == LOAD)){ 
             if(_Curr[2].Value == BMP) _Curr[2].Value = BUF;  // only the Load Dat, Buf file
@@ -595,8 +595,8 @@ else
             Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
           }
           if((Current == OUTPUT)&&(_Kind != PWM)&&(_Kind != NOOUT)){
-            if(Title[OUTPUT][FRQN].Value > 14) 
-              Title[OUTPUT][FRQN].Value = 14;          // upper limit of the analog signal frequency is 20KHz
+            if(Title[OUTPUT][FRQN].Value > 13) 
+              Title[OUTPUT][FRQN].Value = 13;          // upper limit of the analog signal frequency is 20KHz
           }
           if((Current == FILE)&&(_Curr[0].Value == 1)){  // only the Load Dat, Buf file
             if(_Curr[2].Value == BMP) _Curr[2].Value = DAT;
