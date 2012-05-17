@@ -65,15 +65,13 @@
 
 typedef struct  // analog waveform output driver table
 {
-  uc8  STR[8];   // stall identification string
-  uc16 PSC;      // stall identification string
+  uc16 PSC;      // prescaler
   uc16 ARR;      // frequency coefficient
 } A_tab ; 
 
-typedef struct  // 脉冲波形输出驱动表 
+typedef struct  // digital waveform output driver table
 {
-  uc8  STR[8];  // stall identification string
-  uc16 PSC;     // stall identification string
+  uc16 PSC;     // prescaler
   uc16 ARR;     // frequency coefficient
   u16  Duty;    // duty cycle coefficient
 } D_tab ; 

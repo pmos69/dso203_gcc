@@ -61,7 +61,7 @@ char FO_TYPE[6][10]  = {"!SINUS!",  "TRIANG",  "! SAW !",  "SQUARE", "! PWM !", 
 char FO_STR[23][10]  = {"! 1Hz !",  "! 2Hz !",  "! 5Hz !",
                         " 10Hz ",  " 20Hz ",  " 50Hz ",   "!100Hz!",
                        "!200Hz!", "!500Hz!", " 1KHz ",   " 2KHz ",
-                       " 5KHz ",  "!10KHz!", "!20KHz!",  "!50KHz!",
+                       " 5KHz ",  "!10KHz!", "!25KHz!",  "!50KHz!",
                        "100KHz",  "200KHz",  "500KHz",   " 1MHz ",
                        " 2MHz ",  " 4MHz ",  " 6MHz ",   " 8MHz "}; // Output Frequency Str
 
