@@ -14,7 +14,7 @@ u8 OffsetX;
 u8 OffsetY;
 u16 SpecRow = 0;
 u16 colors[200];
-u16 RowMem;
+u16 RowMem, RowMemPeak;
 
 uc8  Mark_TAB[5][7] ={{0x00,0x00,0x42,0xFE,0x02,0x00,0x00},    // Mark 1
                       {0x00,0x46,0x8A,0x92,0x92,0x62,0x00},    // Mark 2
@@ -144,7 +144,7 @@ uc8  Ref_Wave [300] =   // sample waveform description
   92, 88, 85, 83, 81, 80, 79, 79, 80, 81, 83, 85, 88, 91, 94, 97,100,103,106,108,};
 
    
-uc16  Row_Base1[201] =     // with only the vertical edges of the column the basis of data
+uc16  Row_FullGray[201] =     // with only the vertical edges of the column the basis of data
 {GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY , // 00~10
  GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY , // 10~20
  GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY , // 20~30
@@ -167,7 +167,7 @@ uc16  Row_Base1[201] =     // with only the vertical edges of the column the bas
  GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY ,GRAY , // 90~00
  GRAY };
    
-uc16   Row_Base2[201] =     // column contains only the level of edge basic data
+uc16   Row_FullBlack[201] =     // column contains only the level of edge basic data
 {GRAY ,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK, // 00~10
  BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK, // 10~20
  BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK, // 20~30
@@ -190,7 +190,7 @@ uc16   Row_Base2[201] =     // column contains only the level of edge basic data
  BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK, // 90~00
  GRAY };
    
-uc16  Row_Base3[201] =     // column base data with the horizontal grid lines and horizontal edges
+uc16  Row_HorizDots[201] =     // column base data with the horizontal grid lines and horizontal edges
 {GRAY ,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK, // 00~10
  BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK, // 10~20
  BLACK,BLACK,BLACK,BLACK,BLACK,GRAY ,BLACK,BLACK,BLACK,BLACK, // 20~30
@@ -213,7 +213,7 @@ uc16  Row_Base3[201] =     // column base data with the horizontal grid lines an
  BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK,BLACK, // 90~00
  GRAY };
    
-uc16  Row_Base4[201] =     // with the vertical grid lines and horizontal edges of the column the basis of data
+uc16  Row_VertDots[201] =     // with the vertical grid lines and horizontal edges of the column the basis of data
 {GRAY ,BLACK,BLACK,BLACK,BLACK,GRAY ,BLACK,BLACK,BLACK,BLACK, // 00~10
  GRAY ,BLACK,BLACK,BLACK,BLACK,GRAY ,BLACK,BLACK,BLACK,BLACK, // 10~20
  GRAY ,BLACK,BLACK,BLACK,BLACK,GRAY ,BLACK,BLACK,BLACK,BLACK, // 20~30
@@ -259,14 +259,18 @@ trigg V_Trigg[4] = {// Value,  Flag:( HID=0x04, UPDAT=0x02 )
                      {    75,  UPDAT + HID },
                      {    35,  UPDAT + HID },
                    };
-u16 LCD_Buffer1[240], LCD_Buffer2[240];
+u16 LCD_Buffers[2][240]; 
 
 /*******************************************************************************
  Get_TAB_8x11
 *******************************************************************************/
 u16 Get_TAB_8x11(u8 Code, u8 Row)
 {
-  return Char_TAB_8x11[((Code-0x22)*8)+Row];
+    if ((Code == 0x20)||(Code == 0x21)) {
+        return 0x0000;
+    } else {
+        return Char_TAB_8x11[((Code-0x22)*8)+Row];
+    }
 }
 /*******************************************************************************
  Get_Ref_Wave: 
@@ -327,334 +331,317 @@ void Print_Str(u16 x0, u16 y0, u16 Type, u8 Mode, char *s)
 }
 
 /*******************************************************************************
+ Print_Str_Row: 
+*******************************************************************************/
+void Print_Str_Row(u16 Row, u16* LCD_Buffer, u16 x0, u16 y0, u16 Type, u8 Mode, char *s)
+{ 
+    signed short i, y, b; 
+    u16 char_width, w = x0;
+
+    while(*s != 0) {
+        if ((*s) == 0x21) {
+            char_width = CHAR_WIDTH/2 + 1;
+        } else {
+            char_width = CHAR_WIDTH + 1;
+        }
+        if ((Row >= w) && (Row < (w + char_width))) {
+            i = Row - w - 1;
+            if (i < 0) {
+                b = 0x0000;
+            } else {
+                b = Get_TAB_8x11(*s, i);
+            }
+            for (y = 0; y < CHAR_HEIGHT; y++) {
+                if((b << y)& 0x400) {
+                    if(Mode == 0) {
+                        LCD_Buffer[y0 + y] = Color[Type >> 0x8];   //Inverse replace Display
+                    } else {
+                        LCD_Buffer[y0 + y] = Color[Type & 0x0F];   //Normal replace Display
+                    }
+                } else {
+                    if(Mode == 0) {
+                        LCD_Buffer[y0 + y] = Color[Type & 0x0F];   //Normal replace Display
+                    } else {
+                        LCD_Buffer[y0 + y] = Color[Type >> 0x8];   //Inverse replace Display
+                    }
+                }
+            }
+            break;
+        }
+            
+        w += char_width;
+        s++;
+    }
+}
+
+/*******************************************************************************
  Draw_Row : to ease the DMA conflict, in two buffers alternately
 *******************************************************************************/
-void Draw_Row(u16 Row)
+void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer)
 { 
-  u8  i, y[8], Dot_Hide[8]; 
-  s16 Tmp, m, n ;
-  int fftx, val= 0;
+    u8  t, i, y[8], Dot_Hide[8]; 
+    s16 Tmp, m, n ;
+    int fftx, val= 0;
   
-  if((Row > MIN_X)&&(Row <= MAX_X)){               // waveform display data preprocessing
+  // waveform display data preprocessing
     m = (Row - MIN_X-1)* 4;
     n = (Row - MIN_X)  * 4;
     for(i = 0; i < 8; i += 2) {
-      Dot_Hide[i] = 0;
-      y[i]   = TrackBuff[m + i/2];                  // endpoint to extract
-      y[i+1] = TrackBuff[n + i/2];
-      
-      if(y[i]   >= Y_BASE+Y_SIZE)  y[i]   = Y_BASE+Y_SIZE-1;      // bounds
-      else if(y[i]   <= Y_BASE+1)  y[i]   = Y_BASE+1;   
-      if(y[i+1] >= Y_BASE+Y_SIZE)  y[i+1] = Y_BASE+Y_SIZE-1;
-      else if(y[i+1] <= Y_BASE+1)  y[i+1] = Y_BASE+1;
-      
-      if(y[i] == y[i+1]){
-        if((y[i] == Y_BASE+1)||(y[i] == Y_SIZE-1)) Dot_Hide[i] = 1;  // super-sector blanking
-        else {
-          if(y[i] >= Y_BASE+2)           y[i]   -= 1;              // horizontal bold
-          if(y[i+1] <= Y_BASE+Y_SIZE-2)  y[i+1] += 1;
-        }
-      }
-      if(y[i] > y[i+1]){                                             // order of
-        Tmp = y[i+1]; y[i+1]= y[i]; y[i]= Tmp; 
-      }
-    }
-  } 
-  __Row_DMA_Ready();
-  __Point_SCR(Row, MIN_Y);
-  
-  if(Row & 1){                                       // Odd row process
-//----------------------- Fill the row base data -------------------------------
-    __Row_Copy(Row_Base2, LCD_Buffer1);
-//------------------------- Draw the Curve data --------------------------------
-    if((Row > MIN_X)&&(Row < MAX_X)){        
-		
+        Dot_Hide[i] = 0;
+        y[i]   = TrackBuff[m + i/2];                  // endpoint to extract
+        y[i+1] = TrackBuff[n + i/2];
 
-		
-      if((Dot_Hide[0] == 0)&&(Title[TRACK1][SOURCE].Value != HIDE)){
-        if((y[1]-y[0])>5){
-          for(i=y[0]; i<=y[1]; ++i) LCD_Buffer2[i] |=Color[TR_1]-0x4200; // low brightness
-        } else {
-          for(i=y[0]; i<=y[1]; ++i) LCD_Buffer2[i] |=Color[TR_1];        // normal brightness
+        if(y[i]   >= Y_BASE+Y_SIZE)  y[i]   = Y_BASE+Y_SIZE-1;      // bounds
+        else if(y[i]   <= Y_BASE+1)  y[i]   = Y_BASE+1;   
+        if(y[i+1] >= Y_BASE+Y_SIZE)  y[i+1] = Y_BASE+Y_SIZE-1;
+        else if(y[i+1] <= Y_BASE+1)  y[i+1] = Y_BASE+1;
+
+        if(y[i] == y[i+1]){
+            if((y[i] == Y_BASE+1)||(y[i] == Y_SIZE-1)) Dot_Hide[i] = 1;  // super-sector blanking
+            else {
+                if(y[i] >= Y_BASE+2)           y[i]   -= 1;              // horizontal bold
+                if(y[i+1] <= Y_BASE+Y_SIZE-2)  y[i+1] += 1;
+            }
         }
-      }
-      if((Dot_Hide[2] == 0)&&(Title[TRACK2][SOURCE].Value != HIDE)){
-        if((y[3]-y[2])>5){
-          for(i=y[2]; i<=y[3]; ++i) LCD_Buffer2[i] |=Color[TR_2]-0x0208; // low brightness
-        } else {   
-          for(i=y[2]; i<=y[3]; ++i) LCD_Buffer2[i] |=Color[TR_2];        // normal brightness
+        if(y[i] > y[i+1]){                                             // order of
+            Tmp = y[i+1]; y[i+1]= y[i]; y[i]= Tmp; 
         }
-      }
-      if((Dot_Hide[4] == 0)&&(Title[TRACK3][SOURCE].Value != HIDE)){
-        if((y[5]-y[4])>5){
-          for(i=y[4]; i<=y[5]; ++i) LCD_Buffer2[i] |=Color[TR_3]-0x4008; // low brightness
-        } else {
-          for(i=y[4]; i<=y[5]; ++i) LCD_Buffer2[i] |=Color[TR_3];        // normal brightness
+    }
+  
+//------------------------- Draw the Curve data --------------------------------
+    for (t = TR_1; t <= TR_4; t++) {
+        if((Dot_Hide[(t-TR_1)*2] == 0)&&(Title[TRACK1+(t-TR_1)][SOURCE].Value != HIDE)) {
+            if((y[(t-TR_1)*2+1]-y[(t-TR_1)*2]) > 5) {
+                for(i=y[(t-TR_1)*2]; i<=y[(t-TR_1)*2+1]; ++i) {
+                    LCD_Buffer[i] |=Color[t]-0x4200; // low brightness
+                }
+            } else {
+                for(i=y[(t-TR_1)*2]; i<=y[(t-TR_1)*2+1]; ++i) {
+                    LCD_Buffer[i] |=Color[t];        // normal brightness
+                }
+            }
         }
-      }
-      if((Dot_Hide[6] == 0)&&(Title[TRACK4][SOURCE].Value != HIDE)){
-        if((y[7]-y[6])>5){
-          for(i=y[6]; i<=y[7]; ++i) LCD_Buffer2[i] |=Color[TR_4]-0x0200; // low brightness
-        } else {
-          for(i=y[6]; i<=y[7]; ++i) LCD_Buffer2[i] |=Color[TR_4];        // normal brightness
-        }
-      }
-	  
-	  		// FFT ///////
-      fftx = Row - MIN_X; // starts at 1
-       if ((fftx < FFTSize/2) && ShowFFT ) {
+    }
+
+    // FFT ///////
+    if (ShowFFT) {
+        fftx = Row - MIN_X; // starts at 1
+        if (fftx < FFTSize/2) {
             //val = arrin[fftx];
             val = fr[fftx];
             if (val >= 200) val = 199;
-            for (i=Y_BASE+1; i<val; i++) LCD_Buffer2[i] = GRN; //0x0ff0;
-
-            
-            if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++)  {LCD_Buffer2[i] = RED;RowMem=Row; }
-            else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer2[PeakFreq] = RED;
-            else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer2[i] = RED;
-
-               
-      } else if (ShowFFT)
-         for (i=Y_BASE+1; i<200; i++)
-            LCD_Buffer2[i] |= BLACK;
-
-            
-      /////////////   
+            for (i=Y_BASE+1; i<val; i++) LCD_Buffer[i] = GRN; //0x0ff0;
+            if ((fftx == imax - 4) || (fftx == imax + 4)) {
+                for (i=PeakFreq - 1; i<PeakFreq+1; i++) {
+                    LCD_Buffer[i] = RED;
+                    RowMem=Row; 
+                }
+            } else if ((fftx == imax - 3) || (fftx == imax + 3)) {
+                LCD_Buffer[PeakFreq] = RED;
+            } else if ((fftx == imax - 5) || (fftx == imax + 5)) {
+                for (i=PeakFreq - 2; i<PeakFreq+2; i++) { 
+                    LCD_Buffer[i] = RED;
+                }
+            }
+        } else {
+            for (i=Y_BASE+1; i<200; i++) {
+                LCD_Buffer[i] |= BLACK;
+            }
+        }
+    }
 		
 //------------------------- Draw the Trigg Vernie data -------------------------
-      if(Title[TRIGG][SOURCE].Value == TRACK1) 
-        LCD_Buffer2[V_Trigg[TRACK1].Value] |= Color[TR_1];
-      if(Title[TRIGG][SOURCE].Value == TRACK2) 
-        LCD_Buffer2[V_Trigg[TRACK2].Value] |= Color[TR_2];
-      if(Title[TRIGG][SOURCE].Value == TRACK3) 
-        LCD_Buffer2[V_Trigg[TRACK3].Value] |= Color[TR_3];
-      if(Title[TRIGG][SOURCE].Value == TRACK4) 
-        LCD_Buffer2[V_Trigg[TRACK4].Value] |= Color[TR_4];
+    for (t = TR_1; t <= TR_4; t++) {
+        if(Title[TRIGG][SOURCE].Value == TRACK1+(t-TR_1)) 
+            LCD_Buffer[V_Trigg[TRACK1+(t-TR_1)].Value] |= Color[t];
 //------------------------- Draw the X Vernie data -----------------------------
       Tmp =(MIN_X + 150)- _X_posi.Value;
       if(Tmp > MIN_X) {
         if((Row == Tmp)&&((_X_posi.Flag & HID)== 0)){
-          for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer2[i] |= Color[X_POSI];
+          for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer[i] |= Color[X_POSI];
         }
         if((Row == Tmp-1)||(Row == Tmp+1)){
-          LCD_Buffer2[Y_SIZE] = Color[X_POSI];
-          LCD_Buffer2[Y_BASE] = Color[X_POSI];
+          LCD_Buffer[Y_SIZE] = Color[X_POSI];
+          LCD_Buffer[Y_BASE] = Color[X_POSI];
         }
         if(Row == Tmp){
-          LCD_Buffer2[Y_SIZE]   = Color[X_POSI];
-          LCD_Buffer2[Y_SIZE-1] = Color[X_POSI];
-          LCD_Buffer2[Y_BASE+1] = Color[X_POSI];
-          LCD_Buffer2[Y_BASE]   = Color[X_POSI];
+          LCD_Buffer[Y_SIZE]   = Color[X_POSI];
+          LCD_Buffer[Y_SIZE-1] = Color[X_POSI];
+          LCD_Buffer[Y_BASE+1] = Color[X_POSI];
+          LCD_Buffer[Y_BASE]   = Color[X_POSI];
         }
       }
       Tmp = MIN_X + Title[T_VERNIE][T1].Value;
       if((Row == Tmp)&&((Title[T_VERNIE][T1].Flag & HID)== 0)){
-        for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer2[i] |= Color[VERNIE];
+        for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer[i] |= Color[VERNIE];
       }
       if((Row == Tmp-1)||(Row == Tmp+1)){
-        LCD_Buffer2[Y_SIZE] |= Color[VERNIE];
-        LCD_Buffer2[Y_BASE] |= Color[VERNIE];
+        LCD_Buffer[Y_SIZE] |= Color[VERNIE];
+        LCD_Buffer[Y_BASE] |= Color[VERNIE];
       }
       if(Row == Tmp){
-        LCD_Buffer2[Y_SIZE]   |= Color[VERNIE];
-        LCD_Buffer2[Y_SIZE-1] |= Color[VERNIE];
-        LCD_Buffer2[Y_BASE+1] |= Color[VERNIE];
-        LCD_Buffer2[Y_BASE]   |= Color[VERNIE];
+        LCD_Buffer[Y_SIZE]   |= Color[VERNIE];
+        LCD_Buffer[Y_SIZE-1] |= Color[VERNIE];
+        LCD_Buffer[Y_BASE+1] |= Color[VERNIE];
+        LCD_Buffer[Y_BASE]   |= Color[VERNIE];
       }
       Tmp = MIN_X + Title[T_VERNIE][T2].Value;
       if((Row == Tmp)&&((Title[T_VERNIE][T2].Flag & HID)== 0)){
-        for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer2[i] |= Color[VERNIE];
+        for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer[i] |= Color[VERNIE];
       }
       if((Row == Tmp-1)||(Row == Tmp+1)){
-        LCD_Buffer2[Y_SIZE] = Color[VERNIE];
-        LCD_Buffer2[Y_BASE] = Color[VERNIE];
+        LCD_Buffer[Y_SIZE] = Color[VERNIE];
+        LCD_Buffer[Y_BASE] = Color[VERNIE];
       }
       if(Row == Tmp){
-        LCD_Buffer2[Y_SIZE]   = Color[VERNIE];
-        LCD_Buffer2[Y_SIZE-1] = Color[VERNIE];
-        LCD_Buffer2[Y_BASE+1] = Color[VERNIE];
+        LCD_Buffer[Y_SIZE]   = Color[VERNIE];
+        LCD_Buffer[Y_SIZE-1] = Color[VERNIE];
+        LCD_Buffer[Y_BASE+1] = Color[VERNIE];
       }
     } 
 //------------------------- Draw the Y Vernie data -----------------------------
-      if((Row == MIN_X)||(Row == MAX_X)){
-        LCD_Buffer2[Title[V_VERNIE][V1].Value-1] |= Color[VERNIE];
-        LCD_Buffer2[Title[V_VERNIE][V1].Value+0] |= Color[VERNIE];
-        LCD_Buffer2[Title[V_VERNIE][V1].Value+1] |= Color[VERNIE];
-        LCD_Buffer2[Title[V_VERNIE][V2].Value-1] |= Color[VERNIE];
-        LCD_Buffer2[Title[V_VERNIE][V2].Value+0] |= Color[VERNIE];
-        LCD_Buffer2[Title[V_VERNIE][V2].Value+1] |= Color[VERNIE];
-      }
-    __LCD_Copy(LCD_Buffer2, Y_SIZE+1);               // Odd row Transitive
-  } else {                                           // Even row process
-//----------------------- Fill the row base data -------------------------------
-    if(Row+1 == MAX_X)                   __Row_Copy(Row_Base1, LCD_Buffer2);
-    else if(Row+1 == MIN_X)              ;
-    else if((Row+1 - MIN_X)%30 == 0)     __Row_Copy(Row_Base4, LCD_Buffer2);
-    else if((Row+1 - MIN_X)%6  == 0)     __Row_Copy(Row_Base3, LCD_Buffer2);
-    else                                 __Row_Copy(Row_Base2, LCD_Buffer2);
-//------------------------- Draw the Y Vernie data -----------------------------
     if((Row==MIN_X+1)||(Row==MAX_X-1)){
-        LCD_Buffer1[Title[V_VERNIE][V1].Value] |= Color[VERNIE];
-        LCD_Buffer1[Title[V_VERNIE][V2].Value] |= Color[VERNIE];
+        LCD_Buffer[Title[V_VERNIE][V1].Value] |= Color[VERNIE];
+        LCD_Buffer[Title[V_VERNIE][V2].Value] |= Color[VERNIE];
     }
       if((Title[V_VERNIE][V1].Flag & HID)== 0) 
-        LCD_Buffer1[Title[V_VERNIE][V1].Value] |= Color[VERNIE];
+        LCD_Buffer[Title[V_VERNIE][V1].Value] |= Color[VERNIE];
       if((Title[V_VERNIE][V2].Flag & HID)== 0) 
-        LCD_Buffer1[Title[V_VERNIE][V2].Value] |= Color[VERNIE];
-//------------------------- Draw the Curve data --------------------------------
-    if((Row > MIN_X)&&(Row < MAX_X)){          
+        LCD_Buffer[Title[V_VERNIE][V2].Value] |= Color[VERNIE];
+
+    if (ShowFFT) {
+        Print_Str_Row(Row, LCD_Buffer, 245, 4, 0xFFFF, INV, NFreqStr);
+        if ( PeakFreq>5){
+            if  ( RowMemPeak < 35)   
+                RowMemPeak = 35;
+            if (PeakFreq+14 > 178) {
+                Print_Str_Row(Row, LCD_Buffer,  RowMemPeak-20,  178, 0xFFFF, INV, PeakFreqStr);
+            } else {
+                Print_Str_Row(Row, LCD_Buffer,  RowMemPeak-20,  PeakFreq+14, 0xFFFF, INV, PeakFreqStr);
+            }
+        }
+        Print_Str_Row(Row, LCD_Buffer, 15, 189, 0xFFFF, INV, "Div:" ); 
+        Print_Str_Row(Row, LCD_Buffer, 50,189, 0xFFFF, INV, FreqDivStr);
+        Print_Str_Row(Row, LCD_Buffer, 200,189, 0xFFFF, INV, " T1:" ); 
+        Print_Str_Row(Row, LCD_Buffer, 235,189,0xFFFF, INV, FreqT1Str);
+    }
+}
+/*******************************************************************************
+ Draw_Oscill_Grid :  
+*******************************************************************************/
+void Draw_Oscill_Grid(u16 Row, u16 *LCD_Buffer)
+{
+    if(Row == MAX_X) {
+        __Row_Copy(Row_FullGray, LCD_Buffer);
+    } else if(Row == MIN_X) {
+        __Row_Copy(Row_FullGray, LCD_Buffer);
+    } else if((Row - MIN_X)%30 == 0) {
+        __Row_Copy(Row_VertDots, LCD_Buffer);
+    } else if((Row - MIN_X)%6  == 0) {
+        __Row_Copy(Row_HorizDots, LCD_Buffer);
+    } else {
+        __Row_Copy(Row_FullBlack, LCD_Buffer);
+    }
+}
+/*******************************************************************************
+ Draw_XY_Grid :  
+*******************************************************************************/
+void Draw_XY_Grid(u16 Row, u16 *LCD_Buffer)
+{
+    if ((Row == 260)||(Row+1 == MAX_X)) {
+        __Row_Copy(Row_FullGray, LCD_Buffer);
+    } else if(Row == MIN_X) {
+        __Row_Copy(Row_FullGray, LCD_Buffer);
+    } else if(((Row+1 - MIN_X)%25 == 0)&& (Row<260)) {
+        __Row_Copy(Row_VertDots, LCD_Buffer);
+    } else if(((Row+1 - MIN_X)%5  == 0)&& (Row<260)) {
+        __Row_Copy(Row_HorizDots, LCD_Buffer);
+    } else if (Row != 260) {
+        __Row_Copy(Row_FullBlack, LCD_Buffer);
+    }
+}
+/*******************************************************************************
+ Draw_Spec_Grid :  
+*******************************************************************************/
+void Draw_Spec_Grid(u16 Row, u16 *LCD_Buffer)
+{
+    __Row_Copy(Row_FullBlack, LCD_Buffer);
+}
+/*******************************************************************************
+ Draw_Row :  
+*******************************************************************************/
+void Draw_Row(u16 Row)
+{
+    u16* LCD_ActiveBuffer = LCD_Buffers[Row & 1];
+    u16* LCD_NextBuffer = LCD_Buffers[((Row & 1) + 1) & 1];
+
+  __Row_DMA_Ready();
+  __Point_SCR(Row, MIN_Y);
     
+    switch(_Mode) {
+        case AUTO:
+        case NORM:
+        case SGL:
+        case SCAN:
+            Draw_Oscill_Grid(Row, LCD_NextBuffer);
+            if ((Row > MIN_X) && (Row < MAX_X)) {
+                Draw_Row_Oscill(Row, LCD_ActiveBuffer); //Modo oscilloscopio
+            }
+            break;
+        case X_Y:
+        case X_Y_A:
+            Draw_XY_Grid(Row, LCD_NextBuffer);
+            if ((Row > MIN_X) && (Row < MAX_X)) {
+                Draw_Row_XY(Row, LCD_ActiveBuffer); //Modo X Y
+            }
+            break;
+        case SPEC:
+            Draw_Spec_Grid(Row, LCD_NextBuffer);
+            if ((Row > MIN_X) && (Row < MAX_X)) {
+                Draw_Row_Spec(Row, LCD_ActiveBuffer); //Spectogram
+            }
+            break;
+    }
+    __LCD_Copy(LCD_ActiveBuffer, Y_SIZE+1);               // Row Transitive
 
-		
-      if((Dot_Hide[0] == 0)&&(Title[TRACK1][SOURCE].Value != HIDE)){
-        if((y[1]-y[0])>5){
-          for(i=y[0]; i<=y[1]; ++i) LCD_Buffer1[i] |=Color[TR_1]-0x4200; // low brightness
-        } else {
-          for(i=y[0]; i<=y[1]; ++i) LCD_Buffer1[i] |=Color[TR_1];        // normal brightness
-        }
-      }
-      if((Dot_Hide[2] == 0)&&(Title[TRACK2][SOURCE].Value != HIDE)){
-        if((y[3]-y[2])>5){
-          for(i=y[2]; i<=y[3]; ++i) LCD_Buffer1[i] |=Color[TR_2]-0x0208; // low brightness
-        } else {   
-          for(i=y[2]; i<=y[3]; ++i) LCD_Buffer1[i] |=Color[TR_2];        // normal brightness
-        }
-      }
-      if((Dot_Hide[4] == 0)&&(Title[TRACK3][SOURCE].Value != HIDE)){
-        if((y[5]-y[4])>5){
-          for(i=y[4]; i<=y[5]; ++i) LCD_Buffer1[i] |=Color[TR_3]-0x4008; // low brightness
-        } else {
-          for(i=y[4]; i<=y[5]; ++i) LCD_Buffer1[i] |=Color[TR_3];        // normal brightness
-        }
-      }
-      if((Dot_Hide[6] == 0)&&(Title[TRACK4][SOURCE].Value != HIDE)){
-        if((y[7]-y[6])>5){
-          for(i=y[6]; i<=y[7]; ++i) LCD_Buffer1[i] |=Color[TR_4]-0x0200; // low brightness
-        } else {
-          for(i=y[6]; i<=y[7]; ++i) LCD_Buffer1[i] |=Color[TR_4];        // normal brightness
-        }
-      }
-	  
-	  	  		// FFT ///////
-      fftx = (Row - MIN_X); //starts at 1
-       if ((fftx < FFTSize/2) && ShowFFT) {
-            //val = arrin[fftx];
-            val = fr[fftx];
-            if (val >= 200) val = 199;
-            for (i=Y_BASE+1; i<val; i++) LCD_Buffer1[i] = GRN; //0x0ff0;
-
-            
-            if ((fftx == imax - 4) || (fftx == imax + 4)) for (i=PeakFreq - 1; i<PeakFreq+1; i++){ LCD_Buffer1[i] = RED; RowMem=Row;}
-            else if ((fftx == imax - 3) || (fftx == imax + 3)) LCD_Buffer1[PeakFreq] = RED;
-            else if ((fftx == imax - 5) || (fftx == imax + 5)) for (i=PeakFreq - 2; i<PeakFreq+2; i++) LCD_Buffer1[i] = RED;
-
-
-
-
-			
-			
-
-      } else if (ShowFFT)
-         for (i=Y_BASE+1; i<200; i++)
-            LCD_Buffer1[i] |=BLACK;
-      /////////////
-	  }
-//------------------------- Draw the X Vernie data -----------------------------
-      Tmp =(MIN_X + 150)- _X_posi.Value;
-      if(Tmp > MIN_X) {
-        if((Row == Tmp)&&((_X_posi.Flag & HID)== 0)){
-          for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer1[i] |= Color[X_POSI];
-        }
-        if((Row == Tmp-1)||(Row == Tmp+1)){
-          LCD_Buffer1[Y_SIZE] = Color[X_POSI];
-          LCD_Buffer1[Y_BASE] = Color[X_POSI];
-        }
-        if(Row == Tmp){
-          LCD_Buffer1[Y_SIZE]   = Color[X_POSI];
-          LCD_Buffer1[Y_SIZE-1] = Color[X_POSI];
-          LCD_Buffer1[Y_BASE+1] = Color[X_POSI];
-          LCD_Buffer1[Y_BASE]   = Color[X_POSI];
-        }
-      }
-      Tmp = MIN_X + Title[T_VERNIE][T1].Value;
-      if((Row == Tmp)&&((Title[T_VERNIE][T1].Flag & HID)== 0)){
-        for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer1[i] |= Color[VERNIE];
-      }
-      if((Row == Tmp-1)||(Row == Tmp+1)){
-        LCD_Buffer1[Y_SIZE] = Color[VERNIE];
-        LCD_Buffer1[Y_BASE] = Color[VERNIE];
-      }
-      if(Row == Tmp){
-        LCD_Buffer1[Y_SIZE]   = Color[VERNIE];
-        LCD_Buffer1[Y_SIZE-1] = Color[VERNIE];
-        LCD_Buffer1[Y_BASE+1] = Color[VERNIE];
-      }
-      Tmp = MIN_X + Title[T_VERNIE][T2].Value;
-      if((Row == Tmp)&&((Title[T_VERNIE][T2].Flag & HID)== 0)){
-        for(i = 1; i < Y_SIZE; i+=3) LCD_Buffer1[i] |= Color[VERNIE];
-      }
-      if((Row == Tmp-1)||(Row == Tmp+1)){
-        LCD_Buffer1[Y_SIZE] = Color[VERNIE];
-        LCD_Buffer1[Y_BASE] = Color[VERNIE];
-      }
-      if(Row == Tmp){
-        LCD_Buffer1[Y_SIZE]   = Color[VERNIE];
-        LCD_Buffer1[Y_SIZE-1] = Color[VERNIE];
-        LCD_Buffer1[Y_BASE+1] = Color[VERNIE];
-      }
-    __LCD_Copy(LCD_Buffer1, Y_SIZE+1);             // Even row Transitive
-  }
 }
 /*******************************************************************************
  Draw_Window :  
 *******************************************************************************/
 void Draw_Window(void)						
 { 
-  u16 Row;
-   u16 h;
+    u16 Row;
+    u16 h;
    
-  __Row_DMA_Ready();
-  if (_Mode == SPEC)	__Row_Copy(Row_Base2, LCD_Buffer2);
-  else  				__Row_Copy(Row_Base1, LCD_Buffer2);
-  __Row_DMA_Ready();
-  __Row_Copy(Row_Base2, LCD_Buffer1);
- 
-  if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK1][SOURCE].Value == HIDE)) for (h = 0; h <= X_SIZE; ++h) TrackBuff[h*4]=105;		//#pmos69 limit by X_SIZE, instead of 400
-  if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK2][SOURCE].Value == HIDE)) for (h = 0; h <= X_SIZE; ++h) TrackBuff[(h*4)+1]=100;	//#pmos69 limit by X_SIZE, instead of 400
-  
-	if ((_Mode!=X_Y) && (_Mode!=X_Y_A)) {
-	
-		if (_Mode != SPEC)
-			for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row(Row); //Modo oscilloscopio
-		else {
-			if (SpecRow > MAX_X) SpecRow = 0;
-			Draw_Row_Spec(SpecRow); //Spectogram
-			SpecRow++;
-		}
-	}
-  if ((_Mode==X_Y) || (_Mode==X_Y_A)) for(Row = MIN_X; Row <= MAX_X; ++Row) Draw_Row_XY(Row); //Modo X Y
+    __Row_Copy(Row_FullBlack, LCD_Buffers[0]);
+    __Row_DMA_Ready();
 
-  __LCD_DMA_Ready();
-  __Row_DMA_Ready();
-  
-  if (ShowFFT) {
+    if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK1][SOURCE].Value == HIDE)) {
+        for (h = 0; h <= X_SIZE; ++h) {
+            TrackBuff[h*4]=105;       //#pmos69 limit by X_SIZE, instead of 400
+        }
+    }
+    if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK2][SOURCE].Value == HIDE)) {
+        for (h = 0; h <= X_SIZE; ++h) {
+            TrackBuff[(h*4)+1]=100;   //#pmos69 limit by X_SIZE, instead of 400
+        }
+    }
 
+    if (_Mode == SPEC) {
+        if (SpecRow > MAX_X) {
+            SpecRow = 0;
+        }
+        Draw_Row(SpecRow);
+        SpecRow++;
+    } else {
+        for(Row = MIN_X; Row <= MAX_X; ++Row) {
+            Draw_Row(Row);
+        }
+    }
 
-        ; Print_Str( 252, 15, 0xFFFF, INV, NFreqStr);
-     //    Print_Str(  RowMem, PeakFreq, 0x0005, PRN, "Max:" );
-      if ( PeakFreq>5)
-      {
-         if  ( RowMem<35)   RowMem=35;
-        Print_Str(  RowMem-20,  PeakFreq+25, 0xFFFF, INV, PeakFreqStr);
-      }
-         Print_Str( 15, 200, 0xFFFF, INV, "Div:" ); Print_Str( 50,200, 0xFFFF, INV, FreqDivStr);
-
-
-
-
-         Print_Str( 200,200, 0xFFFF, INV, " T1:" ); Print_Str( 235,200,0xFFFF, INV, FreqT1Str);
-      }
-		
+    RowMemPeak = RowMem;
+    __LCD_DMA_Ready();
+    __Row_DMA_Ready();
 }
 /*******************************************************************************
  Draw_Mark :  Routine per un marcatore laterale
@@ -819,11 +806,10 @@ void Clear_Meter_Area(void)
 /*******************************************************************************
 Draw_Row_XY   Disegna il grafico X Y
 *******************************************************************************/
-void Draw_Row_XY(u16 Row)
+void Draw_Row_XY(u16 Row, u16 *LCD_Buffer)
 { 
   u8  i, y[8]; 
   s16 Tmp, m, n ;
-  if((Row > MIN_X)&&(Row <= MAX_X)){              
     m = (Row - MIN_X-1)* 4;
     n = (Row - MIN_X)  * 4;
     for(i = 0; i < 8; i += 2) {
@@ -847,27 +833,12 @@ void Draw_Row_XY(u16 Row)
         Tmp = y[i+1]; y[i+1]= y[i]; y[i]= Tmp; 
       }
     }
-  } 
-  __Row_DMA_Ready();
-  __Point_SCR(Row, MIN_Y);
   
    u16 h;
   u16 TempY;
    u16 TempX;
    
-  
-   
-  if(Row & 1){                                       // Odd row process
-//----------------------- Fill the row base data -------------------------------
-    __Row_Copy(Row_Base2, LCD_Buffer1);
 //------------------------- Draw the Curve data --------------------------------
-  
-    if((Row == 260)||(Row+1 == MAX_X))                 __Row_Copy(Row_Base1, LCD_Buffer2);
-    else if(Row == MIN_X)             __Row_Copy(Row_Base1, LCD_Buffer2);
-    else if(((Row+1 - MIN_X)%25 == 0)&& (Row<260))     __Row_Copy(Row_Base4, LCD_Buffer2);  //%30
-    else if(((Row+1 - MIN_X)%5  == 0)&& (Row<260))     __Row_Copy(Row_Base3, LCD_Buffer2); //%6
-    else if (Row != 260)                                __Row_Copy(Row_Base2, LCD_Buffer2);
-
   for(h = 0; h <= 255; ++h)
   {
      TempX=(TrackBuff[(h*4)])+OffsetX-108;   //*5/4
@@ -876,7 +847,7 @@ void Draw_Row_XY(u16 Row)
      if ((TempY>0) && (TempY<200) && (TempX>0) && (TempX<250)){
          
          if   (TempX==Row)
-         {LCD_Buffer2[TempY] |= Color[TR_4];
+         {LCD_Buffer[TempY] |= Color[TR_4];
          
      }    
      }
@@ -886,7 +857,7 @@ void Draw_Row_XY(u16 Row)
            if (Row>5)
             {
               if ((Row<((OffsetX)+5)) && (Row>((OffsetX)-5))){  
-              LCD_Buffer2[h] |= Color[TR_3];
+              LCD_Buffer[h] |= Color[TR_3];
             }
            }
          }
@@ -898,61 +869,12 @@ void Draw_Row_XY(u16 Row)
            if (h>5)
             {
               if ((h<OffsetY+5) && (h>OffsetY-5)){  
-              LCD_Buffer2[h] |= Color[TR_3];
+              LCD_Buffer[h] |= Color[TR_3];
             }
            }
          }
   
  } 
-  
-    __LCD_Copy(LCD_Buffer2, Y_SIZE+1);               // Odd row Transitive
-  } else {                                           // Even row process
-//----------------------- Fill the row base data -------------------------------
-      if((Row == 260)||(Row+1 == MAX_X))                 __Row_Copy(Row_Base1, LCD_Buffer1);
-    else if(Row == MIN_X)             __Row_Copy(Row_Base1, LCD_Buffer1);
-    else if(((Row+1 - MIN_X)%25 == 0)&& (Row<260))     __Row_Copy(Row_Base4, LCD_Buffer1);  //%30
-    else if(((Row+1 - MIN_X)%5  == 0)&& (Row<260))     __Row_Copy(Row_Base3, LCD_Buffer1); //%6
-    else if (Row != 260)                                __Row_Copy(Row_Base2, LCD_Buffer1);
- 
-   for(h = 0; h <= 255; ++h){
-  
-      TempX=(TrackBuff[(h*4)])+OffsetX-108;  //*5/4
-     TempY=TrackBuff[(h*4)+1]+OffsetY-100;
-    
-     if ((TempY>0) && (TempY<200) && (TempX>0) && (TempX<250)){
-  
-         if   (TempX==Row)
-         {LCD_Buffer1[TempY] |= Color[TR_4];
-           
-    }
-     
-     }
-                  
-   if (h== OffsetY)
-         {
-           if (Row>5)
-            {
-              if ((Row<((OffsetX)+5)) && (Row>((OffsetX)-5))){  
-              LCD_Buffer1[h] |= Color[TR_3];
-            }
-           }
-         }
-         
-         if ((Row==OffsetX))
-         {
-           if (h>5)
-            {
-              if ((h<OffsetY+5) && (h>OffsetY-5)){  
-              LCD_Buffer1[h] |= Color[TR_3];
-            }
-           }
-         }
-
-  }
-  
-  
-    __LCD_Copy(LCD_Buffer1, Y_SIZE+1);             // Even row Transitive
-  }
 }
 
 
@@ -1006,54 +928,21 @@ u32 interpolate(u32 clra, u32 clrb, u8 ratio)
 /*******************************************************************************
  Draw_Row_Spec : to ease the DMA conflict, in two buffers alternately
 *******************************************************************************/
-void Draw_Row_Spec(u16 Row)
+void Draw_Row_Spec(u16 Row, u16 *LCD_Buffer)
 { 
   u8  i;
   int val= 0;
    
-  __Row_DMA_Ready();
-  __Point_SCR(Row, MIN_Y);
-  
   InitColors();
   
-  if(Row & 1){                                       // Odd row process
-//----------------------- Fill the row base data -------------------------------
-    __Row_Copy(Row_Base2, LCD_Buffer1);
 //------------------------- Draw the Curve data --------------------------------
-    if(Row < MAX_X){        
-	  
-		
-		for (i=Y_BASE+1; i<200; i++) {
-			val = fr[i-Y_BASE];
-			if (val >= 200) val = 199;
-			LCD_Buffer2[i] = colors[val];
-		}
+    for (i=Y_BASE+1; i<200; i++) {
+    	val = fr[i-Y_BASE];
+    	if (val >= 200) val = 199;
+    	LCD_Buffer[i] = colors[val];
+    }
      
-    } 
-
-    __LCD_Copy(LCD_Buffer2, Y_SIZE+1);               // Odd row Transitive
-
-	} else {                                           // Even row process
-//----------------------- Fill the row base data -------------------------------
-     __Row_Copy(Row_Base2, LCD_Buffer2);
-//------------------------- Draw the Curve data --------------------------------
-    if(Row < MAX_X){          
-	  
-		
-		for (i=Y_BASE+1; i<200; i++) {
-			val = fr[i-Y_BASE];
-			if (val >= 200) val = 199;
-			LCD_Buffer1[i] = colors[val];
-		}
-	  }
-	  
-    __LCD_Copy(LCD_Buffer1, Y_SIZE+1);             // Even row Transitive
-  }
 }
-
-
-
-
 
 // void DrawPixel(u16 x, u16 y, u16 clr) {
     // __Point_SCR(x, y);

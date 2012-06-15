@@ -72,6 +72,11 @@ typedef struct
 #define TRACK_OFFSET  2
 //#define MAX_X       (X_SIZE + MIN_X)
 #define MAX_Y       (Y_SIZE + MIN_Y)
+
+#define CHAR_WIDTH  8
+#define CHAR_HEIGHT 11
+
+
 extern u8 OffsetX;
 extern u8 OffsetY;
 extern u16 MAX_X;
@@ -79,15 +84,16 @@ extern u8 FlagFrameMode;
 extern u8 FlagMeter;
 extern u8 TrgAuto;
 extern u16 Color[16];
-extern u16 LCD_Buffer1[240], LCD_Buffer2[240];
+
 extern trigg V_Trigg[4];
 u16  Get_TAB_8x11(u8 Code, u8 Row);
 u8   Get_Ref_Wave(u16 i);
 void Print_Clk(u16 x0, u16 y0, u16 Type, u8 Phase);
 void Print_Str(u16 x0, u16 y0, u16 Color, u8 Mode, char *s);
-void Draw_Row(u16 Row);
-void Draw_Row_XY(u16 Row);
-void Draw_Row_Spec(u16 Row);
+void Print_Str_Row(u16 Row, u16* LCD_Buffer, u16 x0, u16 y0, u16 Color, u8 Mode, char *s);
+void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer);
+void Draw_Row_XY(u16 Row, u16 *LCD_Buffer);
+void Draw_Row_Spec(u16 Row, u16 *LCD_Buffer);
 void Draw_Window(void);						
 void Draw_Mark(u16 m, u16 n);						
 void Update_Mark(void);						
