@@ -411,14 +411,8 @@ void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer)
 //------------------------- Draw the Curve data --------------------------------
     for (t = TR_1; t <= TR_4; t++) {
         if((Dot_Hide[(t-TR_1)*2] == 0)&&(Title[TRACK1+(t-TR_1)][SOURCE].Value != HIDE)) {
-            if((y[(t-TR_1)*2+1]-y[(t-TR_1)*2]) > 5) {
-                for(i=y[(t-TR_1)*2]; i<=y[(t-TR_1)*2+1]; ++i) {
-                    LCD_Buffer[i] |=Color[t]-0x4200; // low brightness
-                }
-            } else {
-                for(i=y[(t-TR_1)*2]; i<=y[(t-TR_1)*2+1]; ++i) {
-                    LCD_Buffer[i] |=Color[t];        // normal brightness
-                }
+            for(i=y[(t-TR_1)*2]; i<=y[(t-TR_1)*2+1]; ++i) {
+                LCD_Buffer[i] |=Color[t];        // normal brightness
             }
         }
     }

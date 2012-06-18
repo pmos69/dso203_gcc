@@ -1,4 +1,4 @@
-DSO203 GCC v1.22 APP - Community Edition
+DSO203 GCC v1.23 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
@@ -66,6 +66,9 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.23
+- Fix track color inconsistence for 'vertical' part of track (vblack)
 
 v1.22
 - FFT flickering fix, with improved drawing code (vblack)
