@@ -57,7 +57,7 @@ APP V2.50 rewrite based on the new FAT12 file system, file read and write proced
 APP V2.51 modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "     GCC v1.23 APP Community Edition"
+#define APP_VERSION       "     GCC v1.24 APP Community Edition"
 
 u8 OldMode;
 u16 OldPosi;

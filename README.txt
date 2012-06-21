@@ -1,4 +1,4 @@
-DSO203 GCC v1.23 APP - Community Edition
+DSO203 GCC v1.24 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
@@ -66,6 +66,12 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.24
+- (Quick&Dirty) Fix for analog channels sampling delay in relation to the digital channels
+	- 5 sample shift in the display of the analog channels when any digital channel is also visible - the first 5 samples are dropped from display
+- Fix for the clipping of values exported to CVS
+	- Now has full range of 0-255 instead of 0-200
 
 v1.23
 - Fix track color inconsistence for 'vertical' part of track (vblack)

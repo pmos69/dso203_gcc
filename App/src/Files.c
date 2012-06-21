@@ -318,12 +318,12 @@ u8 Save_Csv(u8 FileNum)
   for(i=0; i<4096; i++){
     temp=Ka1[_A_Range]+((Ka2[_A_Range]*(DataBuf[i] & 0xff))+512)/1024;
     if(temp > 0){
-      if(temp > 200)  track[0] = 199;
+      if(temp > 255)  track[0] = 255;
       else            track[0] = temp;
     } else            track[0] = 0;
     temp = Kb1[_B_Range]+((Kb2[_B_Range]*(DataBuf[i] & 0xff00)>>8)+512)/1024;
     if(temp > 0){
-      if(temp > 200)  track[1] = 199;
+      if(temp > 255)  track[1] = 255;
       else            track[1] = temp;
     } else            track[1] = 0;
     if((DataBuf[i] & 0x010000)==0)  track[2] = Title[TRACK3][POSI].Value;

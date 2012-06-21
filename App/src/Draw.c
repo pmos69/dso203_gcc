@@ -379,18 +379,26 @@ void Print_Str_Row(u16 Row, u16* LCD_Buffer, u16 x0, u16 y0, u16 Type, u8 Mode, 
 *******************************************************************************/
 void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer)
 { 
-    u8  t, i, y[8], Dot_Hide[8]; 
+    u8  t, i, y[8], Dot_Hide[8], Delay; 
     s16 Tmp, m, n ;
     int fftx, val= 0;
   
   // waveform display data preprocessing
     m = (Row - MIN_X-1)* 4;
     n = (Row - MIN_X)  * 4;
+	Delay = 0;
     for(i = 0; i < 8; i += 2) {
         Dot_Hide[i] = 0;
-        y[i]   = TrackBuff[m + i/2];                  // endpoint to extract
-        y[i+1] = TrackBuff[n + i/2];
-
+		  if (((i<4) && ((_3_source  != HIDE) || ((_4_source != HIDE) && (_4_source != FFT_A) && (_4_source != FFT_B)))) ||
+				((i==6) && ((_4_source == A_add_B) ||(_4_source == A_sub_B)))) {
+				Delay = 5;
+			y[i]   = TrackBuff[m+(Delay*4) + i/2];                  // endpoint to extract
+			y[i+1] = TrackBuff[n+(Delay*4) + i/2];
+		} else {
+			y[i]   = TrackBuff[m + i/2];                  // endpoint to extract
+			y[i+1] = TrackBuff[n + i/2];
+		}
+		
         if(y[i]   >= Y_BASE+Y_SIZE)  y[i]   = Y_BASE+Y_SIZE-1;      // bounds
         else if(y[i]   <= Y_BASE+1)  y[i]   = Y_BASE+1;   
         if(y[i+1] >= Y_BASE+Y_SIZE)  y[i+1] = Y_BASE+Y_SIZE-1;
@@ -412,7 +420,9 @@ void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer)
     for (t = TR_1; t <= TR_4; t++) {
         if((Dot_Hide[(t-TR_1)*2] == 0)&&(Title[TRACK1+(t-TR_1)][SOURCE].Value != HIDE)) {
             for(i=y[(t-TR_1)*2]; i<=y[(t-TR_1)*2+1]; ++i) {
-                LCD_Buffer[i] |=Color[t];        // normal brightness
+				if ((FlagMeter==1) || (Row < (MAX_X - (Delay * 2)))) {
+					LCD_Buffer[i] |=Color[t];        // normal brightness
+				}
             }
         }
     }
