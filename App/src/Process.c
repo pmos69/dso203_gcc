@@ -34,7 +34,8 @@ u8  b_Mid_H, b_Mid_L;
 s8  Kab;                                     // analog channel zero balance correction factor
 u32 a_Avg, b_Avg, a_Ssq, b_Ssq;              // the average cumulative sum of squares of the cumulative
 u8  a_Max, b_Max, a_Min, b_Min;              // the original maximum value, the original minimum value
-s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
+//s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
+s16 Posi_412, Posi_41_2, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
 s16 c_Max, d_Max, A_Posi, B_Posi;
 
  
@@ -324,6 +325,7 @@ void Process(void)
   TaN = 0; TbN = 0; TcN = 0; TdN = 0; 
 
   Posi_412 = _4_posi - _1_posi - _2_posi;
+  Posi_41_2 = _4_posi - _1_posi + _2_posi;
   Posi_41  = _4_posi - _1_posi;
   Posi_42  = _4_posi - _2_posi;
   Posi_4_2 = _4_posi + _2_posi;
@@ -536,8 +538,8 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
 	
 	break;
   case A_sub_B:
-    Tmp = Posi_412 + Va - Vb;
-    
+    //Tmp = Posi_412 + Va - Vb;
+     Tmp = Posi_41_2 + Va - Vb;
 	
 	
 	break;

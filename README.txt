@@ -1,4 +1,4 @@
-DSO203 GCC v1.24 APP - Community Edition
+DSO203 GCC v1.25 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
@@ -23,7 +23,6 @@ Main button functions:
 
 - Button 1 (>||)
 	- Short press:	Toggle Run/Hold status
-	- Long press:	Toggle display of Channel A FFT on/off
 - Button 2 (square)
 	- Short press:	Select auto trigger level preset
 	- Long press:	Calibrate (select channel A or B first)
@@ -34,6 +33,9 @@ Main button functions:
 	- Short press:	Change between meters presets
 	- Long press:	Toggle between full buffer mode (4096 samples) and short buffer mode (just enough samples to fill LCD)
 
+- FFT function (channels A or B) available in the channel 4 menu.
+- Simple Spectrogram (Test version) available in the trigger mode/X_Y menu (only works if FFT function is active)
+
 -------------------------------------------
 
 Access source in github:
@@ -43,7 +45,7 @@ or get a zip with the complete tree here:
   https://github.com/pmos69/dso203_gcc/zipball/master
   
 To build, simply edit makefile.bat to reflect the location of your Arm toolchain and the windows drive letter of the DSO.
-The App will be built and copied to the DSO (first connect and boot the DSO in upgrade mode)
+The App will be built and copied to the DSO (first connect and boot the DSO in upgrade mode - turn on while pressing Button 1 >|| )
 
 -------------------------------------------
 
@@ -58,14 +60,17 @@ All thanks to:
 - The original firmware developers
 - Marco Sinatti (marcosin)
 - Gabriel Valky (gabonator1)
-- Ivan Mellen
 - JackTheVendicator
 - Jerson (http://jerson.co.in)
 - vblack
+- dementianati
 
 -------------------------------------------
 
 Revisions:
+
+v1.25
+- Patch for Process.c to correct problem with (A-B) calculation. (dementianati)
 
 v1.24
 - (Quick&Dirty) Fix for analog channels sampling delay in relation to the digital channels
@@ -84,7 +89,7 @@ v1.21
 
 v1.20
 - Improvements in the FFT (Marco Sinatti):
-	- The FFT function and FFT source can be selected from the track4 menù, it's possible to select the ch A or ch B.
+	- The FFT function and FFT source can be selected from the track4 menu, it's possible to select the ch A or ch B.
 		They are displayed as track4 math results.
 	- Changed some colors
 	- Changed the FFT meter positions, the max meter moves along the peak position
