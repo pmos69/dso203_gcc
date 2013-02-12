@@ -1,4 +1,4 @@
-DSO203 GCC v1.25 APP - Community Edition
+DSO203 GCC v1.26 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
@@ -47,6 +47,8 @@ or get a zip with the complete tree here:
 To build, simply edit makefile.bat to reflect the location of your Arm toolchain and the windows drive letter of the DSO.
 The App will be built and copied to the DSO (first connect and boot the DSO in upgrade mode - turn on while pressing Button 1 >|| )
 
+If you just want the APP, get it here: http://pmos69.net/dso203/APP_G251.hex
+
 -------------------------------------------
 
 Uses CodeSourcery Arm toolchain:
@@ -68,6 +70,9 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.26
+- readme changes
 
 v1.25
 - Patch for Process.c to correct problem with (A-B) calculation. (dementianati)
