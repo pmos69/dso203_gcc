@@ -7,8 +7,8 @@ Hopefully, the users community can get involved and contribute more fixes and en
 (Win32 GCC support by gabonator1)
  
 Tested with:
-	- SYS 1.50 1.6 from Marco Sinatti
-	- FPGA 2.61
+	- SYS 1.50 1.6 from Marco Sinatti ( http://pmos69.net/dso203/SYS25116.hex )
+	- FPGA 2.61 ( http://pmos69.net/dso203/FPGA261.zip )
 	- HW 2.6
 
 PS: Do a calibration after changing firmware.
