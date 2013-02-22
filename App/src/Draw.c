@@ -7,13 +7,13 @@
 #include "Menu.h"
 #include "BIOS.h"
 #include "Function.h"
- 
+
 u16 MAX_X;
 uc16 RULE_BASE[8] ={0x020,0x040,0x080,0x040,0x020,0x010,0x008,0x010};
 u8 OffsetX;
 u8 OffsetY;
 u16 SpecRow = 0;
-u16 colors[200];
+u8 colors[200];
 u16 RowMem, RowMemPeak;
 
 uc8  Mark_TAB[5][7] ={{0x00,0x00,0x42,0xFE,0x02,0x00,0x00},    // Mark 1
@@ -60,7 +60,8 @@ uc16 Char_TAB_8x11[744] = {
   0x000,0x020,0x070,0x0D8,0x18C,0x306,0x202,0x000, // <
   0x090,0x090,0x090,0x090,0x090,0x090,0x000,0x000, // =  
   0x000,0x202,0x306,0x18C,0x0D8,0x070,0x020,0x000, // >
-  0x018,0x01C,0x004,0x344,0x364,0x03C,0x018,0x000, // ? 
+  //0x018,0x01C,0x004,0x344,0x364,0x03C,0x018,0x000, // ?
+  0x07F,0x008,0x0D4,0x322,0x441,0x300,0x0C0,0x000, // ? Kv
   //0x1F8,0x104,0x272,0x272,0x2F2,0x284,0x078,0x000, // @ 
   0x3FE,0x020,0x3FE,0x000,0x320,0x2A0,0x260,0x000, // @		Hz
   0x3F0,0x3F8,0x04C,0x046,0x04C,0x3F8,0x3F0,0x000, // A
@@ -122,26 +123,10 @@ uc16 Char_TAB_8x11[744] = {
   0x038,0x278,0x240,0x240,0x240,0x1F8,0x0F8,0x000, // y
   0x318,0x388,0x2C8,0x268,0x238,0x318,0x000,0x000, // z 
   0x0F8,0x088,0x38E,0x022,0x2FA,0x2FA,0x2FA,0x2FA, // { battery head
-  0x000,0x000,0x000,0x3FE,0x3FE,0x000,0x000,0x000, // | 
+  0x000,0x000,0x000,0x3FE,0x3FE,0x000,0x000,0x000, // |
   0x2FA,0x2FA,0x2FA,0x2FA,0x2FA,0x202,0x3FE,0x000, // } battery last
-  0x0F8,0x088,0x38E,0x202,0x202,0x202,0x202,0x202};// ~ battery empty head
+  0x0F8,0x088,0x38E,0x202,0x202,0x202,0x202,0x202};// ~ battery empty head 
 
-uc8  Ref_Wave [300] =   // sample waveform description
-{100,116,130,144,157,167,175,181,185,185,184,179,173,164,153,141,128,114,100, 86,
-  73, 60, 49, 40, 33, 27, 24, 24, 25, 29, 35, 43, 52, 63, 75, 87,100,112,124,135,
- 145,153,160,164,167,167,166,163,157,150,142,133,122,111,100, 89, 79, 70, 61, 54,
-  48, 44, 42, 42, 43, 46, 50, 57, 64, 72, 81, 90,100,109,118,126,133,139,144,147,
- 149,149,148,146,142,137,130,124,116,108,100, 93, 85, 79, 73, 68, 64, 61, 60, 60,
-  61, 63, 66, 70, 75, 81, 87, 93,100,106,112,117,122,125,128,130,131,131,131,129,
- 126,123,119,115,110,105,100, 96, 91, 88, 84, 81, 79, 78, 77, 78, 78, 80, 82, 84, 
-  87, 90, 93, 97,100,103,106,108,110,112,113,114,114,113,113,112,110,109,107,105,
- 104,102,100,99, 97, 96, 96, 95, 95, 95, 95, 96, 96, 97, 97, 98, 99, 99, 100,100,
- 100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,
- 100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,
- 100,100,100,100,100,115,129,141,151,160,165,169,170,169,167,162,156,148,139,130,
- 120,110,100, 91, 82, 75, 68, 63, 59, 57, 56, 56, 58, 61, 64, 69, 75, 81, 87, 94,
- 100,106,112,117,121,125,127,129,130,130,128,127,124,121,117,113,109,104,100, 96, 
-  92, 88, 85, 83, 81, 80, 79, 79, 80, 81, 83, 85, 88, 91, 94, 97,100,103,106,108,};
 
    
 uc16  Row_FullGray[201] =     // with only the vertical edges of the column the basis of data
@@ -272,13 +257,14 @@ u16 Get_TAB_8x11(u8 Code, u8 Row)
         return Char_TAB_8x11[((Code-0x22)*8)+Row];
     }
 }
+
 /*******************************************************************************
  Get_Ref_Wave: 
 *******************************************************************************/
-u8 Get_Ref_Wave(u16 i)
+/*u8 Get_Ref_Wave(u16 i)
 {
   return Ref_Wave[i];
-}
+}*/
 /*******************************************************************************
  Print_Clk:  progress indicator
 *******************************************************************************/
@@ -379,26 +365,18 @@ void Print_Str_Row(u16 Row, u16* LCD_Buffer, u16 x0, u16 y0, u16 Type, u8 Mode, 
 *******************************************************************************/
 void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer)
 { 
-    u8  t, i, y[8], Dot_Hide[8], Delay; 
+    u8  t, i, y[8], Dot_Hide[8]; 
     s16 Tmp, m, n ;
     int fftx, val= 0;
   
   // waveform display data preprocessing
     m = (Row - MIN_X-1)* 4;
     n = (Row - MIN_X)  * 4;
-	Delay = 0;
     for(i = 0; i < 8; i += 2) {
         Dot_Hide[i] = 0;
-		  if (((i<4) && ((_3_source  != HIDE) || ((_4_source != HIDE) && (_4_source != FFT_A) && (_4_source != FFT_B)))) ||
-				((i==6) && ((_4_source == A_add_B) ||(_4_source == A_sub_B)))) {
-				Delay = 5;
-			y[i]   = TrackBuff[m+(Delay*4) + i/2];                  // endpoint to extract
-			y[i+1] = TrackBuff[n+(Delay*4) + i/2];
-		} else {
-			y[i]   = TrackBuff[m + i/2];                  // endpoint to extract
-			y[i+1] = TrackBuff[n + i/2];
-		}
-		
+        y[i]   = TrackBuff[m + i/2];                  // endpoint to extract
+        y[i+1] = TrackBuff[n + i/2];
+
         if(y[i]   >= Y_BASE+Y_SIZE)  y[i]   = Y_BASE+Y_SIZE-1;      // bounds
         else if(y[i]   <= Y_BASE+1)  y[i]   = Y_BASE+1;   
         if(y[i+1] >= Y_BASE+Y_SIZE)  y[i+1] = Y_BASE+Y_SIZE-1;
@@ -420,9 +398,7 @@ void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer)
     for (t = TR_1; t <= TR_4; t++) {
         if((Dot_Hide[(t-TR_1)*2] == 0)&&(Title[TRACK1+(t-TR_1)][SOURCE].Value != HIDE)) {
             for(i=y[(t-TR_1)*2]; i<=y[(t-TR_1)*2+1]; ++i) {
-				if ((FlagMeter==1) || (Row < (MAX_X - (Delay * 2)))) {
-					LCD_Buffer[i] |=Color[t];        // normal brightness
-				}
+				LCD_Buffer[i] |=Color[t];        // normal brightness
             }
         }
     }
@@ -530,6 +506,7 @@ void Draw_Row_Oscill(u16 Row, u16 *LCD_Buffer)
         Print_Str_Row(Row, LCD_Buffer, 235,189,0xFFFF, INV, FreqT1Str);
     }
 }
+
 /*******************************************************************************
  Draw_Oscill_Grid :  
 *******************************************************************************/
@@ -584,31 +561,33 @@ void Draw_Row(u16 Row)
     
     switch(_Mode) {
         case AUTO:
-        case NORM:
+        case NORH:
+		case NORC:
         case SGL:
         case SCAN:
-            Draw_Oscill_Grid(Row, LCD_NextBuffer);
-            if ((Row > MIN_X) && (Row < MAX_X)) {
-                Draw_Row_Oscill(Row, LCD_ActiveBuffer); //Modo oscilloscopio
-            }
+			if ((_4_source!=SPEC_A) && (_4_source!=SPEC_B)){
+				Draw_Oscill_Grid(Row, LCD_NextBuffer);
+				if ((Row > MIN_X) && (Row < MAX_X)) {
+					Draw_Row_Oscill(Row, LCD_ActiveBuffer); //Modo oscilloscopio
+				}
+			} else {
+				Draw_Spec_Grid(Row, LCD_NextBuffer);
+				if ((Row > MIN_X) && (Row < MAX_X)) {
+					Draw_Row_Spec(Row, LCD_ActiveBuffer); //Spectogram
+				}
+			}
             break;
         case X_Y:
-        case X_Y_A:
             Draw_XY_Grid(Row, LCD_NextBuffer);
             if ((Row > MIN_X) && (Row < MAX_X)) {
                 Draw_Row_XY(Row, LCD_ActiveBuffer); //Modo X Y
-            }
-            break;
-        case SPEC:
-            Draw_Spec_Grid(Row, LCD_NextBuffer);
-            if ((Row > MIN_X) && (Row < MAX_X)) {
-                Draw_Row_Spec(Row, LCD_ActiveBuffer); //Spectogram
             }
             break;
     }
     __LCD_Copy(LCD_ActiveBuffer, Y_SIZE+1);               // Row Transitive
 
 }
+
 /*******************************************************************************
  Draw_Window :  
 *******************************************************************************/
@@ -620,18 +599,19 @@ void Draw_Window(void)
     __Row_Copy(Row_FullBlack, LCD_Buffers[0]);
     __Row_DMA_Ready();
 
-    if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK1][SOURCE].Value == HIDE)) {
+    if (((_Mode==X_Y)) && (Title[TRACK1][SOURCE].Value == HIDE)) {
         for (h = 0; h <= X_SIZE; ++h) {
             TrackBuff[h*4]=105;       //#pmos69 limit by X_SIZE, instead of 400
         }
     }
-    if (((_Mode==X_Y) || (_Mode==X_Y_A)) && (Title[TRACK2][SOURCE].Value == HIDE)) {
+    if (((_Mode==X_Y)) && (Title[TRACK2][SOURCE].Value == HIDE)) {
         for (h = 0; h <= X_SIZE; ++h) {
             TrackBuff[(h*4)+1]=100;   //#pmos69 limit by X_SIZE, instead of 400
         }
     }
 
-    if (_Mode == SPEC) {
+    //if (_Mode == SPEC) {
+	if ((_4_source==SPEC_A) || (_4_source==SPEC_B)) {
         if (SpecRow > MAX_X) {
             SpecRow = 0;
         }
@@ -749,7 +729,6 @@ void Update_Mark(void)
     __LCD_SetPixl(Color[VERNIE]);
   }
 }
-
 /*******************************************************************************
  Update_View_Area: Disegna rettangolo con zig zag posizione buffer 
 *******************************************************************************/
@@ -881,9 +860,7 @@ void Draw_Row_XY(u16 Row, u16 *LCD_Buffer)
  } 
 }
 
-
-
-  u16 to565( u32 clr )
+u16 to565( u32 clr )
   {
     u8 r = clr>>16;
     u8 g = clr>>8;
@@ -925,7 +902,7 @@ u32 interpolate(u32 clra, u32 clrb, u8 ratio)
     {
       u8 base = i/50;
       u16 rem = (i%50)*255/50;
-      colors[i] = to565( interpolate(baseclr[base], baseclr[base+1], rem) );
+      colors[i] = to565( interpolate(baseclr[base], baseclr[base+1], rem) )/256;
     }
   }
 
@@ -943,7 +920,7 @@ void Draw_Row_Spec(u16 Row, u16 *LCD_Buffer)
     for (i=Y_BASE+1; i<200; i++) {
     	val = fr[i-Y_BASE];
     	if (val >= 200) val = 199;
-    	LCD_Buffer[i] = colors[val];
+    	LCD_Buffer[i] = colors[val]*256;
     }
      
 }

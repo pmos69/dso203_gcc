@@ -37,7 +37,7 @@ typedef struct
 #define SAW        2
 #define DIGI       3
 #define PWM        4
-#define NOOUT	   5
+#define NOOUT     5
 
 #define PRN        0   // No inverse Display
 #define INV        1   // Inverse Display
@@ -52,7 +52,10 @@ typedef struct
 #define PURPL_     0xB817
 #define GRN        0x07E0
 #define GRN_       0x05E0
-#define GRAY       0x7BEF   
+//#define GRAY       0x7BEF    //original, dark gray
+//#define GRAY       0x9DEF    //greenish gray 
+#define GRAY       0xBDF7      //bright gray   
+//#define GRAY       0xA514      //medium gray
 #define BLUE       0xF800
 #define ORANGE     0x051F
 #define RED        0x001F
@@ -63,7 +66,7 @@ typedef struct
 #define LCD_X2      399
 #define LCD_Y1      0
 #define LCD_Y2      239
-#define X_SIZE      392   //300  400
+#define X_SIZE      392   //386  300  400 
 #define X_BASE      0
 #define Y_SIZE      200
 #define Y_BASE      0
@@ -76,15 +79,17 @@ typedef struct
 #define CHAR_WIDTH  8
 #define CHAR_HEIGHT 11
 
-
 extern u8 OffsetX;
 extern u8 OffsetY;
+//extern u16 PrevTempX1;
+//extern u16 PrevTempX2;
 extern u16 MAX_X;
 extern u8 FlagFrameMode;
 extern u8 FlagMeter;
+extern u8 UpdateMeter;
 extern u8 TrgAuto;
 extern u16 Color[16];
-
+//extern u16 LCD_Buffer1[240], LCD_Buffer2[240];
 extern trigg V_Trigg[4];
 u16  Get_TAB_8x11(u8 Code, u8 Row);
 u8   Get_Ref_Wave(u16 i);
@@ -99,9 +104,6 @@ void Draw_Mark(u16 m, u16 n);
 void Update_Mark(void);						
 void Update_View_Area(void);
 void Clear_Meter_Area(void);
-
-// void DrawBar(u16 x1, u16 y1, u16 x2, u16 y2, u16 clr);
-// void DrawPixel(u16 x, u16 y, u16 clr);
 
 #endif
 

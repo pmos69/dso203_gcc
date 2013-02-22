@@ -7,15 +7,15 @@
 
 #include "stm32f10x_lib.h"
 
-//#define FLASH_WAIT_TIMEOUT      100000 
-//#define PAGE_0                  0 
-//#define PAGE_1                  1 
-//#define PAGE_2                  2 
-//#define PAGE_3                  3 
+// #define FLASH_WAIT_TIMEOUT      100000 
+// #define PAGE_0                  0 
+// #define PAGE_1                  1 
+// #define PAGE_2                  2 
+// #define PAGE_3                  3 
 
 #define OK           0            // operation is completed
-//#define SEC_ERR      1            // sectors read and write errors
-//#define FAT_ERR      2            // FAT table to read and write errors
+// #define SEC_ERR      1            // sectors read and write errors
+// #define FAT_ERR      2            // FAT table to read and write errors
 #define OVER         3            // operations overflow
 #define NEW          4            // new directory entry
 #define EMPT         4            // file does not exist

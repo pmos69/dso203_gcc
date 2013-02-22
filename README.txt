@@ -1,4 +1,4 @@
-DSO203 GCC v1.26 APP - Community Edition
+DSO203 GCC v1.27 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
@@ -8,6 +8,8 @@ Hopefully, the users community can get involved and contribute more fixes and en
  
 Tested with:
 	- SYS 1.50 1.6 from Marco Sinatti ( http://pmos69.net/dso203/SYS25116.hex )
+	(******* NEEDED FOR CORRECT GENERATOR FREQUENCIES *******)
+	
 	- FPGA 2.61 ( http://pmos69.net/dso203/FPGA261.zip )
 	- HW 2.6
 
@@ -22,19 +24,38 @@ Pedro Simões
 Main button functions:
 
 - Button 1 (>||)
-	- Short press:	Toggle Run/Hold status
+	- Short press:			Toggle Run/Hold status
+	- Long press: (1/2s)		Shortcut to channels A or B volts/div: will move mode selection to last selected channel. If already on a selected
+                                        	channel's volts/div, will move selection to the other (A or B) channel's volts/div; if the channel is off, will turn it on.
 - Button 2 (square)
-	- Short press:	Select auto trigger level preset
-	- Long press:	Calibrate (select channel A or B first)
+	- Short press           	Select auto trigger level preset, will default to 1/2, then > 3/4 > 1/4
+	- Long press: (1/2s)       	Selects manual trigger level, moves selection to trigger level control
+	- Extra long press (3s):    	Calibration screen    
+
 - Button 3 (circle)
-	- Short press:	Toggle FullScreen mode on/off
-	- Long press:	Save settings
+	- Short press:              	Toggles Meters on/off
+	- Long press:(1-1/2s)         	Save settings
+
 - Button 4 (triangle)
-	- Short press:	Change between meters presets
-	- Long press:	Toggle between full buffer mode (4096 samples) and short buffer mode (just enough samples to fill LCD)
+	- Short press:                	Change between menu items   (previously @ left toggle center press... much easier to press this often used control)
+	- Long press:(1/2s)          	Shortcut to time base time/div     
+
+- Toggle buttons:
+	- Left toggle left/right:     	Change menu item settings
+	- Left toggle center press
+		- Short press:         	Sets triggering to presently selected channel (eg: after turning a channel on with toggle, press to set triggering to this ch)
+		- Long press:(1/2s):   	-With meters ON: Change between meter presets    (previously button 4 short press)
+                                       	-With meters OFF: Toggles waveform gain calibration ON/OFF.  OFF= improves waveform quality, eliminates visible 
+                                        	steps introduced to adjust gain. ON= corrects waveform gain (if needed) at the expense of waveform quality. 
+                                        	Does not affect meters, gain always corrected for meters.  Menu displays "C" for calibration ON and "Un" for OFF.
+
+	- Right toggle left/right:    	Change menus
+	- Right toggle center press
+		- Short press:        	Change between full buffer mode and single screen buffer mode    (previously button 4 long press)
+		- Long press:(1/2s)    	Change between menu selection and meter selection    (previously short press) 
 
 - FFT function (channels A or B) available in the channel 4 menu.
-- Simple Spectrogram (Test version) available in the trigger mode/X_Y menu (only works if FFT function is active)
+- Simple Spectrogram (channels A or B) available in the channel 4 menu.
 
 -------------------------------------------
 
@@ -66,10 +87,78 @@ All thanks to:
 - Jerson (http://jerson.co.in)
 - vblack
 - dementianati
+- Wildcat
 
 -------------------------------------------
 
 Revisions:
+
+v1.27
+- FFT (channel A or Channel B) and Spectrograms  (channel A or Channel B) now accessible in the Channel 4 menu
+- Merged all contributions from Wildcat:
+	INTERFACE:
+		- Variable repeat rate for toggles, slow for menus, fast for verniers, etc.
+		- Main Menu will stop at left (CH-A), and at right on Time Vernier or Volume adj, will not "go around".
+		- Program will attempt to set triggering to relevant channel, if shutting off a channel with trigg set, 
+  			will move trigger source to last selected ch. 
+		- Will not time out into standby if USB power plugged in.
+		- "SCAN" mode renamed "TrOFF". Trigger levels/vernier do not show in this mode. 
+		- "NorCL" (Normal-Clear) mode added (simulates regular CRT type scope, clears display if no trigger)
+		- Single shot trigg mode automatically goes into full size buffer mode.
+		- Digital channels meter default displays changed to show only relevant meters (no volt meters)
+		- Trigg verniers disabled for digital channels (preset at 1/2)
+		- X_Y-A and X_Y-S removed, now only X_Y. Mode is triggered in AUTO mode to allow meters to work correctly. (Move trigg 
+  			source to unused ch to disable triggering if desired).
+	TRIGGERING:
+		- Re-sequencing of triggering functions to allow proper time for reset to bring up start flag before attempting to read
+  			FIFO, allows analog channels to trigger properly on slow/random signals at fastest timebases.
+		- Fixed a problem in the mid-range time bases where display would freeze or trigger very sporadically 
+		- Implementation of proper triggering in single screen buffer mode.
+		- Various functions optimizing triggering for different timebases, triggering modes, etc.
+		- "SCAN" mode (now renamed "TrOFF") optimized with different routines for fast and slow time bases.
+		- Single screen buffer mode now resets immediately after right edge of screen, also is available at all time bases.
+		- Auto trigger fix to eliminate condition in some cases where device could not trigger because trigg level was too far 
+  			away from wave and auto function could not find wave because device was not triggering.
+	CALIBRATION:
+		- Gain calibration now modifies signal in relation to signal zero point, rather than screen bottom. Prevents
+  			interfering with offset calibration and Y positioning.
+		- Signed variables now used to allow values at bottom of screen, which can be pushed up by offset calibration, and
+  			then be below zero, to be read properly.
+		- ADC operating point shifted away from non-linearity at the bottom of screen. Allows calibration routine to 
+  			work more accurately.
+		- Fix for an error in FPGA where the 2 least significant bits of CH-B are swapped.  
+		- Fix for an error in saving parameters to disk where CH-B offset compensation could be corrupted if CH-A's value was 
+  			negative. 
+		- Signal gain calibration now switchable ON/OFF (Screen only, does not affect meters. Improves wave quality by removing
+  			correction "steps", if present).
+	FILES:
+		- Fixed BMP header. Header was missing a row of digits causing improper file and image size to be listed.
+		- Added several additional parameters to be saved in "save config". (Config file still compatible with previous versions)
+	METERS:
+		- Values now corrected by calibration in reference to signal zero point, rather than screen bottom. Prevents offsets and 
+  			Y positioning from affecting accuracy.
+		- Time measurements in process completely re-written, eliminating the inclusion of partial waves before triggering. While 
+  			this only affected accuracy slightly in full frame buffer mode, it introduced major inaccuracies in single screen buffer 
+  			mode where at times only a few waveforms are considered in the measurements.
+		- Frequency meter fixed so it works past ~2Mhz. This worked OK in original program, but had wrong suffix. Subsequent fix for
+  			improper readout caused meter to malfunction past around 2Mhz.
+		- Fixed Time and Voltage Vernier meter readouts so they display properly at very large and very small time/voltage settings.
+	GENERATOR:
+		- Shifting of amplitude variation from signal's zero point rather than screen bottom, eliminates distortion at lower levels
+  			where bottom of wave is clipped. Note that this results in an unchanging DC offset as level is varied... (use AC coupling
+  			to display properly)
+		- Changed division ratios so proper frequency is produced/displayed without needing a special SYS version (should work OK with
+  			it as well) Only issue with this is the innability to produce 20Khz (produces 25Khz instead) Readout shows correct value.
+	DISPLAY:
+		- Improved linearity from ADC operating point shift. (Eliminates compression of wave at bottom of screen).
+		- Bit swap correction on CH-B improves trace quality.
+		- Elimination of noise at beginning and end of trace on some ranges.
+		- Alignment of Digital channels with Analogs. Note that digital channels trailing at very fast timebases is caused by
+  			delay introduced in Digital channel input stage. There is no way to fix this at the software level, needs to be fixed 
+  			in hardware.  This same input stage configuration also introduces instabilities when triggering from the digital CHs at 
+  			fast time bases.
+		- Re-aligned trigger point with trigger vernier
+		- Fixed "time shift" at fastest timebases when changing time/div while on hold.
 
 v1.26
 - readme changes

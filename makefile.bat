@@ -9,7 +9,7 @@ set TARGET=E:\
 set TFILE=APP_G251
 set APP=1
 rem ===================================================
- 
+
 Echo DS203 Build tool by valky.eu
 Echo Target slot: !APP!
 Echo DFU Drive: !TARGET!
@@ -41,7 +41,7 @@ set SRC_ASM=..\App\asm
 
 set CFLAGS=-Wall -Os -Werror -fno-common -mcpu=cortex-m3 -mthumb -msoft-float -fomit-frame-pointer -MD -I !STM_INC! -I !SRC_INC! -I !SRC_SRC!
 set AFLAGS=-mcpu=cortex-m3 -mthumb
-set LDFLAGS=-nostartfiles -mcpu=cortex-m3 -mthumb -march=armv7 -mfix-cortex-m3-ldrd -msoft-float
+set LDFLAGS=-nostartfiles -mcpu=cortex-m3 -mthumb -march=armv7 -mfix-cortex-m3-ldrd -msoft-float 
 
 set OBJS=Calibrat.o Draw.o Files.o Function.o ^
          Interrupt.o Main.o Menu.o Process.o startup.o ^
@@ -63,7 +63,7 @@ cd !INTERMEDIATE!
 !CC! !CFLAGS! -c !SRCS!
 
 echo Linking...
-!CC! -o !TFILE!_!APP!.elf !LDFLAGS! -T !SRC_LDS!\app!APP!.lds !OBJS!
+!CC! -o !TFILE!_!APP!.elf !LDFLAGS! -T !SRC_LDS!\app!APP!.lds !OBJS! 
 !OBJCOPY! -O binary !TFILE!_!APP!.elf !TFILE!.bin
 !OBJCOPY! -O ihex !TFILE!_!APP!.elf !TFILE!.hex
 

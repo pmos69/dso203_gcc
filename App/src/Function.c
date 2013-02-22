@@ -5,6 +5,8 @@
 #include "Interrupt.h"
 #include "Function.h"
 #include "BIOS.h"
+#include "Menu.h"
+#include "Process.h"
 
 // u32 TestCnt = 0;
 
@@ -81,6 +83,9 @@ void Delayms(u16 mS)
   while (Delay_Cnt > 0){}
 }
 
+
+
+
 /*******************************************************************************
  Sign_int2Str: 32-digit switch to e-bit effective number of strings + dimensionless string
 ******************************************************************************/
@@ -90,12 +95,16 @@ void Int2Str(char *p, long n, char *pUnit, u8 e, u8 Mode)
   long i, j, m, c;
   char  *k;
   u8  v=0;
+  u8 numdigits=e;
+  char id=pUnit[0];
+  s32 nn=n;
   
   if(n == 0x80000000)
   {               // This value is defined as an invalid value
     *p++ = ' ';
 	*p++ = '.';
-    while(--e)  *p++ = ' '; 
+    while(--e)  *p++ = ' ';
+    if ((id=='u')&&(numdigits==3))*p++=' '; 
     *p = 0;  return;
   }
   if(Mode == SIGN)
@@ -150,18 +159,18 @@ void Int2Str(char *p, long n, char *pUnit, u8 e, u8 Mode)
   }
   
   p += e;
-  k = p+1;  
-  while(n >= Power(10, e))
-	n /= 10;  // interception of the highest e effective number of bits
-  for(j=0; j<m; j++)
+  k = p+1;  				 					// pointer to where suffix will go
+  while(n >= Power(10, e))	
+	n /= 10;  									// interception of the highest e effective number of bits
+  for(j=0; j<m; j++)								// move pointer m "slots" to nul in front of desired string
 	while(*pUnit++);
-	
-  do *k++ = *pUnit;
+  if ((_T_Range<3)&&(id=='u')&&(numdigits==3)) while(*pUnit++);	// special case for very large deltaT intervals, move to proper suffix
+  do *k++ = *pUnit;								// copy desired string
   while(*pUnit++); // dimensional character string
  
   while(e--)
   {
-    *p-- = '0'+(n%10);
+    *p-- = '0'+(n%10);								// copy the digits of the value
 	n /= 10;
     if((Mode != STD)&&(m > 0)&&(i == e))//&&(Mode != SIGN)
 	{
@@ -178,20 +187,27 @@ void Int2Str(char *p, long n, char *pUnit, u8 e, u8 Mode)
   if((Mode==STD)&&(m==0))
     *p-- = ' ';
 
-  if((Mode == SIGN)&&(p[1] == '.')&&(p[0] != '0'))
-  {
-    p[7]=0;
-    p[6]=p[5];
-    p[5]=p[4];
-    p[4]=p[3];
-    p[3]=p[2];
-    p[2]='.';
-    p[1]='0';
-    if(v=='-')
-     p[0]='-';
-    else
-     p[0]='+';
+  if((Mode == SIGN)&&(p[1] == '.')&&(p[0] != '0')){
+   if ((id=='u')&&(numdigits==3)){				// identify time vernier, no need for +, allow suffix to show properly
+     p[0]='0';
+   }else{
+     p[7]=0;
+     p[6]=p[5];
+     p[5]=p[4];
+     p[4]=p[3];
+     p[3]=p[2];
+     p[2]='.';
+     p[1]='0';
+     if(v=='-')
+      p[0]='-';
+     else
+      p[0]='+';
    }
+  }
+  if ((id=='u')&&(numdigits==3)){				// identify time vernier
+    if (p[0]=='+')p[0]=' ';					// strip off "+" sign on rest of readings to match values that start with 0
+    if (nn<100){p--; p[0]='0'; p[1]='.';}			// special case for very small values
+  }
 }
 
 
@@ -337,25 +353,24 @@ void Word2Hex(char *p, u32 n)
  Int_sqrt: unsigned int square root
 *******************************************************************************/
 u32 Int_sqrt(u32 n)
+/*{ u32 k;					
+  if ( n == 0 ) return 0;
+  k = 2*Int_sqrt(n/4)+1;
+  if ( k*k > n ) return k-1;
+  else return k;
+}*/
 
-// { u32 k;
-  // if ( n == 0 ) return 0;
-  // k = 2*Int_sqrt(n/4)+1;
-  // if ( k*k > n ) return k-1;
-  // else return k;
-// }
-
-{
+{						
     unsigned int c = 0x8000;
     unsigned int g = 0x8000;
 
-    for(;;) {
-        if(g*g > n)
-            g ^= c;
-        c >>= 1;
-        if(c == 0)
+    for(;;) {				
+        if(g*g > n)                 
+            g ^= c;                 
+        c >>= 1;				
+        if(c == 0)			
             return g;
-        g |= c;
+        g |= c;				
     }
 }
 
@@ -366,31 +381,55 @@ u8 Read_Keys(void)
 {
   u16 Key_Status, Key_Status_Now;
   u8  KeyCode=0;
-  
+
   Key_Status_Now = ~__Get(KEY_STATUS);//~KeyScan();
   Key_Status = Key_Status_Now &(~Key_Status_Last);
   if(Key_Status){                               // New key push on
     Key_Wait_Cnt=30;                        // Close auto repeat 25=500mS
-    if(Key_Status & K_ITEM_D_STATUS)   KeyCode = K_ITEM_DEC;    // K9
+    if(Key_Status & K_ITEM_D_STATUS)   KeyCode = K_ITEM_DEC;    // K9    right toggle -
     if(Key_Status & K_ITEM_S_STATUS)   KeyCode = K_ITEM_S;      // K10
     if(Key_Status & KEY3_STATUS)       KeyCode = KEY3;          // K3 
     if(Key_Status & KEY4_STATUS)       KeyCode = KEY4;          // K4 
-    if(Key_Status & K_INDEX_D_STATUS)  KeyCode = K_INDEX_DEC;   // K5 
-    if(Key_Status & K_INDEX_I_STATUS)  KeyCode = K_INDEX_INC;   // K6  
+    if(Key_Status & K_INDEX_D_STATUS)  KeyCode = K_INDEX_DEC;   // K5   left toggle -
+    if(Key_Status & K_INDEX_I_STATUS)  KeyCode = K_INDEX_INC;   // K6   left toggle +
     if(Key_Status & K_INDEX_S_STATUS)  KeyCode = K_INDEX_S;     // K7  
     if(Key_Status & KEY2_STATUS)       KeyCode = KEY2;          // K2
     if(Key_Status & KEY1_STATUS)       KeyCode = KEY1;         // K1
-    if(Key_Status & K_ITEM_I_STATUS)   KeyCode = K_ITEM_INC;    // K8
+    if(Key_Status & K_ITEM_I_STATUS)   KeyCode = K_ITEM_INC;    // K8   right toggle +
   } else {
     if(Key_Status_Now & Key_Status_Last){       // Key push hold on
       if((Key_Wait_Cnt || Key_Repeat_Cnt)==0){
-        if(Key_Status_Now & K_INDEX_D_STATUS)  KeyCode = K_INDEX_DEC;    // K5 
-        if(Key_Status_Now & K_INDEX_I_STATUS)  KeyCode = K_INDEX_INC;    // K6
-        
-        /* removed by Jerson.  Was causing selections to jump around (bounce) */
-      //  if(Key_Status_Now & K_ITEM_D_STATUS)   KeyCode = K_ITEM_DEC;     // K9 
-      //  if(Key_Status_Now & K_ITEM_I_STATUS)   KeyCode = K_ITEM_INC;     // K8 
-        Key_Repeat_Cnt = 2;                 // Auto repeat per 5= 100mS
+        if(Key_Status_Now & K_INDEX_D_STATUS)  KeyCode = K_INDEX_DEC;   // K5 
+        if(Key_Status_Now & K_INDEX_I_STATUS)  KeyCode = K_INDEX_INC;   // K6
+
+      if((Key_Status_Now & K_INDEX_D_STATUS)||(Key_Status_Now & K_INDEX_I_STATUS)){   
+                                                                  				// Auto repeat per 5= 100mS
+	  switch (Current){											//fast toggle repeat rate for:
+	    case T_VERNIE:							      			//time cursors
+	    case V_VERNIE:											//volt cursors
+		Key_Repeat_Cnt = 2;
+		break;
+	    case TRIGG:	
+		if (Detail[Current]==2) Key_Repeat_Cnt = 2; else Key_Repeat_Cnt = 5;		//trigger cursors
+		break;
+	    case OUTPUT:
+	     if ((_Det==2)||(_Det==3))Key_Repeat_Cnt = 2; else Key_Repeat_Cnt = 5;  		//PWM duty cycle or out level
+            break;
+	    case T_BASE:
+		if (Detail[Current]==2) Key_Repeat_Cnt = 2; else Key_Repeat_Cnt = 5;		//xpos in large buffer mode
+		break;
+	    case TRACK1:
+	    case TRACK2:
+	    case TRACK3:
+	    case TRACK4:
+		if (Detail[Current]==3) Key_Repeat_Cnt = 2; else Key_Repeat_Cnt = 5;		//ypos in track menus
+		break;
+	    default:
+		Key_Repeat_Cnt = 5;
+        }
+      }
+        if(Key_Status_Now & K_ITEM_D_STATUS)   {KeyCode = K_ITEM_DEC;  Key_Repeat_Cnt = 5;}    // K9 
+        if(Key_Status_Now & K_ITEM_I_STATUS)   {KeyCode = K_ITEM_INC;  Key_Repeat_Cnt = 5;}    // K8 
       }
     }
   }
@@ -609,4 +648,5 @@ void fix_fft(short fr[], short fi[], short size)		// m = number of bits of the F
 }
 	
 		
+
 /********************************* END OF FILE ********************************/

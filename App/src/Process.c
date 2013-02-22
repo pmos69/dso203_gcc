@@ -8,9 +8,7 @@
 #include "Menu.h"
 #include "BIOS.h"
 #include "File.h"
- 
-u8 HoldOnNext=0;  
- 
+
 // FFT ////////////////////////////////////////////////////////////////////
 short fr[FFTSize];
 short fi[FFTSize];
@@ -22,7 +20,6 @@ short PeakFreq;
 char PeakFreqStr[12];
 char FreqDivStr[12];
 char FreqT1Str[12];
-//char TempStr[12];
 ////////////////////////////////////////////////////////////////////////////
 
 u16 TaS, TbS, TcS, TdS;            // cycles accumulated
@@ -30,26 +27,39 @@ u16 PaS, PbS, PcS, PdS;            // pulse width of the cumulative
 u16 TaN, TbN, TcN, TdN;            // Cycle Count
 u8  a_Mid_H, a_Mid_L;
 u8  b_Mid_H, b_Mid_L;
-
 s8  Kab;                                     // analog channel zero balance correction factor
-u32 a_Avg, b_Avg, a_Ssq, b_Ssq;              // the average cumulative sum of squares of the cumulative
-u8  a_Max, b_Max, a_Min, b_Min;              // the original maximum value, the original minimum value
-//s16 Posi_412, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
-s16 Posi_412, Posi_41_2, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
+
+s32 a_Avg, b_Avg, a_Ssq, b_Ssq;              // use signed integers, allows values at bottom of screen to be read
+s16  a_Max, b_Max, a_Min, b_Min;              // 0 levels can get pushed up by calibration, bringing bottom of screen below 0
+
+s16 Posi_412,Posi_41_2, Posi_41, Posi_42, Posi_4_2, Posi_4F1, Posi_4F2, Posi_4F3, Posi_4F4;
 s16 c_Max, d_Max, A_Posi, B_Posi;
 
- 
 u16 JumpCnt;
-u8 FrameMode;
+u8  FrameMode;
+u8  HoldOnNext =0;
+u16 bag_max_buf = 4096;
+u8  freerun=0;					//flags for auto trig mode
+u8  exitflag=0;
+u8  entryflag=0;
+u8  ADCoffset=54; //shifts ADC/FIFO operating area away from non-linear first xx steps into previously unused linear 200-255 step area
+u16 TempKp1=1024;
+u8  CalFlag;
 
-uc16 Wait[27]= {1000, 500, 200, 100, 50, 20, 10, 5, 2, 2,   
-                2,      2,   2,   2,  2,  2,  2, 2, 2, 2,    
-                2,      2,   2,   2,  2,  2,  2 };
-                     
+uc16 Wait[27]=        {1000, 500, 200, 100, 65, 30, 20, 10, 5, 3,   			
+                       2,      2,   2,   2,  2,  2,  2, 2, 2, 2,    			
+                        2,      2,   2,   2,  2,  2,  2 };
+
+
+uc16 shortwait[27]=        {300, 150, 100, 75, 35, 15, 10, 10, 5, 3,   	//for auto trig mode, set time to hold before going auto		
+                        2,      2,   2,   2,  2,  2,  2, 2, 2, 2,    			
+                        2,      2,   2,   2,  2,  2,  2 };
+
+
 Y_attr *Y_Attr; 
 X_attr *X_Attr; 
 G_attr *G_Attr; 
-T_attr *T_Attr; 
+T_attr *T_Attr;
 
 u32 DataBuf[4096];
 u8  TrackBuff  [X_SIZE * 4];         // curve track: i +0, i +1, i +2, i +3, respectively, placed one on the 4th track data
@@ -88,6 +98,7 @@ D_tab D_Tab[23] ={  // pulse waveform output driver table, based on the 72MHz fr
   {" 8MHz ",    1-1,      9-1,     50}};
 
 A_tab A_Tab[15] ={ // analog waveform output driver table synthesis, based on the 72MHz frequency, per 36
+
 //    STR     PSC     ARR 
   {"! 1Hz !", 20-1,  50000-1},
   {"! 2Hz !", 20-1,  20000-1},
@@ -104,6 +115,7 @@ A_tab A_Tab[15] ={ // analog waveform output driver table synthesis, based on th
   {"!10KHz!", 10-1,     10-1},
   {"!20KHz!", 10-1,      5-1},
   {"!40KHz!",  4-1,      5-1}};
+
 
 u16   ATT_DATA[72];
 
@@ -127,7 +139,7 @@ u16 SAW_DATA[72] =  // Sawtooth wave data                                       
 2352,2408,2464,2520,2576,2632,2688,2744,2800,2856,2912,2968,3024,3080,3136,3192,3248,3304,3360,
 3416,3472,3528,3584,3640,3696,3752,3808,3864,3920,3976};   // 360   
 
-u16 DIGI_DATA[72] =  // Sawtooth wave data                                                                                             //         
+u16 DIGI_DATA[72] =  // Square wave data                                                                                             //         
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
   4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,4095,
@@ -171,9 +183,9 @@ void App_init(void)
   Update = 1;                  // return back the jumper settings
 }
 /*******************************************************************************
- View_init: Displays the window waveform data initialization
+ _init: Displays the window waveform data initialization <<<< THIS (AND REF_WAVE) COULD BE ELIMINATED? DOES NOT SEEM TO BE USED
 *******************************************************************************/
-void View_init(void)
+/*void View_init(void)
 { 
   u16 i, j = 0, k = 0;
   for(i = 0; i < X_SIZE * 4; i += 4){
@@ -184,22 +196,21 @@ void View_init(void)
     if((i%64)==0) k = 1 - k;
     TrackBuff[i+3] = 20 + (k * 17);
   }
-}
+}*/
 /*******************************************************************************
  Update_Range: 
 *******************************************************************************/
 void Update_Range(void) 
 {
-
   __Set(ADC_CTRL, EN);       
-  __Set(ADC_MODE, SEPARATE);                        // Set Separate mode ((Range + 1)*25)
+  __Set(ADC_MODE, SEPARATE);                        							// Set Separate mode ((Range + 1)*25)
   __Set(CH_A_COUPLE, Title[TRACK1][COUPLE].Value);
   __Set(CH_A_RANGE,  Title[TRACK1][RANGE].Value);
-  __Set(CH_A_OFFSET, ((1024 + Ka3[_A_Range])*_1_posi + 512)/1024);
+  __Set(CH_A_OFFSET, (((1024 + Ka3[_A_Range])*_1_posi + 512)/1024)+ADCoffset);		//ADCoffset nulled out when reading FIFO
 
   __Set(CH_B_COUPLE, Title[TRACK2][COUPLE].Value);
   __Set(CH_B_RANGE,  Title[TRACK2][RANGE].Value);
-  __Set(CH_B_OFFSET, ((1024 + Kb3[_B_Range])*_2_posi + 512)/1024);
+  __Set(CH_B_OFFSET, (((1024 + Kb3[_B_Range])*_2_posi + 512)/1024)+ADCoffset);
 
   if(_Status == RUN) __Set(FIFO_CLR, W_PTR);       // FIFO write pointer reset
 }
@@ -212,7 +223,6 @@ void Update_Base(void)
   
   __Set(ADC_CTRL, EN);       
   i = Title[T_BASE][BASE].Value;     // independent sampling mode
-
   __Set(T_BASE_PSC, X_Attr[i].PSC);
   __Set(T_BASE_ARR, X_Attr[i].ARR);
   Wait_Cnt = Wait[_T_base];
@@ -229,62 +239,66 @@ void Update_Output(void)
   switch (_Kind) {
   
   case SINE:
-	for(att=0; att <72; att++){ 
-		ATT_DATA[att]=(SIN_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
-    DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
-    __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
-    __Set(ANALOG_CNT, 72);
-    __Set(ANALOG_PTR, (u32)ATT_DATA);
+    for(att=0; att <72; att++){ 
+     //ATT_DATA[att]=(SIN_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}	                       //zero axis at 0, causes distortion as level is dropped
+     ATT_DATA[att]=(((Title[OUTPUT][OUTATT].Value*(SIN_DATA[att]-2048))/100)+2048);}           //establish zero axis at mid of full output level
+     DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
+      __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);								     //used with special sys version	
+      __Set(ANALOG_CNT, 72);
+      __Set(ANALOG_PTR, (u32)ATT_DATA);
     DMA2_Channel4->CCR |= DMA_CCR1_EN;
-    __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-	break;
+      __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
+    
+  break;
   
   case SAW:
    for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(SAW_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
+     //ATT_DATA[att]=(SAW_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
+     ATT_DATA[att]=(((Title[OUTPUT][OUTATT].Value*(SAW_DATA[att]-2048))/100)+2048);}           
      DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
       __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
       __Set(ANALOG_CNT, 72);
       __Set(ANALOG_PTR, (u32)ATT_DATA);
      DMA2_Channel4->CCR |= DMA_CCR1_EN;
       __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-	  break;
- 
+  break;
+  
   case TRIANG:
     for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(TRG_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
+     //ATT_DATA[att]=(TRG_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
+     ATT_DATA[att]=(((Title[OUTPUT][OUTATT].Value*(TRG_DATA[att]-2048))/100)+2048);}          
      DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
       __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
       __Set(ANALOG_CNT, 72);
       __Set(ANALOG_PTR, (u32)ATT_DATA);
     DMA2_Channel4->CCR |= DMA_CCR1_EN;
       __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-	  break;
+  break;
   
   case DIGI:
     for(att=0; att <72; att++){ 
-     ATT_DATA[att]=(DIGI_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
+     //ATT_DATA[att]=(DIGI_DATA[att]*Title[OUTPUT][OUTATT].Value)/100;}
+     ATT_DATA[att]=(((Title[OUTPUT][OUTATT].Value*(DIGI_DATA[att]-2048))/100)+2048);}           
      DMA2_Channel4->CCR &= ~DMA_CCR1_EN;
       __Set(ANALOG_PSC,  A_Tab[_Frqn].PSC);
       __Set(ANALOG_CNT, 72);
       __Set(ANALOG_PTR, (u32)ATT_DATA);
     DMA2_Channel4->CCR |= DMA_CCR1_EN;
       __Set(ANALOG_ARR, A_Tab[_Frqn].ARR);
-	break;
+  break;
 
- case PWM:
+  case PWM:
     __Set(DIGTAL_PSC, D_Tab[_Frqn].PSC);
     __Set(DIGTAL_ARR, D_Tab[_Frqn].ARR);
     __Set(DIGTAL_CCR, ((D_Tab[_Frqn].ARR+1)*(100-Title[OUTPUT][DUTYPWM].Value))/100);
-	break;
-	
-case NOOUT:
+  break;
+  
+  case NOOUT:
     __Set(DIGTAL_PSC, D_Tab[_Frqn].PSC);
     __Set(DIGTAL_ARR, D_Tab[_Frqn].ARR);
     __Set(DIGTAL_CCR, (D_Tab[_Frqn].ARR+1));
-	break;
+  break;
   }
-  
 }
 
 /*******************************************************************************
@@ -296,14 +310,13 @@ void Update_Trig(void)
   else           __Set(T_THRESHOLD, (_T2 - _T1)); 
   __Set(TRIGG_MODE,  (_Tr_source<< 3)+_Tr_kind);
   if(Title[TRIGG][SOURCE].Value == TRACK1){ 
-    __Set(V_THRESHOLD, (((_Vt1-Ka1[_A_Range])*1024)/Ka2[_A_Range])&0xFF); 
+  __Set(V_THRESHOLD, ((((_Vt1-Ka1[_A_Range]-_1_posi)*1024)/Ka2[_A_Range])&0xFF)+ADCoffset+_1_posi); 
   }
   if(Title[TRIGG][SOURCE].Value == TRACK2){ 
-    __Set(V_THRESHOLD, (((_Vt2-Kb1[_B_Range])*1024)/Kb2[_B_Range])&0xFF); 
-  }
+  __Set(V_THRESHOLD, ((((_Vt2-Kb1[_B_Range]-_2_posi)*1024)/Kb2[_B_Range])&0xFF)+ADCoffset+_2_posi); 
+ }
   if(_Status == RUN) __Set(FIFO_CLR, W_PTR);      // FIFO write pointer reset
 }
-
 /*******************************************************************************
  Process: Calculate processing buffer data
 *******************************************************************************/
@@ -311,15 +324,18 @@ void Process(void)
 { 
   s16 i, j = 0, k, V[8] = {0}, n = 0;
   s32 Tmp;
-  u8  Ch[4], C_D;
+  u8  Ch[4], C_D=0,discard;
   s8  Sa = 2, Sb = 2, Sc = 2, Sd = 2; // time status
   u16 Ta, Tb, Tc, Td;                 // pulse width count
-  u16 bag_max_buf = 4096;
-  
-     int X,Y;
+  u16 Pa, Pb, Pc, Pd;			  // holds + side transition of wave for PaS
+  u8  jj;
+  u16 h;
+  u32 swap; 
 
+  int X,Y;
   
   Ta = Tb = Tc = Td = 0;
+  Pa = Pb = Pc = Pd = 0;
   
   PaS = 0; PbS = 0; PcS = 0; PdS = 0; 
   TaN = 0; TbN = 0; TcN = 0; TdN = 0; 
@@ -333,139 +349,278 @@ void Process(void)
   Posi_4F2 = _4_posi - FileBuff[ 799];
   Posi_4F3 = _4_posi - FileBuff[ 1199];
   Posi_4F4 = _4_posi - FileBuff[1599];
-  A_Posi   = ((_1_posi-Ka1[_A_Range])*1024)/Ka2[_A_Range];
-  B_Posi   = ((_2_posi-Kb1[_B_Range])*1024)/Kb2[_B_Range];
+
+
+  //A_Posi   = ((_1_posi-Ka1[_A_Range])*1024)/Ka2[_A_Range];
+  //B_Posi   = ((_2_posi-Kb1[_B_Range])*1024)/Kb2[_B_Range];
+
+  A_Posi   = _1_posi-Ka1[_A_Range];    // Kx2 is for signal gain correction, not Y positioning
+  B_Posi   = _2_posi-Kb1[_B_Range];
+
   
   a_Max = A_Posi; b_Max = B_Posi; 
   a_Min = A_Posi; b_Min = B_Posi;             
-  
-  a_Avg = 0;   b_Avg = 0; 
-  a_Ssq = 0;   b_Ssq = 0;            
-  
+
   if((_3_posi + 20)>= Y_BASE+Y_SIZE)  c_Max = Y_BASE+Y_SIZE-1;
   else                                c_Max = _3_posi + 20;
   if((_4_posi + 20)>= Y_BASE+Y_SIZE)  d_Max = Y_BASE+Y_SIZE-1;
   else                                d_Max = _4_posi + 20;
- 
-   bag_max_buf = get_bag_max_buf();
-   
-
   
-    k =((1024 -_Kp1)*150 + 512)/1024 + _X_posi.Value;//  // window position in the calculation of the interpolation of the correction value
-	
-    for(i=0; i <bag_max_buf; i++){
-      if(((_T_base > 15)||(_Mode == SGL))&&(_Status == RUN))  DataBuf[i] = __Read_FIFO(); // read into the 32-bit FIFO data reading pointer +1
-      else if((__Get(FIFO_EMPTY)==0)&&(i == JumpCnt)&&(_Status == RUN)){
+  bag_max_buf = get_bag_max_buf();
+  b_Avg = a_Ssq = b_Ssq = a_Avg = bag_max_buf/2;	 // centers value to center of "0" step, makes meters equally sensitive to + and - signals
+
+
+    if(_Status==RUN)TempKp1=_Kp1;	 // eliminates improper change of wave timebase by Kp1 while in hold mode at faster timebases
+    k =((1024 - TempKp1)*150 + 512)/1024 + _X_posi.Value;  // window position in the calculation of the interpolation of the correction value
+
+      if ((exitflag==1)&&(JumpCnt!=0)) exitflag=0;     // leave exitflag on at beginning of frame so if complete frame is done, allow freerun     
+
+      for(i=0; i <bag_max_buf; i++){
+      if(((_T_base > 11)||(_Mode == SGL)||(freerun==1)||((_Mode==X_Y)&&(_T_base>9)))&&(_Status == RUN)){				//>200uS/div
+        DataBuf[i] = __Read_FIFO();    
+	  swap=0x300;
+	  swap &= DataBuf[i];
+	  if ((swap==0x100)||(swap==0x200))DataBuf[i]^=0x300; //swap 2 least significant bits of chB, fixes error in FPGA programming (V2.61)
+      }
+      else if((__Get(FIFO_EMPTY)==0)&&(i == JumpCnt)&&(_Status == RUN))     
+  	{
         JumpCnt++;
         DataBuf[i] = __Read_FIFO();             // read into the 32-bit FIFO data reading pointer +1
-      }
-      Ch[A] = (DataBuf[i] & 0xFF );              
-      a_Avg += Ch[A];                           // cumulative average channel A, DC
-      Tmp = Ch[A]- A_Posi;
-      a_Ssq +=(Tmp * Tmp);                      // statistical sum of squares of the A channel
-      Ch[B] = ((DataBuf[i] >> 8) & 0xFF);       
-      b_Avg += Ch[B];                           // cumulative average channel B, DC
-      Tmp = Ch[B]- B_Posi;
-      b_Ssq +=(Tmp * Tmp);                      // statistical sum of squares of the B channel
-		
+	  swap=0x300;
+	  swap &= DataBuf[i];
+	  if ((swap==0x100)||(swap==0x200))DataBuf[i]^=0x300; //swap 2 least significant bits of chB, fixes error in FPGA programming (V2.61)
+  	}
+
+      Ch[A] = (DataBuf[i] & 0xFF );              	    // now only used for time measurements	
+	V[A]=(Ch[A]-ADCoffset);					    // for wave trace,(also now used for meters, with signed vars) load into signed var and no clipping
+	if (Ch[A]<ADCoffset) Ch[A]=ADCoffset;   		    // clip at new 0 level, needed for unsigned var	    	
+	Ch[A]-=ADCoffset;						    // with ypos shift canceling this, moves operating point back to normal	
+
+      a_Avg += V[A];                          		    // use signed vars, otherwise, values at bottom of screen, pushed up by Kx1, now below zero, fail to register
+
+      Tmp = V[A]- A_Posi;
+      a_Ssq +=(Tmp * Tmp);		                      // statistical sum of squares of the A channel
+      Ch[B] = ((DataBuf[i] >> 8) & 0xFF);
+	V[B]=(Ch[B]-ADCoffset);
+	if (Ch[B]<ADCoffset) Ch[B]=ADCoffset;               	    	
+	Ch[B]-=ADCoffset;
+
+      b_Avg += V[B];                                     // cumulative average channel B, DC
+
+      Tmp = V[B]- B_Posi;
+      b_Ssq +=(Tmp * Tmp);                                // statistical sum of squares of the B channel
+
 		if(i == 0) {	// read first values - max = min = values
-		    a_Max = Ch[A];	// statistics channel A maximum
+		    a_Max = V[A];	// statistics channel A maximum
 			a_Min = a_Max;	// statistics channel A minimum
-			b_Max = Ch[B];	// statistics channel B maximum
+			b_Max = V[B];	// statistics channel B maximum
 			b_Min = b_Max;	// statistics channel B minimum
 		} else {		// not the first values
-			if(Ch[A] > a_Max)  a_Max = Ch[A];         // statistics channel A maximum
-			if(Ch[A] < a_Min)  a_Min = Ch[A];         // statistics channel A minimum
-			if(Ch[B] < b_Min)  b_Min = Ch[B];         // statistics channel B minimum
-			if(Ch[B] > b_Max)  b_Max = Ch[B];         // statistics channel B maximum
+			if(V[A] > a_Max)  a_Max = V[A];         // statistics channel A maximum
+			if(V[A] < a_Min)  a_Min = V[A];         // statistics channel A minimum
+			if(V[B] < b_Min)  b_Min = V[B];         // statistics channel B minimum
+			if(V[B] > b_Max)  b_Max = V[B];         // statistics channel B maximum
 		}
-		
-		// FFT ///////////////////////////////////////
-      if (_4_source==FFT_A)
-		{if ((i < FFTSize) && ShowFFT) {
+
+    // FFT ///////////////////////////////////////
+      if ((_4_source==FFT_A) || (_4_source==SPEC_A))
+		//{if ((i < FFTSize) && ShowFFT) {
+		{if (i < FFTSize) {
 			  fr[i] = Ch[A]<<2;
         }
 }
 
 
-         if (_4_source==FFT_B)
+         if ((_4_source==FFT_B) || (_4_source==SPEC_B))
         {
-           if ((i < FFTSize) && ShowFFT) {
+           //if ((i < FFTSize) && ShowFFT) {
+		   if (i < FFTSize) {
               fr[i] = Ch[B]<<2;
              }
         }
 		////////////////////////////////////// FFT ///
        
-      C_D = DataBuf[i] >>16;
-      if((i>1)&&(i<4094)){
-        if(Sa == 2){TaS = i; Ta = i; PaS = 0;}
+      if (i>4) {C_D = DataBuf[i-5] >>16;}else C_D=0;	    // align digital chs with analogs	
+
+      if(    (i>3)&&(i<(bag_max_buf-3))){		//exclude possible noise at start & end on some ranges (for time measurements only)
+
         if(Ch[A] > a_Mid_H){
-          if(Sa == 0){ TaS = i; TaN++;} 
-          Sa = 1;  
+          if (Sa<2){					//don't initiate if value is above trigger point when starting out
+            if(Sa == 0){
+		  TaS = i;                    					
+              if(Ta==0){				//use Ta to initiate
+                Ta=i;					//first + crossing point saved 
+		  }else{					//after initialized, count + crossings, add + wave sampling count to PaS
+		    TaN++;                          //increment TaN only after initial crossing point saved
+		    PaS += Pa;				//only add positive part if whole wave is considered	
+              }
+		}
+            Sa = 1;  
+          } 
         } else { 
-          if(Ch[A] < a_Mid_L) if(Sa == 1){Sa = 0; PaS += i-TaS;}
+          if(Ch[A] < a_Mid_L){
+            if(Sa == 2){
+		  Sa=0; 					//initiate only after going below trigger point so partial wave does not get counted
+		  PaS=0;					//initiate PaS
+            }
+	      if(Sa == 1){
+              Sa = 0;
+		  Pa = i-TaS;				//save for PaS
+            }
+          }
         }
-        if(Sb == 2){TbS = i; Tb = i; PbS = 0;}
-        if(Ch[B] > b_Mid_H){
-          if(Sb == 0){ TbS = i; TbN++;} 
-          Sb = 1;  
+
+       if(Ch[B] > b_Mid_H){
+          if (Sb<2){					
+            if(Sb == 0){
+		  TbS = i;                    					
+              if(Tb==0){				
+                Tb=i;					 
+		  }else{
+		    TbN++;                         
+		    PbS += Pb;					
+              }
+		}
+            Sb = 1;  
+          } 
         } else { 
-          if(Ch[B] < b_Mid_L) if(Sb == 1){Sb = 0; PbS += i-TbS;}
+          if(Ch[B] < b_Mid_L){
+            if(Sb == 2){
+		  Sb=0; 					
+		  PbS=0;					
+            }
+	      if(Sb == 1){
+              Sb = 0;
+		  Pb = i-TbS;				
+            }
+          }
         }
-        if(Sc == 2){TcS = i; Tc = i; PcS = 0;}
-        if(C_D & 1){
-          if(Sc == 0){ TcS = i; TcN++;} 
-          Sc = 1;  
-        } else {
-          if(Sc == 1){Sc = 0; PcS += i-TcS;} 
-        }
-        if(Sd == 2){TdS = i; Td = i; PdS = 0;}
-        if(C_D & 2){
-          if(Sd == 0){ TdS = i; TdN++;} 
-          Sd = 1;  
-        } else {
-          if(Sd == 1){Sd = 0; PdS += i-TdS;} 
+
+       if(C_D & 1){
+          if (Sc<2){					
+            if(Sc == 0){
+		  TcS = i;                    					
+              if(Tc==0){				
+                Tc=i;					 
+		  }else{
+		    TcN++;                         
+		    PcS += Pc;					
+              }
+		}
+            Sc = 1;  
+          } 
+        } else { 
+            if(Sc == 2){
+		  Sc=0; 					
+		  PcS=0;					
+            }
+	      if(Sc == 1){
+              Sc = 0;
+		  Pc = i-TcS;				
+            }
+	  } 
+
+       if(C_D & 2){
+          if (Sd<2){					
+            if(Sd == 0){
+		  TdS = i;                    					
+              if(Td==0){				
+                Td=i;					 
+		  }else{
+		    TdN++;                         
+		    PdS += Pd;					
+              }
+		}
+            Sd = 1;  
+          } 
+        } else { 
+            if(Sd == 2){
+		  Sd=0; 					
+		  PdS=0;					
+            }
+	      if(Sd == 1){
+              Sd = 0;
+		  Pd = i-TdS;				
+            }
         }
       }
+
       if(i >= k){                               // pointer to reach the specified window position
-        V[A]  = Ka1[_A_Range] +(Ka2[_A_Range] *Ch[A]+ 512)/1024;      
-        V[B]  = Kb1[_B_Range] +(Kb2[_B_Range] *Ch[B]+ 512)/1024;      // the main value in the current point
+
+
+														// Use V[x] loaded above rather than unsigned Ch[x], prevents clipping.
+
+	if (CalFlag>0) {
+        V[A]  = Ka1[_A_Range]+A_Posi+(Ka2[_A_Range]*(V[A]-A_Posi)+ 512)/1024;      // Factor in gain correction for signal (Ka2) from signal zero point
+        V[B]  = Kb1[_B_Range]+B_Posi+(Kb2[_B_Range]*(V[B]-B_Posi)+ 512)/1024;      // rather than screen bottom, prevents interference with offsets
+	}else{											    
+        V[A]  = Ka1[_A_Range]+V[A];      // gain correction switched off
+        V[B]  = Kb1[_B_Range]+V[B];      // 
+      }
         while(j > 0 ){
           Send_Data( V[A_]+((V[A]-V[A_])*(1024 - j))/1024, // the current CH_A point interpolation
                      V[B_]+((V[B]-V[B_])*(1024 - j))/1024, // the current CH_B point interpolation
                      C_D,                                  // current point digital channel values
                      n++);
-          j -= _Kp1+5;
+          j -= TempKp1+5;
           if(n >= X_SIZE-TRACK_OFFSET){ k = 8192;  break;}     //300
         }
         j += 1024;
         V[A_] = V[A];  V[B_] = V[B];     
-      }	  
+        }
+    }						// end of for loop
+
+    if ((exitflag==1)&&(JumpCnt<393)) exitflag=0;      //if exitflag was on at start, full frame finished allows freerun     
  
-      }
+ 
+ 
+ 
 
-	  
+  if ((FrameMode!=0) && (_T_base>11) && (_Mode==SCAN)) __Set(FIFO_CLR, W_PTR);	
 
-  if ((FrameMode!=0) && (_Mode==SCAN)) __Set(FIFO_CLR, W_PTR);
-  
-  
   a_Mid_H = 4 +(a_Max + a_Min)/2;
   a_Mid_L = a_Mid_H - 8;
   b_Mid_H = 4 +(b_Max + b_Min)/2;
   b_Mid_L = b_Mid_H - 8;
 
   TaS -= Ta; TbS -= Tb; TcS -= Tc; TdS -= Td;
-    
- for(j=0; j<X_SIZE; j++){                               // Sposta il buffer per eliminra il problema dei primi pixel
-    TrackBuff[(j)*4] = TrackBuff[(j+TRACK_OFFSET)*4];
-    TrackBuff[(j)*4+1] = TrackBuff[(j+TRACK_OFFSET)*4+1];
-    TrackBuff[(j)*4+2] = TrackBuff[(j+TRACK_OFFSET)*4+2];
-    TrackBuff[(j)*4+3] = TrackBuff[(j+TRACK_OFFSET)*4+3];
- } 
- 
- 
- 	  // FFT /////////////////////////////
-		if (ShowFFT) {
+
+
+   if (Title[TRIGG][SOURCE].Value>1){			//if triggering from digital chs, alignment with analog chs shifts waveforms to the right,
+     for(h=0; h<(X_SIZE-5); h++){                     //shift back to original position   
+        TrackBuff[h*4] = TrackBuff[(h+5)*4];
+        TrackBuff[h*4+1] = TrackBuff[(h+5)*4+1];
+        TrackBuff[h*4+2] = TrackBuff[(h+5)*4+2];
+        TrackBuff[h*4+3] = TrackBuff[(h+5)*4+3];
+     }
+   }
+
+   if (_T_base < 17)							// If sngl discard 4
+     {if (_T_base > 11)
+	 {discard=4;
+       }else discard=1;
+     }else discard=0;
+   if (_Mode==SGL) discard=4;
+
+
+   for(jj=0; jj<discard; jj++){                            // Discard first pixels, fill with next valid sample
+    TrackBuff[jj*4] = TrackBuff[discard*4];		     // conditional in draw.c blanks these 	
+    TrackBuff[jj*4+1] = TrackBuff[discard*4+1];            // this way it doesn't misalign wave trace with trigger vernier...
+   }
+
+   if (Title[TRIGG][SOURCE].Value<2)discard+=5;            // add 5 to blank C and D if not shifting screen to the left 5 samples
+   for(jj=0; jj<(discard); jj++){                          // Discard first pixels, fill with next valid sample
+    TrackBuff[jj*4+2] = TrackBuff[(discard)*4+2];           
+   }
+   if (Title[TRIGG][SOURCE].Value<2){
+     if ((_4_source==A_add_B)||(_4_source==A_sub_B))discard-=5;  
+   }
+   for(jj=0; jj<(discard); jj++){                           	
+    TrackBuff[jj*4+3] = TrackBuff[(discard)*4+3];
+   }
+
+   // FFT /////////////////////////////
+		if (ShowFFT || (_4_source==SPEC_A) || (_4_source==SPEC_B)) {
 			  for(i=0; i<FFTSize;i++)	fi[i] = 0;
 			  fix_fft(fr, fi, FFTSize);
 			  
@@ -476,16 +631,16 @@ void Process(void)
 				fr[ i ] = Int_sqrt(X*X+ Y*Y);    
 			  }
 			  
+			  
 			  if(_T_Scale < 333) {		// Avoid datatype overflow
-
-			  NFreq = 500000 / (_T_Scale / ((double)_T_KP / 1024));
-			
+				NFreq = 500000 / (_T_Scale / ((double)_T_KP / 1024));
+				
 				Int2Str(NFreqStr, NFreq, FM_UNIT, 4, UNSIGN);
 				Int2Str(FreqT1Str, ((NFreq / FFTBins) * _T1), FM_UNIT, 4, UNSIGN);
 				Int2Str(FreqDivStr, ((NFreq / FFTBins) * 30), FM_UNIT, 4, UNSIGN);
 			  } else {
 				NFreq = 500000000 / (_T_Scale / ((double)_T_KP / 1024));
-				NFreq *= 1000;
+				// NFreq *= 1000;
 				
 				Int2Str(NFreqStr, NFreq, F_UNIT, 4, UNSIGN);	
 				Int2Str(FreqT1Str, ((NFreq / FFTBins) * _T1), F_UNIT, 4, UNSIGN);
@@ -504,15 +659,14 @@ void Process(void)
 			  
 			  if (imax>1) {
 					if(_T_Scale < 333) 		// Avoid datatype overflow
-						Int2Str(PeakFreqStr, ((NFreq / FFTBins) * imax), FM_UNIT, 4, UNSIGN);
+						// Int2Str(PeakFreqStr, ((NFreq / FFTBins) * imax), FM_UNIT, 4, UNSIGN);
+						Int2Str(PeakFreqStr, ((NFreq / FFTBins) * imax * 1000), F_UNIT, 4, UNSIGN);
 					else
 						Int2Str(PeakFreqStr, ((NFreq / FFTBins) * imax), F_UNIT, 4, UNSIGN);
 			  }
 		}
   //////////////////////////// FFT ///
- 
- 
- 
+  
 }
 
 void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
@@ -533,19 +687,16 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
   switch (_4_source){                       
   case A_add_B:
     Tmp = Posi_412 + Va + Vb;
-    
-	
-	
-	break;
+    break;
   case A_sub_B:
-    //Tmp = Posi_412 + Va - Vb;
-     Tmp = Posi_41_2 + Va - Vb;
-	
-	
-	break;
+    //Tmp = Posi_412 + Va - Vb;	//did not work right
+    Tmp = Posi_41_2 + Va - Vb;	//uses new var with correct values
+    break;
   case C_and_D:
-    if((~C_D)& 3) Tmp = d_Max; 
-    else          Tmp = _4_posi;
+    //if((~C_D)& 3) Tmp = d_Max;				// was backwards... 
+    //else          Tmp = _4_posi;
+    if((~C_D)& 3) Tmp = _4_posi; 
+    else          Tmp = d_Max;
     break;  
   case C_or_D:
     if(C_D & 3)   Tmp = d_Max; 
@@ -563,9 +714,11 @@ void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n)  // output display data
   case REC_4:
     Tmp = Posi_4F4 +  FileBuff[n+1200];  
     break;
- case FFT_A:
- case FFT_B:
-break;
+  case FFT_A:
+  case FFT_B:
+  case SPEC_A:
+  case SPEC_B:
+    break;
   default:
     if(C_D & 2)  Tmp = d_Max;
     else         Tmp = _4_posi;
@@ -574,18 +727,94 @@ break;
   else if(Tmp <= Y_BASE+1)  TrackBuff[i + TRACK4] = Y_BASE+1;
   else                      TrackBuff[i + TRACK4] = Tmp;
 }
-
 /*******************************************************************************
  Synchro: scan synchronization, waveform display by setting the mode
 *******************************************************************************/
 void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
 { 
+u16  i;
+freerun=0;
 
-
-  switch (_Mode){ 
-  case SPEC:
-  case AUTO:
+if (FrameMode>0)								//single frame buffer
+ {
+  switch (_Mode)
+  {  
+     case X_Y:
+     case AUTO:
+        __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
+      if(__Get(FIFO_START)!=0){
+        if (entryflag>0){
+          JumpCnt=0;
+          entryflag=0;
+        }
+        Process();
+        Wait_Cnt=shortwait[_T_base];                                              
+        exitflag=1;                                                          
+      }else if ((Wait_Cnt==1)&&(_T_base < 9)){
+         if (_T_base <6)__Set(FIFO_CLR, W_PTR);                              
+       }else if(Wait_Cnt ==0){
+            if (_T_base > 8){
+              freerun=1;
+              entryflag=0;
+            }else{
+               freerun=2;						  
+               entryflag=1;                                                 
+             }
+            if (JumpCnt > 392)JumpCnt = 0;                     
+            Process();
+        }
+      break;
+    case NORH:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
+      if(__Get(FIFO_START)!=0)
+      {
+        Process();                                 
+      }else{ 
+        if(Wait_Cnt==0) Wait_Cnt = 1;	                      
+      }
+      break;
+    case NORC:
+     __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
+     if(__Get(FIFO_START)!=0)
+        {
+          Process();
+          Wait_Cnt=Wait[_T_base];
+        } else if(Wait_Cnt==0)						//was ==1
+         {
+          if (_T_base < 7) cleardatabuf( A_Posi,  B_Posi, 393);
+          for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0;
+          Wait_Cnt=Wait[_T_base];						//added
+      }
+      break;
+   case SGL:
+      __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
+      if(__Get(FIFO_START)!=0)  Process();          
+      break;
+    case SCAN:								
+      if (_T_base>11){ 
+        __Set(TRIGG_MODE, UNCONDITION);            	// works best at high sweep rates
+      }else{                                          // works better at low rates
+       __Set(TRIGG_MODE,3);  		                  // same as track1 (0) <<3 + 3 (>vt) (do not use digital chs...) 
+       __Set(V_THRESHOLD,255);                        // level then set out of range. Prevents triggering(vt>255), with fifo "splice" shifted left 150pix, gives smooth display at low speeds
+      }
+      if (_T_base>7){ 
+        freerun=1;
+        Process();                                  	
+      }else{ 								//tbase<8
+         freerun=2;
+         if ((FlagMeter==0) && (JumpCnt> 389)) JumpCnt=0;
+         if ((FlagMeter==1) && (JumpCnt> 304)) JumpCnt=0;
+         Process();
+      } 
+  } //switch
+ }
+ else										//regular large buffer mode
+ { 
+ switch (_Mode)
+  { 
+   case X_Y:
+   case AUTO:
+       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
       if(__Get(FIFO_START)!=0) {
         Process();                                 
         Wait_Cnt = Wait[_T_base];
@@ -594,7 +823,7 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
           Process();   
           Wait_Cnt = Wait[_T_base];
       } break;
-  case NORM:
+    case NORH:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
       if(__Get(FIFO_START)!=0) {
         Process();                                 
@@ -602,90 +831,105 @@ void Synchro(void)  // scan synchronization: AUTO, NORM, SGL, NONE, SCAN modes
       } else if(Wait_Cnt==0) {
         Wait_Cnt = Wait[_T_base];
       } break;
-  case SGL:
+     case NORC:
+      __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
+      if(__Get(FIFO_START)!=0) {
+        Process();                                 
+        Wait_Cnt = Wait[_T_base];
+      } else if(Wait_Cnt==0) {
+        for(i=0; i<4*X_SIZE; ++i)  TrackBuff[i] = 0;      // clear screen
+        Wait_Cnt = Wait[_T_base];
+      } break;
+   case SGL:
       __Set(TRIGG_MODE,(_Tr_source <<3)+_Tr_kind);  
       if(__Get(FIFO_START)!=0)  Process();         
       break;
-  case X_Y:
-  case X_Y_A:
-  case SCAN:
-      __Set(TRIGG_MODE, UNCONDITION);               
-      Process();                                  
-   }
-  
-
-  
-  Draw_Window();                                  // refresh the screen waveform display area
-  
-  if ((_Mode==SCAN) || (_Mode==X_Y)) Wait_Cnt = 1;
-
-  if ((FrameMode>0) && (_Status == RUN))
-    {   //_Mode == SCAN &&
-      Wait_Cnt = 1;
-      if (_Mode==SCAN)
-      {
-        if ((FlagMeter==0) && (JumpCnt> ((390*FrameMode)-1))) JumpCnt=0;
-        if ((FlagMeter==1) && (JumpCnt> ((305*FrameMode)-1))) JumpCnt=0;
-      } 
-      else
-      {
-        if (JumpCnt> ((300*FrameMode)-1)) JumpCnt=0;	//
+    case SCAN:								
+      if (_T_base>11){ 
+        __Set(TRIGG_MODE, UNCONDITION);               	
+      }else{
+       __Set(TRIGG_MODE,3);  
+       __Set(V_THRESHOLD,255); 
       }
-    }
-	
-//   if((_Status == RUN)&&(__Get(FIFO_FULL)!=0))
-//   {    // FIFO is full
-//     __Set(FIFO_CLR, W_PTR);                       // FIFO write pointer reset
-//     Wait_Cnt = Wait[_T_base];
-//     JumpCnt =0;
-// 	
-//     if(_Mode == SGL)
-// 	{
-//       _Status = HOLD;                             // one finished, enter the pause
-//       _State.Flag |= UPDAT;
-//     }
-//   }
-  if(HoldOnNext==1) {
-    _State.Value = HOLD;                             // one finished, enter the pause
+      if (_T_base>7){ 
+        freerun=1;
+        Process();                                  
+      }else{ 								//tbase<8
+         freerun=2;
+         if(JumpCnt >= 4095)  JumpCnt = 0; 
+         Process();
+       } 
+  }  										
+ }   										// end else (framemode=0)
+  
+
+ 
+  if (_Mode==SCAN) Wait_Cnt = 1;	     	
+
+  if ((FrameMode > 0)&&(_Mode!=SGL)){                     	// in single frame buffer mode
+    if (_Mode==SCAN)						     	
+    {
+      if ((FlagMeter==0) && (JumpCnt> 389)) JumpCnt=0;
+      if ((FlagMeter==1) && (JumpCnt> 304)) JumpCnt=0;
+    } 
+    if (JumpCnt> 392){
+        if((__Get(FIFO_START)!=0)&&(freerun!=2))            // resetting FIFO after start flag and frame completed provides proper triggering in single frame buffer mode
+	  {
+        JumpCnt=0;
+        __Set(FIFO_CLR, W_PTR);              	            // FIFO write pointer reset
+        }
+    }    
+  } 
+
+   if(HoldOnNext==1) {
+    _State.Value = HOLD;                                    // for single mode
     _State.Flag |= UPDAT;
     HoldOnNext=0;
     return;
-  }
+   }
 
-  if((_Status == RUN)&&(__Get(FIFO_FULL)!=0)){    // FIFO is full
-    if((_Mode != SGL)) {
-      __Set(FIFO_CLR, W_PTR);                       // FIFO write pointer reset
+ if ((_Status == RUN)&&(_T_base > 11)&&(_T_base < 14)&&(_Mode != SGL))   //special case for "in between" sweep rates...
+    if ((__Get(FIFO_START)!=0)&&(FrameMode >0))	__Set(FIFO_CLR, W_PTR);	 // prevents "double looping" in single window buffer mode
+                                                                         // with slow or random triggers from failure to "fill" buffer and reset
+
+if ((_Status == RUN)&&(__Get(FIFO_FULL)!=0))  {                         // FIFO is full
+    if(_Mode != SGL) {
+      __Set(FIFO_CLR, W_PTR);                                            // FIFO write pointer reset
     }
-    Wait_Cnt = Wait[_T_base];
+    if (FrameMode == 0)  Wait_Cnt = Wait[_T_base];
     JumpCnt =0;
     if(_Mode == SGL){
       HoldOnNext=1;
     }
-  }    
-}  
+  }
 
+  if ((_Mode != AUTO)||(_T_base > 8)||(exitflag==0)||(entryflag==0)) Draw_Window(); //Executing time consuming screen update AFTER resetting FIFO rather than before
+                                                                                    //allows enough time for START flag to register at fast time bases - fixes triggering
+														//issue of slow/random pulses not triggering
+}   										               
 
 u16 get_bag_max_buf(void) {
 u16 out = 4096;
 
-	if (FlagFrameMode==1){
-          if (_Mode==SCAN) { FrameMode=1; } 
-          else {
-             if (Title[T_BASE][1].Value<11) {FrameMode=2; } //2
-             else { FrameMode=0;} //0
-          }
-    } else { FrameMode=0; }
-	
-if (FrameMode>0) {    //_Mode == SCAN
-    if (_Mode==SCAN) {
-        if (FlagMeter==0) (out = (390*FrameMode));
-        if (FlagMeter==1) (out = (305*FrameMode));
-    } else
-        out = (300*FrameMode);
-		//out = (X_SIZE*FrameMode);  //X_SIZE -> incorrect triggering
-  
+  if ((FrameMode>0)&&(_Mode!=SGL)){
+    if (_Mode==SCAN){					
+        if (FlagMeter==0) out =  390;
+        if (FlagMeter==1) out =  305;
+        if (_T_base>9) out=390+150;			//moves trigger splice out of view to left edge of screen at fast time bases for cleaner display
+    } else out = 393;					
   }
   return out;
+}
+
+void cleardatabuf(s16 Afill, s16 Bfill, u16 n)   //Clears/replaces n samples in DataBuf
+{
+ u32 sample;
+ u16 i;
+
+sample=((Bfill+ADCoffset) & 0xff);					 
+sample <<= 8;
+sample|=((Afill+ADCoffset) & 0xff);
+   for (i=0; i<n; i++) DataBuf[i]=sample;      
 }
 
 

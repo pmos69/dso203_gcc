@@ -28,26 +28,30 @@ SECTIONS
       BIOS.o
     }
 
-    .text : {
+	.isr_vector : {
       _vectors = .;
       *(.isr_vectors)      /* Vector table */
+    } >rom
+
+    .text : {
       *(.text*)        /* Program code */
       *(.rodata*)      /* Read only data */
+     . = ALIGN(4);
       _etext = .;
       _sidata = _etext;
     } >rom
 
-    .  = 0x20000000;   /* From 0x20000000 */      
-
-    .data : {
+    .data :  AT ( _sidata ) {
       _sdata = . ;
-      *(.data)        /* Data memory */
+	*(.data*)        /* Data memory */
+      . = ALIGN(4);
       _edata = .;
-    } >ram AT > rom
+	} >ram
 
-  .bss : {
+    .bss (NOLOAD) : {
     _sbss = .;
     *(.bss)         /* Zero-filled run time allocate data memory */
+    . = ALIGN(4);
     _ebss = .;
     } >ram AT > rom
   }  

@@ -6,7 +6,7 @@
 #define __MENU_H
 
 #include "stm32f10x_lib.h"
- 
+
 //----------- The Detail menu constants MARK defined -----------
 #define NUM2    0x01   // display the Value of two values in the specified location
 #define NUM3    0x02   // in the specified location to display the floating point value of the Value of 3
@@ -62,6 +62,10 @@
 
 #define FFT_A      10
 #define FFT_B      11
+
+#define SPEC_A      12
+#define SPEC_B      13
+
 //------------- RUNNING sub-menu item number defined -------------
 #define STATE      0
 #define STATUS     1
@@ -77,13 +81,13 @@
 #define VIEW       3
 
 //............. T_BASE Mode number defined ............
-#define AUTO       0
-#define NORM       1
-#define SGL        2
-#define SCAN       3
-#define X_Y        4
-#define X_Y_A      5
-#define SPEC	   6
+#define SCAN        0
+#define AUTO       1
+#define NORH       2
+#define NORC       3
+#define SGL        4
+#define X_Y      5
+
 //-------------- OUTPUT sub-menu item number defined -------------
 #define KIND       0
 #define FRQN       1

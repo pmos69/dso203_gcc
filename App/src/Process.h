@@ -14,7 +14,7 @@
 #define B                 1
 #define A_                2
 #define B_                3
- 
+
 //================== Structure variables, macro definitions ==================
 #define _1_source  Title[TRACK1][SOURCE].Value
 #define _2_source  Title[TRACK2][SOURCE].Value
@@ -78,16 +78,22 @@ typedef struct  // 脉冲波形输出驱动表
   u16  Duty;    // duty cycle coefficient
 } D_tab ; 
 
-
 extern u8  TrackBuff [X_SIZE * 4];          //  i +0 ~ 3, a 4 track data were stored
-extern u32 a_Avg, b_Avg, a_Ssq, b_Ssq;
-extern u8  a_Max, b_Max, a_Min, b_Min;                // statistics of intermediate variables
+//extern u32 a_Avg, b_Avg, a_Ssq, b_Ssq;
+extern s32 a_Avg, b_Avg, a_Ssq, b_Ssq;
+
+//extern u8  a_Max, b_Max, a_Min, b_Min;                // statistics of intermediate variables
+extern s16  a_Max, b_Max, a_Min, b_Min;                // statistics of intermediate variables
 
 extern u16 TaS, TbS, TcS, TdS;            // cycles accumulated
 extern u16 PaS, PbS, PcS, PdS;            // pulse width of the cumulative
 extern u16 TaN, TbN, TcN, TdN;           // Cycle Count
 extern u8 FrameMode;
 
+extern u16 TempKp1;
+extern u8 ADCoffset;
+extern u8 CalFlag;
+extern u16 JumpCnt;
 extern s8  Kab;              
 extern s8  Ka1[10], Kb1[10]; 
 extern u16 Ka2[10], Kb2[10]; 
@@ -106,6 +112,7 @@ void Process(void);
 void Synchro(void);
 void Send_Data(s16 Va, s16 Vb, u8 C_D, u16 n);
 u16 get_bag_max_buf();
+void cleardatabuf(s16 Afill, s16 Bfill, u16 n);
 
 // FFT ////////////////////////////////////////////////////////////////////
 
@@ -120,7 +127,6 @@ extern short PeakFreq;
 extern char PeakFreqStr[];
 extern char FreqDivStr[];
 extern char FreqT1Str[];
-//extern char TempStr[];
 ///////////////////////////////////////////////////////////// FFT ///////
 
 #endif

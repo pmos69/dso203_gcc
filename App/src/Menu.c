@@ -9,19 +9,32 @@
 #include "Menu.h"
 #include "Draw.h"
 #include "BIOS.h"
- 
+
 u16 Result_FPS;
 u8 Cnt_InCharge;
 u8 Cnt_Charged;
 u8 Cnt_Batt;
 u8 FlagInCharge;
 
+char a_xy[8]="CH!A=!X";		
+char b_xy[8]="CH!B=!Y";
+char ax10_xy[7]="X10A=X";
+char bx10_xy[7]="X10B=Y";
+char a[8]="!CH(A)!";		
+char b[8]="!CH(B)!";
+char ax10[7]="x10(A)";
+char bx10[7]="x10(B)";
+
 char T_UNIT[12] ={'u','S', 0 ,'u','S', 0 ,'m','S', 0 ,'S',' ', 0 };
-char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
-char F_UNIT[12] ={'H','z', 0 ,'H','z', 0 ,'K','@', 0 ,'M','@', 0 };
+//char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
+char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'?',' ', 0 };     // ? = special"kv"character 
+char F_UNIT[12] ={'H','z', 0 ,'K','@', 0 ,'M','@', 0 ,'G','@', 0 };	//Used at high sweep rates so display works right
 char FM_UNIT[12] ={'M','@', 0 ,'M','@', 0 ,'G','@', 0 ,'T','@', 0 };
+// char N_UNIT[12] ={ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 };
 char S_UNIT[12] ={'/','S','e','c', 0 ,'/','S','e','c', 0 , 0 , 0 };
 char P_UNIT[12] ={'%',' ', 0 ,'%',' ', 0 ,'%',' ', 0 , 0 , 0 , 0 };
+char F_UNITSUB[12]={'H','z', 0 ,'H','z', 0 ,'K','@', 0 ,'M','@', 0 };   //added to keep original FREQ display working right at low sweep rates 
+
 
 char STATESTR[3][10] = {"!RUN!", "HOLD", "HOLD"};                  // Running state str
 
@@ -32,12 +45,12 @@ uc16 B_COLOR[5]     = {(NOTE1<<8)+SCRN, (SIDE <<8)+SCRN,
                        (TEXT2<<8)+SCRN, (TEXT2<<8)+SCRN,
                        (TEXT2<<8)+SCRN};                          // Battery Status Color
 
-char CH_A_STR[4][10]  = {" -NO- ", "!CH(A)!", "x10(A)"};
-char CH_B_STR[4][10]  = {" -NO- ", "!CH(B)!", "x10(B)"};
-char CH_C_STR[2][10]  = {" -NO- ", "!CH(C)!"};
-char CH_D_STR[12][10] = {" -NO- ", "!CH(D)!", "!(A+B)!", "!(A-B)!",  
+char CH_A_STR[4][10]  = {" !OFF! ", "!CH(A)!", "x10(A)"};
+char CH_B_STR[4][10]  = {" !OFF! ", "!CH(B)!", "x10(B)"};
+char CH_C_STR[2][10]  = {" !OFF! ", "!CH(C)!"};
+char CH_D_STR[14][10] = {" !OFF! ", "!CH(D)!", "!(A+B)!", "!(A-B)!",  
                      "!(C&D)!", "!(C|D)!", "!REC_A!",  "!REC_B!",
-                        "!REC_C!",  "!REC_D!", "!FFT_A!", "!FFT_B!"};                      // Track source Str
+						"!REC_C!",  "!REC_D!", "!FFT_A!", "!FFT_B!", "SPEC_A", "SPEC_B"};                      // Track source Str
 char NO_RANGE[5]      = "";//" -- ";                       
 char NO_DEF[5]        = "";//"--";                       
 
@@ -51,7 +64,7 @@ uc16 Y_COLOR[5]     = {(TR_1<<8)+SCRN, (TR_2<<8)+SCRN,
                        (TR_3<<8)+SCRN, (TR_4<<8)+SCRN,
                        (VERNIE<<8)+SCRN};                          // Track Color 2
 
-char MODESTR[10][10]  = {"!AUTO!", "!NORM!","SINGL","!SCAN!","X_Y S","X_Y A","SPECT"};        // Sync Mode Str
+char MODESTR[10][10]  = {"TrOFF","!AUTO!", "NORML","NorCL","SINGL"," X_Y "};        // Sync Mode Str
 char BaseStr[30][10];                                              // Time Base b Str
 char  XPOSISTR[5]    = {"XPOS"};
 uc16 XCOLOR[2]      = {(SCRN<<8)+X_POSI, (X_POSI<<8)+SCRN};        // Time Base Color
@@ -83,7 +96,7 @@ uc16 T_INV[1]       = {(SCRN<<8)+VERNIE};
 uc16 T_COLOR[1]        = {(VERNIE<<8)+SCRN};                         // X Vernie Color
 char  F_FUNC[2][10]  = {"Save File", "Load File"};                 // File Function Str
 
-char  F_EXT[8][10]   = {".BMP?", ".DAT?", ".BUF?",".CSV?", " OK! ",
+char  F_EXT[8][10]   = {".BMP ", ".DAT ", ".BUF ",".CSV ", " OK! ",
                          " ERR!",".HEX", ".BIN",};                  // File Ext Name Str
 uc16 F_INV[1]       = {(SCRN<<8)+TEXT1};                          //  File Color
 char  DELTA_V[2][10] = {"[V:", "[V:"};
@@ -121,7 +134,7 @@ menu Title[13][4]=
     {(char*)YPOSISTR,(u16*)Y_INV+2, 200-1,  FIX,    0,    0,    60, UPDAT}, //  Adj. Track Position
   },
   {//============================ Title Track4 Group ===========================
-    {(char*)CH_D_STR,(u16*)Y_INV+3,  12-1, CIRC,  188,  228,     1, UPDAT}, //  Track source
+    {(char*)CH_D_STR,(u16*)Y_INV+3,  14-1, CIRC,  188,  228,     1, UPDAT}, //  Track source
     {(char*)NO_DEF , (u16*)Y_COLOR+3, 1-1, CIRC,  188,  216,     0, UPDAT}, //  Track Couple        
     {(char*)NO_RANGE,(u16*)Y_COLOR+3, 1-1,    0,  204,  216,     0, UPDAT}, //  Track Range
     {(char*)YPOSISTR,(u16*)Y_INV+3, 200-1,  FIX,    0,    0,    20, UPDAT}, //  Adj. Track Position
@@ -139,7 +152,7 @@ menu Title[13][4]=
     {(char*)NumStr,  (u16*)O_COLOR,   100, NUM3,  196,  216,    50, UPDAT}, //  Attenuazione    251,202         
   },
   {//========================= Title Time Base Group ===========================
-    {(char*)MODESTR, (u16*)XCOLOR,    7-1, CIRC,  290,  228,     0, UPDAT}, //  Sync Mode    5 numero modi  239  228
+    {(char*)MODESTR, (u16*)XCOLOR,    6-1, CIRC,  290,  228,     0, UPDAT}, //  Sync Mode    5 numero modi  239  228
     {(char*)BaseStr, (u16*)XCOLOR+1, 27-1,    0,  290,  216,    17, UPDAT}, //  Time Base Range             239 216
     {(char*)XPOSISTR,(u16*)XCOLOR,   3695,  FIX,  366,    0,     0, UPDAT}, //  Adj. X position  3795
     {(char*)XPOSISTR,(u16*)XCOLOR,   3695,  NOT,   80,    0,     0, UPDAT}, //  View window rule  3795
@@ -176,13 +189,13 @@ menu Title[13][4]=
   },
   {//============================ Title Volume Group ===========================
     {(char*)Vol_Str, (u16*)V_INV,     1-1,  FIX,  314,  152,     0, UPDAT}, //  Volume        
-    {(char*)NumStr,  (u16*)V_COLOR,  10-1, NUM2,  342,  152,     5, UPDAT}, //  Class (Jerson was 11-1 now 10-1)     
+    {(char*)NumStr,  (u16*)V_COLOR,  10-1, NUM2,  342,  152,     5, UPDAT}, //  Class     was 11-1, causing display error
     {(char*)NumStr,  (u16*)V_INV,       0,  NOT,    0,    0,     0,   HID},    
     {(char*)NumStr,  (u16*)V_INV,       0,  NOT,    0,    0,     0,   HID},    
   },
 };
-
-meter Meter[9] =
+      //.str
+meter Meter[9] = //.track   .item                         .flag
 { {(char*)METER,      4,    VBT,     314,    342,   137,  UPDAT}, //  Meter #0
   {(char*)METER,      4,    FPS,     314,    342,   122,  UPDAT}, //  Meter #1
   {(char*)METER, TRACK4,    FRQ,     314,    342,   107,  UPDAT}, //  Meter #2
@@ -224,12 +237,12 @@ void Display_Meter(void)                  // refresh measurements display
 void Display_Value(u8 i)
 {
   s32 Tmp = 0;
+  s32 Tmp2= 0;
   u16 Kp;
   u32 k, n, m;
   u16 bag_max_buf = 4096;   // store sample buffer size
-  
+
   Kp = _Kp1; // independent sampling mode
-  
   
   k = _T_Range; m = 1;  n = 1;
   if(k < 9)  m = Power(10, (11-k)/3); //9 //11
@@ -249,8 +262,12 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Ka2[_A_Range]*(a_Max - a_Min)+ 512)/1024;
-			if(Tmp <= 4) Tmp = 0;	// round of precision error
+			Tmp=a_Max+Ka1[_A_Range]-_1_posi;				
+	            Tmp = ((Ka2[_A_Range]*Tmp)+512)/1024;
+			Tmp2=a_Min+Ka1[_A_Range]-_1_posi;
+	            Tmp2 = ((Ka2[_A_Range]*Tmp2)+512)/1024; 
+			Tmp=Tmp-Tmp2;
+			if(Tmp <= 2) Tmp = 0;						// round of precision error - was 4
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -258,8 +275,14 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK2){
 		if  (_2_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Kb2[_B_Range]*(b_Max - b_Min)+ 512)/1024;
-			if(Tmp <= 4) Tmp = 0;	// round of precision error
+			Tmp=b_Max+Kb1[_B_Range]-_2_posi;
+	            Tmp = ((Kb2[_B_Range]*Tmp)+512)/1024; 
+			Tmp2=b_Min+Kb1[_B_Range]-_2_posi;
+	            Tmp2 = ((Kb2[_B_Range]*Tmp2)+512)/1024; 
+			Tmp=Tmp-Tmp2;
+
+
+			if(Tmp <= 2) Tmp = 0;						// round of precision error - was 4
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -271,9 +294,9 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*(a_Avg/bag_max_buf)+ 512)/1024 - _1_posi; // use bag_max_buf as average divider
-			//Tmp = Ka1[_A_Range]+(Ka2[_A_Range]*((a_Avg/bag_max_buf)- _1_posi)+ 512)/1024 ; // use bag_max_buf as average divider
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp=((a_Avg/bag_max_buf)+Ka1[_A_Range]-_1_posi);
+	            Tmp = ((Ka2[_A_Range]*Tmp)+512)/1024;   // Add signal level correction factor based on signal zero level rather than bottom of screen, prevents offsets from corupting value 
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;		// round of precision error
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -281,8 +304,9 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK2){
 		if  (_2_source == HIDE) Tmp=0;
 		else {
-			Tmp = Kb1[_B_Range]+(Kb2[_B_Range]*(b_Avg/bag_max_buf)+ 512)/1024 - _2_posi; // use bag_max_buf as average divider
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp=((b_Avg/bag_max_buf)+Kb1[_B_Range]-_2_posi);
+	            Tmp = ((Kb2[_B_Range]*Tmp)+512)/1024; // use bag_max_buf as average divider
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;		// round of precision error
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -293,8 +317,8 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = Ka1[_A_Range] +(Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024; // use bag_max_buf as average divider
-			if(Tmp <= 4) Tmp = 0;	// round of precision error
+			Tmp = (Ka2[_A_Range]*Int_sqrt(a_Ssq/bag_max_buf)+ 512)/1024;     // adding Ka1 here causes error in calc, already factored in in Process...
+			if(Tmp <= 2) Tmp = 0;						// round of precision error				
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -302,8 +326,8 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK2){
 		if  (_2_source == HIDE) Tmp=0;
 		else {
-			Tmp = Kb1[_B_Range] +(Kb2[_B_Range]*Int_sqrt(b_Ssq/bag_max_buf)+ 512)/1024; // use bag_max_buf as average divider
-			if(Tmp <= 4) Tmp = 0;	// round of precision error
+			Tmp = (Kb2[_B_Range]*Int_sqrt(b_Ssq/bag_max_buf)+ 512)/1024; 			
+			if(Tmp <= 2) Tmp = 0;						// round of precision error				
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -314,8 +338,9 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Max + 512)/1024 - _1_posi);
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp=a_Max+Ka1[_A_Range]-_1_posi;
+	            Tmp = ((Ka2[_A_Range]*Tmp)+512)/1024; // use bag_max_buf as average divider
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -323,8 +348,9 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK2){
 		if  (_2_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Max + 512)/1024 - _2_posi);
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp=b_Max+Kb1[_B_Range]-_2_posi;
+	            Tmp = ((Kb2[_B_Range]*Tmp)+512)/1024; // use bag_max_buf as average divider
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -336,8 +362,9 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK1){
 		if  (_1_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Ka1[_A_Range] +(Ka2[_A_Range]*a_Min + 512)/1024 - _1_posi);
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp=a_Min+Ka1[_A_Range]-_1_posi;
+	            Tmp = ((Ka2[_A_Range]*Tmp)+512)/1024; // use bag_max_buf as average divider
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
 			Tmp *= Y_Attr[_A_Range].SCALE;
 			if  (_1_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -345,8 +372,9 @@ void Display_Value(u8 i)
     if(Meter[i].Track == TRACK2){
 		if  (_2_source == HIDE) Tmp=0;
 		else {
-			Tmp = (Kb1[_B_Range] +(Kb2[_B_Range]*b_Min + 512)/1024 - _2_posi);
-			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;	// round of precision error
+			Tmp=b_Min+Kb1[_B_Range]-_2_posi;
+	            Tmp = ((Kb2[_B_Range]*Tmp)+512)/1024; // use bag_max_buf as average divider
+			if((Tmp >= -2)&&(Tmp <= 2)) Tmp = 0;
 			Tmp *= Y_Attr[_B_Range].SCALE;
 			if  (_2_source == CH_X10) Tmp=Tmp*10;
 		}
@@ -355,20 +383,16 @@ void Display_Value(u8 i)
     break;
   case FRQ:
     if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
-      Tmp = 2000*((5000000 * TaN)/TaS);
+      Tmp = 2000*((500000 * TaN)/TaS);
     if((Meter[i].Track == TRACK2)&&(_2_source != HIDE))
-      Tmp = 2000*((5000000 * TbN)/TbS);
+      Tmp = 2000*((500000 * TbN)/TbS);
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
-      Tmp = 2000*((5000000 * TcN)/TcS);
-    if((Meter[i].Track == TRACK4)&&(_4_source == CH_D))
-      Tmp = 2000*((5000000 * TdN)/TdS);
-	  
-
-    if(n < 10)  Int2Str(NumStr,((((250*(Tmp/(k/6)))/m)/15)),   F_UNIT, 4, UNSIGN);
-    else       Int2Str(NumStr, ((Kp*(n*(Tmp/(k/6))/240)/256)*1000), F_UNIT, 4, UNSIGN); //aggiunto *1000   4
+      Tmp = 2000*((500000 * TcN)/TcS);
+    if((Meter[i].Track == TRACK4)&&((_4_source == CH_D)||(_4_source == C_and_D)||(_4_source == C_or_D)))
+      Tmp = 2000*((500000 * TdN)/TdS);
+    if(n < 10)  Int2Str(NumStr, ((250*(Tmp/(k/60)))/m)/15, F_UNITSUB , 4, UNSIGN);     //added display string so works correctly
+    else        Int2Str(NumStr, Kp*(n*(Tmp/(k/60))/240)/256, F_UNIT, 4, UNSIGN);       //returned to original code, modified did not work > ~2Mhz
     break;  
-	
-	
   case CIR:
     if((Meter[i].Track == TRACK1)&&(_1_source != HIDE))
       Tmp = (k *TaS)/TaN;
@@ -376,7 +400,7 @@ void Display_Value(u8 i)
       Tmp = (k *TbS)/TbN;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (k *TcS)/TcN;
-    if((Meter[i].Track == TRACK4)&&(_4_source == CH_D))
+    if((Meter[i].Track == TRACK4)&&((_4_source == CH_D)||(_4_source == C_and_D)||(_4_source == C_or_D)))
       Tmp = (k *TdS)/TdN;
     if(Tmp <= 0x7FFFFFFF/m) Tmp = 1024*((m*Tmp)/Kp)/n;
     else                    Tmp = 0x80000000;
@@ -389,7 +413,7 @@ void Display_Value(u8 i)
       Tmp = (100000*PbS)/TbS;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (100000*PcS)/TcS;
-    if((Meter[i].Track == TRACK4)&&(_4_source == CH_D))
+    if((Meter[i].Track == TRACK4)&&((_4_source == CH_D)||(_4_source == C_and_D)||(_4_source == C_or_D)))
       Tmp = (100000*PdS)/TdS;
     Int2Str(NumStr, Tmp, P_UNIT, 4, UNSIGN);
     break;
@@ -400,7 +424,7 @@ void Display_Value(u8 i)
       Tmp = (k*TbS)/TbN - (k*PbS)/TbN;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (k*TcS)/TcN - (k*PcS)/TcN;
-    if((Meter[i].Track == TRACK4)&&(_4_source == CH_D))
+    if((Meter[i].Track == TRACK4)&&((_4_source == CH_D)||(_4_source == C_and_D)||(_4_source == C_or_D)))
       Tmp = (k*TdS)/TdN - (k*PdS)/TdN;
     if(Tmp <= 0x7FFFFFFF/m) Tmp = 1024*((m*Tmp)/Kp)/n;
     else                    Tmp = 0x80000000;
@@ -413,7 +437,7 @@ void Display_Value(u8 i)
       Tmp = (k*PbS)/TbN;
     if((Meter[i].Track == TRACK3)&&(_3_source == CH_C))
       Tmp = (k*PcS)/TcN;
-    if((Meter[i].Track == TRACK4)&&(_4_source == CH_D))
+    if((Meter[i].Track == TRACK4)&&((_4_source == CH_D)||(_4_source == C_and_D)||(_4_source == C_or_D)))
       Tmp = (k*PdS)/TdN;
     if(Tmp <= 0x7FFFFFFF/m) Tmp = 1024*((m*Tmp)/Kp)/n;
     else                    Tmp = 0x80000000;
@@ -427,17 +451,41 @@ void Display_Value(u8 i)
     NumStr);                              // display the measured values
 }
 
-void Display_Title(void)
+void Display_Title(void)			
 {
   u16  i, j;
   s32  k, n, m;
   u8 z;
-  
-  
+  char *p;
+
+if (_Mode==X_Y){					//replace menu title for chA and chB to show X_Y mode
+  p=(char *)CH_A_STR;
+  p+=10;
+  for (i=0;i<7;i++)*p++=a_xy[i];
+  p+=3;
+  for (i=0;i<6;i++)*p++=ax10_xy[i];
+  p=(char *)CH_B_STR;
+  p+=10;
+  for (i=0;i<7;i++)*p++=b_xy[i];
+  p+=3;
+  for (i=0;i<6;i++)*p++=bx10_xy[i];
+ }else{						//show regular title
+  p=(char *)CH_A_STR;
+  p+=10;
+  for (i=0;i<7;i++)*p++=a[i];
+  p+=3;
+  for (i=0;i<6;i++)*p++=ax10[i];
+  p=(char *)CH_B_STR;
+  p+=10;
+  for (i=0;i<7;i++)*p++=b[i];
+  p+=3;
+  for (i=0;i<6;i++)*p++=bx10[i];
+}
+
       if ((Current == OUTPUT)&&((_Det==DUTYPWM) || (_Det==OUTATT))){ z=Twink; } else { z=INV;}
      
       if  (Title[OUTPUT][KIND].Value == PWM)
-      {
+	{
         u8ToDec3(Title[OUTPUT][DUTYPWM].Str, Title[OUTPUT][DUTYPWM].Value);
         Print_Str(156,  216, (Title[OUTPUT][DUTYPWM].Color[0]), z, "Duty % "); //225,202[Title[OUTPUT][PWM].Value]
         Print_Str(Title[OUTPUT][DUTYPWM].XPOS, Title[OUTPUT][DUTYPWM].YPOS,
@@ -446,9 +494,15 @@ void Display_Title(void)
       else
       {
         Print_Str(156,  216, (Title[OUTPUT][DUTYPWM].Color[0]), z, "!!Out ");//230,202
-        Int2Str(NumStr, (Title[OUTPUT][OUTATT].Value*26000), V_UNIT, 2, UNSIGN);
+        Int2Str(NumStr, (Title[OUTPUT][OUTATT].Value*28000), V_UNIT, 2, UNSIGN);     //26000 
         Print_Str(Title[OUTPUT][OUTATT].XPOS, Title[OUTPUT][OUTATT].YPOS,
                   (Title[OUTPUT][OUTATT].Color[0]),z,NumStr);
+      }
+
+      if (CalFlag==0){
+        Print_Str(137,216,0x0405,PRN,"Un");
+      }else{
+        Print_Str(137,216,0x0405,PRN,"!C!");
       }
 	  
   for(i = TRACK1; i <= VOLUME; ++i){
@@ -495,12 +549,13 @@ void Display_Title(void)
 				//Delta V value
               );
             }
-            if(i == T_VERNIE){
+            if(i == T_VERNIE){				
               m = 1;  n = 1;
               k = _T_Range;
               if(k < 9)  m = Power(10, (11-k)/3);
               else       n = Power(10, (k- 9)/3);
               k = X_Attr[(k%3)+9].SCALE *(_T2 - _T1);
+		  if (_T_Range<3)k/=1000;				//special case for very long interval so won't overload
               if(k > 0){
                 if(k <=  0x7FFFFFFF/m)  k = (m * k)/n;
                 else                    k = 0x80000000;
@@ -532,9 +587,7 @@ void Display_Title(void)
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
                 } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
             } else {                                  // volume percentage
-             
-              if(Title[i][j].Value >= Title[i][j].Limit){     // Jerson (was ==10, made >=Limit)
-
+              if(Title[i][j].Value == 9){							//was 10, changed so volume ind works properly
                 Int2Str(NumStr, 100, P_UNIT, 3, STD);
               } else Int2Str(NumStr, 10*(Title[i][j].Value+1), P_UNIT, 2, STD);
             }
@@ -705,11 +758,13 @@ void Update_Battery(void)
   }
   else
   {
-    Level =0;
-    if(Vb > 3000 ) Level +=1;
-    if(Vb > 3500 ) Level +=1;
-    if(Vb > 3900 ) Level +=1;
-    if(Vb > 4100 ) Level +=1; 
+    Level =0;	//3000,3500,3900,4100 (or)    3200,3600,3900,4100 (mod)     3400,3600,3800,3990 >Batt seemed to die off very fast after going from 1/2 to 1/4...
+    //if(Vb > 3000 ) Level +=1;
+    if(Vb > 3400 ) Level +=1;
+    //if(Vb > 3500 ) Level +=1;
+    if(Vb > 3600 ) Level +=1;
+    if(Vb > 3800 ) Level +=1;
+    if(Vb > 3990 ) Level +=1; 
      
   }  
   if (Level>4) Level=4;

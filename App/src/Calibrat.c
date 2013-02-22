@@ -9,22 +9,23 @@
 #include "File.h"
 #include "BIOS.h"
 #include "Menu.h"
- 
+
 char VS_STR[9][12]  ={"250-300mV", "!0.5-0.6V!","!1.0-1.2V!","!2.5-3.0V!",
                      "!5.0-6.0V!"," !10-12V! "," !25-30V! "," !50-60V! "};
 
 void Balance(void)
 {
   u16 i;
-  
+  u32 swap;
+
   __Set(STANDBY, DN);                          // exit the power saving state
   __Set(ADC_CTRL, EN );       
   __Set(T_BASE_PSC, X_Attr[_2uS].PSC);         // T_BASE = 2uS
   __Set(T_BASE_ARR, X_Attr[_2uS].ARR);
   __Set(CH_A_COUPLE, AC);
   __Set(CH_B_COUPLE, AC);
-  __Set(CH_A_OFFSET, 100);
-  __Set(CH_B_OFFSET, 100);
+  __Set(CH_A_OFFSET, (100+ADCoffset));
+  __Set(CH_B_OFFSET, (100+ADCoffset));
   __Set(CH_A_RANGE,  G_Attr[0].Yp_Max);        // 10V/Div
   __Set(CH_B_RANGE,  G_Attr[0].Yp_Max+1);      // B channel incorporated into the A channel
   __Set(ADC_MODE, INTERLACE);                  // Set Interlace mode
@@ -34,14 +35,20 @@ void Balance(void)
   
   __Set(FIFO_CLR, W_PTR); 
   Delayms(20); 
-  //a_Avg = 2048;               
-  //b_Avg = 2048; 
-  a_Avg = 0;               
-  b_Avg = 0;     
+  a_Avg = 2048;				    // centers half way up 0-1 step, makes equaly sensitive to + step added than - step added	               
+  b_Avg = 2048;       			    	
   for(i=0; i <4096; i++){
     DataBuf[i] = __Read_FIFO();         // read into the 32-bit FIFO data reading pointer +1
-    a_Avg += (DataBuf[i] & 0xFF );      // cumulative DC average              
+    swap=0x300;
+    swap &= DataBuf[i];
+    if ((swap==0x100)||(swap==0x200))DataBuf[i]^=0x300; //swap 2 least significant digits of chB, fixes error in FPGA programming
+    a_Avg += (DataBuf[i] & 0xFF );                      // cumulative DC average              
+    if (a_Avg < ADCoffset) a_Avg = ADCoffset;           // clip at new 0 level	    	
+    a_Avg-=ADCoffset;	
     b_Avg += ((DataBuf[i]>>8) & 0xFF );              
+    if (b_Avg < ADCoffset) b_Avg = ADCoffset;           // clip at new 0 level	    	
+    b_Avg-=ADCoffset;	
+
   }
   Kab = (a_Avg - b_Avg)/4096;
 }
@@ -55,14 +62,14 @@ void Calibrat(u8 Channel)
   s16 TmpA, TmpB;
   u8  Range, k = 0, m, Step;
   char n[10];
+  u32 swap;
   
   Key_Buffer = 0; 
   __Set(STANDBY, DN);                                   // exit the power saving state
   __Set(BACKLIGHT, 10*(Title[BK_LIGHT][CLASS].Value+1));
   __Clear_Screen(BLACK);                                // clear the screen
   
- 
-  __Set(ADC_MODE, SEPARATE);                            // Set Separate mode
+   __Set(ADC_MODE, SEPARATE);                            // Set Separate mode
   __Set(ADC_CTRL, EN);       
   __Set(TRIGG_MODE, UNCONDITION);                       // set any trigger
   _Status = RUN;
@@ -124,7 +131,8 @@ void Calibrat(u8 Channel)
   }
 
   while (1){
-    if(PD_Cnt == 0){
+    if (__Get(USB_POWER)>0) PD_Cnt = 600;
+    if(PD_Cnt == 0){               
       __Set(BACKLIGHT, 0);                               // turn off the backlight
       __Set(STANDBY, EN);                                // enter low power state
       return;
@@ -133,12 +141,17 @@ void Calibrat(u8 Channel)
     Delayms(20); 
     __Set(FIFO_CLR, W_PTR);
     Delayms(20); 
-    //a_Avg = 2048;  b_Avg = 2048;               
-   a_Avg = 0;  b_Avg = 0;
+    a_Avg = 2048;  b_Avg = 2048;               
     for(i=0; i <4096; i++){
       DataBuf[i] = __Read_FIFO();         // read into the 32-bit FIFO data
-      a_Avg += (DataBuf[i] & 0xFF );      // cumulative DC average
-      b_Avg += ((DataBuf[i]>>8) & 0xFF );              
+	swap=0x300;
+	swap &= DataBuf[i];
+	if ((swap==0x100)||(swap==0x200))DataBuf[i]^=0x300; //swap 2 least significant digits of chB, fixes error in FPGA programming
+      a_Avg += (DataBuf[i] & 0xFF );    			    // cumulative DC average
+      a_Avg-=ADCoffset;	
+      b_Avg += ((DataBuf[i]>>8) & 0xFF );
+      b_Avg-=ADCoffset;	
+           
     }
     TmpA  = Ka1[Range] +(Ka2[Range]*(a_Avg/4096)+ 512)/1024;
     TmpB  = Kb1[Range] +(Kb2[Range]*(b_Avg/4096)+ 512)/1024;
@@ -148,8 +161,8 @@ void Calibrat(u8 Channel)
       switch (Step){  
       case 0:
         Range = 0;
-        __Set(CH_A_OFFSET, ((1024+Ka3[Range])*40 + 512)/1024);
-        __Set(CH_B_OFFSET, ((1024+Kb3[Range])*40 + 512)/1024);
+        __Set(CH_A_OFFSET, (((1024+Ka3[Range])*40 + 512)/1024)+ADCoffset);
+        __Set(CH_B_OFFSET, (((1024+Kb3[Range])*40 + 512)/1024)+ADCoffset);
         Print_Str(   8, 216, 0x0305, PRN,   "        PLEASE CONNECT");
         Print_Str(29*8, 216, 0x0305, PRN,   "INPUT TO ");
         Print_Str(38*8, 216, 0x0405, PRN,   "GND      ");
@@ -184,8 +197,8 @@ void Calibrat(u8 Channel)
         if(Range > G_Attr[0].Yp_Max){ 
           Range = 0;  Step++;
         } 
-        __Set(CH_A_OFFSET, ((1024+Ka3[Range])*40 + 512)/1024);
-        __Set(CH_B_OFFSET, ((1024+Kb3[Range])*40 + 512)/1024);
+        __Set(CH_A_OFFSET, (((1024+Ka3[Range])*40 + 512)/1024)+ADCoffset);
+        __Set(CH_B_OFFSET, (((1024+Kb3[Range])*40 + 512)/1024)+ADCoffset);
         k = 0;
         break;
       case 2:
@@ -207,13 +220,13 @@ void Calibrat(u8 Channel)
         if(Range > G_Attr[0].Yp_Max){ 
           Range = 0;  Step++;
         } 
-        __Set(CH_A_OFFSET, ((1024+Ka3[Range])*40 + 512)/1024);
-        __Set(CH_B_OFFSET, ((1024+Kb3[Range])*40 + 512)/1024);
+        __Set(CH_A_OFFSET, (((1024+Ka3[Range])*40 + 512)/1024)+ADCoffset);
+        __Set(CH_B_OFFSET, (((1024+Kb3[Range])*40 + 512)/1024)+ADCoffset);
         break;
       case 3:
         k++;
-        __Set(CH_A_OFFSET, ((1024+Ka3[Range])*160 + 512)/1024);
-        __Set(CH_B_OFFSET, ((1024+Kb3[Range])*160 + 512)/1024);
+        __Set(CH_A_OFFSET, (((1024+Ka3[Range])*160 + 512)/1024)+ADCoffset);
+        __Set(CH_B_OFFSET, (((1024+Kb3[Range])*160 + 512)/1024)+ADCoffset);
         if((Channel == TRACK1)&&(TmpA > 140))  Step++;
         if((Channel == TRACK2)&&(TmpB > 140))  Step++;
         if(k > 20)  Step++;
@@ -234,8 +247,8 @@ void Calibrat(u8 Channel)
         if(Range > G_Attr[0].Yp_Max){ 
           Range = 0;  Step++;
         } 
-        __Set(CH_A_OFFSET, ((1024+Ka3[Range])* 160 + 512)/1024);
-        __Set(CH_B_OFFSET, ((1024+Kb3[Range])* 160 + 512)/1024);
+        __Set(CH_A_OFFSET, (((1024+Ka3[Range])* 160 + 512)/1024)+ADCoffset);
+        __Set(CH_B_OFFSET, (((1024+Kb3[Range])* 160 + 512)/1024)+ADCoffset);
         break;
       case 5:
         k++;
@@ -256,16 +269,16 @@ void Calibrat(u8 Channel)
         if(Range > G_Attr[0].Yp_Max){ 
           Range = 0;  Step++;
         } 
-        __Set(CH_A_OFFSET, ((1024+Ka3[Range])* 160 + 512)/1024);
-        __Set(CH_B_OFFSET, ((1024+Kb3[Range])* 160 + 512)/1024);
+        __Set(CH_A_OFFSET, (((1024+Ka3[Range])* 160 + 512)/1024)+ADCoffset);
+        __Set(CH_B_OFFSET, (((1024+Kb3[Range])* 160 + 512)/1024)+ADCoffset);
         break;
       case 6:
         k++;
         if(k > 20)  Step++;
         Range = 0;
         if(m < 2){
-          __Set(CH_A_OFFSET, ((1024+Ka3[Range])*40 + 512)/1024);
-          __Set(CH_B_OFFSET, ((1024+Kb3[Range])*40 + 512)/1024);
+          __Set(CH_A_OFFSET, (((1024+Ka3[Range])*40 + 512)/1024)+ADCoffset);
+          __Set(CH_B_OFFSET, (((1024+Kb3[Range])*40 + 512)/1024)+ADCoffset);
           if((Channel == TRACK1)&&(TmpA < 50)){
             Step = 1;
             m++;
@@ -275,8 +288,8 @@ void Calibrat(u8 Channel)
             m++;
           }
         } else {
-          __Set(CH_A_OFFSET, ((1024+Ka3[Range])* 25 + 512)/1024);
-          __Set(CH_B_OFFSET, ((1024+Kb3[Range])* 25 + 512)/1024);
+          __Set(CH_A_OFFSET, (((1024+Ka3[Range])* 25 + 512)/1024)+ADCoffset);
+          __Set(CH_B_OFFSET, (((1024+Kb3[Range])* 25 + 512)/1024)+ADCoffset);
           if((Channel == TRACK1)&&(TmpA < 55))  Step++;
           if((Channel == TRACK2)&&(TmpB < 55))  Step++;
         }
@@ -328,7 +341,7 @@ void Calibrat(u8 Channel)
         if(Channel == TRACK1)  Print_Str(37*8, 216, 0x0105, PRN, "CH_B     "); 
         if(Channel == TRACK2)  Print_Str(37*8, 216, 0x0005, PRN, "CH_A     ");
         break;
-      case 10:                            //             "Exit WITHOUT SAVE RESULTS        "
+      case 10:                            //             "Exit WITHOUT SAVING RESULTS      "
         Print_Str( 9*8, 216, 0x0405, Twink, " ");       
         Print_Str(14*8, 216, 0x0405, PRN,   "Exit WITHOUT SAVE RESULTS        ");
         break;
@@ -390,7 +403,7 @@ void Calibrat(u8 Channel)
               Kb1[i] = 0; Kb2[i] = 1024; Kb3[i] = 0;
             }
             Save_Param();  // clear the calibration parameters, save the default values
-            Print_Str( 8, 216, 0x0405, PRN, "       RESTORE DEFAULTS CALIBRATION DATA        ");
+            Print_Str( 8, 216, 0x0405, PRN, "       RESTORE DEFAULT CALIBRATION DATA         ");
           }
           Delayms(1000);                                      
           App_init();

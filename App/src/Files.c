@@ -15,13 +15,16 @@ u8  FileBuff[1600];
 u16 TempPar[66];
 u16 BMP_Color[16] = { WHT,  CYAN, CYAN_,  YEL,  YEL_, PURPL, PURPL_, GRN,   
                       GRN_, GRAY, ORANGE, BLUE, RED,  BLACK, BLACK,  BLACK};    
-u8  BmpHead[54]   = { 0X42, 0X4D, 0XF8, 0XB, 0X00, 0X00, 0X00, 0X00, 
-                      0X00, 0X00, 0X76, 0X0, 0X00, 0X00, 0X28, 0X00,
-                      0X00, 0X00, 0X90, 0X1, 0X00, 0X00, 0XF0, 0X00,
-                      0X00, 0X00, 0X01, 0X0, 0X04, 0X00, 0X00, 0X00,
-                      0X00, 0X00, 0X82, 0XB, 0X00, 0X00, 0X12, 0X0B,
-                      0X00, 0X00, 0X12, 0XB, 0X00, 0X00, 0X00, 0X00,
-                      0X00, 0X00, 0X00, 0X0, 0X00, 0X00};
+u8  BmpHead[54] = /*{ 0X42, 0X4D, 0XF8, 0XB, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X76, 0X0, 0X00, 0X00, 0X28, 0X00,
+                      0X00, 0X00, 0X90, 0X1, 0X00, 0X00, 0XF0, 0X00, 0X00, 0X00, 0X01, 0X0, 0X04, 0X00, 0X00, 0X00,
+                      0X00, 0X00, 0X82, 0XB, 0X00, 0X00, 0X12, 0X0B, 0X00, 0X00, 0X12, 0XB, 0X00, 0X00, 0X00, 0X00,
+                      0X00, 0X00, 0X00, 0X0, 0X00, 0X00};*/
+						//   ^ missing a digit... 			
+			  { 0X42, 0X4D, 0XF8, 0XBB, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X76, 0X0, 0X00, 0X00, 0X28, 0X00,	//file size and image size corrections
+                      0X00, 0X00, 0X90, 0X01, 0X00, 0X00, 0XF0, 0X00, 0X00, 0X00, 0X01, 0X0, 0X04, 0X00, 0X00, 0X00,
+                      0X00, 0X00, 0X82, 0XBB, 0X00, 0X00, 0X12, 0X0B, 0X00, 0X00, 0X12, 0XB, 0X00, 0X00, 0X10, 0X00,
+                      0X00, 0X00, 0X00, 0X00, 0X00, 0X00};
+
 
 /*******************************************************************************
 Open the specified file extension		input: The file extension		return value: 0x00 = successful
@@ -391,7 +394,10 @@ u8 Load_Param(void)
   if(i != OK) return i;
 
   if(__ReadFileSec(SecBuff, pCluster)!= OK) return RD_ERR;
-  if(Versions !=(*p & 0xFF)) return VER_ERR;          // return version of the error
+
+  if((Versions !=(*p & 0xFF))&&((Versions+0x10)!=(*p & 0xFF))) return VER_ERR;          // works with either V6 or V 0x16(no longer used)
+  Versions=(*p & 0xFF);
+
   for(i=0; i<512; ++i) Sum += SecBuff[i];
   if(Sum != 0) return SUM_ERR;                        // checksum error
   Current =(*p++ >>8);                                // restore Current Title
@@ -412,16 +418,20 @@ u8 Load_Param(void)
   for(i=0; i<10; i++){
     Ka1[i] = *p;                         // restore the original channel A low error correction coefficient
     Kb1[i] =(*p++ >>8);                  // restore the original B-channel low error correction coefficient
+    if (Versions==0x16){Ka1[i]-=50; Kb1[i]-=50;} 	
     Ka2[i] = *p++;                       // restore the original channel A gain error correction factor
     Kb2[i] = *p++;                       // restore the B-channel gain error correction coefficient
     Ka3[i] = *p;                         // restore the original channel A high error correction coefficient
     Kb3[i] =(*p++ >>8);                  // restore the original B-channel high error correction factor
+    if (Versions==0x16){Ka3[i]-=50; Kb3[i]-=50;} 	
   }
   V_Trigg[A].Value = *p++;
   V_Trigg[B].Value = *p++;               // restore the original A and B channel trigger threshold
   FlagFrameMode= *p++;
-  FlagMeter= *p++;
-  TrgAuto=*p++;
+  FlagMeter= *p;
+  UpdateMeter=(*p++ >>8);		     // add updatemeter in a way compatible with original version   	
+  TrgAuto=*p;
+  CalFlag=(*p++ >>8);			     // add CalFlag	
   OffsetX=*p++;
   OffsetY=*p++;
   return OK;
@@ -431,11 +441,12 @@ u8 Load_Param(void)
 *******************************************************************************/
 u8 Save_Param(void)             // save the operating parameters table
 {
-  u8  Sum = 0, Versions = 0x06; 
+  u8  Sum = 0, Versions = 0x06;	// was version 0x06, x16 denotes version with shifts in signed vars 
   char Filename[12];
   u16 i, Tmp[2];
   u16* p =(u16*)SecBuff;
-  
+  u8 transfer;  
+
   u16 pCluster[3];
   u32 pDirAddr[1]; 
 
@@ -467,16 +478,20 @@ u8 Save_Param(void)             // save the operating parameters table
       *p++ =(Meter[i].Track<<8)+ Meter[i].Item; // Save the measurement items and measurement object
     }
     for(i=0; i<10; i++){
-      *p++ = (Kb1[i]<<8)+ Ka1[i];             // save the current A and B channel low error correction coefficient
+
+
+      transfer=Ka1[i];				    //load into unsigned var first, prevents error with added signed CH-A value spilling over into shifted CH-B when negative	
+	*p++ = (Kb1[i]<<8)+ transfer;             
       *p++ =  Ka2[i];                         // save the current channel A gain error correction coefficient
       *p++ =  Kb2[i];                         // save the current B-channel gain error correction factor
-      *p++ = (Kb3[i]<<8)+ Ka3[i];             // save the current, B, channel high error correction factor
+	transfer=Ka3[i];
+	*p++ = (Kb3[i]<<8)+ transfer;
     }
     *p++ = V_Trigg[A].Value;
     *p++ = V_Trigg[B].Value;                  // save the current A and B channels trigger threshold
-	*p++ = FlagFrameMode;
-    *p++ = FlagMeter;
-    *p++=TrgAuto;
+    *p++ = FlagFrameMode;
+    *p++ = (UpdateMeter<<8)+FlagMeter;        // include meter "page" along with flag		
+    *p++ = (CalFlag<<8)+TrgAuto;		    // include wave amplitude calibration flag	
     *p++=OffsetX;
     *p++=OffsetY; 
 	

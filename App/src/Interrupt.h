@@ -10,7 +10,7 @@
 
 extern vu8  Cursor_Cnt, Key_Wait_Cnt, Key_Repeat_Cnt, Key_Buffer, Cnt_mS, Cnt_20mS;
 extern vu8  Twink, Blink;
-//extern u8   Volume, Light;
+// extern u8   Volume, Light;
 extern vu16 Delay_Cnt, Beep_mS, Key_Status_Last, Sec_Cnt, PD_Cnt, TimedDeltaView ; 
 extern vu32 Wait_Cnt; 
 void NMIException(void);

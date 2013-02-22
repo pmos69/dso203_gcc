@@ -7,7 +7,7 @@
 
 #include "stm32f10x_lib.h"
 
- 
+
 //============================= Flash space allocation =================================
 
 #define BIN_BASE                ((u32)(0x0802C000)) // Size < 68KB  
@@ -47,7 +47,7 @@
 #define DIGTAL_CCR       18     // pulse output duty cycle value 		Value = 0~65535
 #define KEY_IF_RST       19     // timer interrupt flag reset		 	Value = 0
 #define STANDBY          20     // to enter the power-down waiting		Value = 0
-#define ANALOG_PSC       21
+#define ANALOG_PSC       21	  // only implemented in Marcosin's sys version
 #define FPGA_RST         31     // FPGA Reset							Value = 0
 
 #define TRIGG_MODE       32+0  // trigger mode							Value = Mode
