@@ -16,14 +16,14 @@ u8 Cnt_Charged;
 u8 Cnt_Batt;
 u8 FlagInCharge;
 
-char a_xy[8]="CH!A=!X";		
-char b_xy[8]="CH!B=!Y";
-char ax10_xy[7]="X10A=X";
-char bx10_xy[7]="X10B=Y";
-char a[8]="!CH(A)!";		
-char b[8]="!CH(B)!";
-char ax10[7]="x10(A)";
-char bx10[7]="x10(B)";
+const char a_xy[8]="CH!A=!X";		
+const char b_xy[8]="CH!B=!Y";
+const char ax10_xy[7]="X10A=X";
+const char bx10_xy[7]="X10B=Y";
+const char a[8]="!CH(A)!";		
+const char b[8]="!CH(B)!";
+const char ax10[7]="x10(A)";
+const char bx10[7]="x10(B)";
 
 char T_UNIT[12] ={'u','S', 0 ,'u','S', 0 ,'m','S', 0 ,'S',' ', 0 };
 //char V_UNIT[12] ={'m','V', 0 ,'m','V', 0 ,'V',' ', 0 ,'k','V', 0 };
@@ -36,11 +36,11 @@ char P_UNIT[12] ={'%',' ', 0 ,'%',' ', 0 ,'%',' ', 0 , 0 , 0 , 0 };
 char F_UNITSUB[12]={'H','z', 0 ,'H','z', 0 ,'K','@', 0 ,'M','@', 0 };   //added to keep original FREQ display working right at low sweep rates 
 
 
-char STATESTR[3][10] = {"!RUN!", "HOLD", "HOLD"};                  // Running state str
+const char STATESTR[3][10] = {"!RUN!", "HOLD", "HOLD"};                  // Running state str
 
 uc16 S_Inv[3]       = {(SCRN<<8)+TEXT2, (SCRN<<8)+X_POSI, (SCRN<<8)+NOTE1};         // Running state Color
 
-char BATT_STR[5][10] = {"~``'", "~``}", "~`;}", "~;;}", "{;;}"};   // Battery Status Str
+const char BATT_STR[5][10] = {"~``'", "~``}", "~`;}", "~;;}", "{;;}"};   // Battery Status Str
 uc16 B_COLOR[5]     = {(NOTE1<<8)+SCRN, (SIDE <<8)+SCRN,
                        (TEXT2<<8)+SCRN, (TEXT2<<8)+SCRN,
                        (TEXT2<<8)+SCRN};                          // Battery Status Color
@@ -69,9 +69,9 @@ char BaseStr[30][10];                                              // Time Base 
 char  XPOSISTR[5]    = {"XPOS"};
 uc16 XCOLOR[2]      = {(SCRN<<8)+X_POSI, (X_POSI<<8)+SCRN};        // Time Base Color
 
-char FO_TYPE[6][10]  = {"!SINUS!",  "TRIANG",  "! SAW !",  "SQUARE", "! PWM !", " NONE "}; // Output Kind Str  "Kd=  %"
+const char FO_TYPE[6][10]  = {"!SINUS!",  "TRIANG",  "! SAW !",  "SQUARE", "! PWM !", " NONE "}; // Output Kind Str  "Kd=  %"
 
-char FO_STR[23][10]  = {"! 1Hz !",  "! 2Hz !",  "! 5Hz !",
+const char FO_STR[23][10]  = {"! 1Hz !",  "! 2Hz !",  "! 5Hz !",
                         " 10Hz ",  " 20Hz ",  " 50Hz ",   "!100Hz!",
                        "!200Hz!", "!500Hz!", " 1KHz ",   " 2KHz ",
                        " 5KHz ",  "!10KHz!", "!20KHz!",  "!50KHz!",

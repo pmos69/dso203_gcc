@@ -88,7 +88,7 @@ extern u8 FlagFrameMode;
 extern u8 FlagMeter;
 extern u8 UpdateMeter;
 extern u8 TrgAuto;
-extern u16 Color[16];
+extern uc16 Color[16];
 //extern u16 LCD_Buffer1[240], LCD_Buffer2[240];
 extern trigg V_Trigg[4];
 u16  Get_TAB_8x11(u8 Code, u8 Row);

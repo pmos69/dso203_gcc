@@ -57,7 +57,7 @@ APP V2.50 rewrite based on the new FAT12 file system, file read and write proced
 APP V2.51 modify Vmin and Vmax, Vpp measured BUG (Process.c)
 *******************************************************************************/
 
-#define APP_VERSION       "     GCC v1.27 APP Community Edition"
+#define APP_VERSION       "     GCC v1.28 APP Community Edition"
 
 u8 OldMode;
 u16 OldPosi;
@@ -553,34 +553,43 @@ if(Key_Buffer== KEY4){
 //----------------------------------------------------------------------------------------------------------------
       if(Key_Buffer == K_INDEX_DEC){                                            // ===--- TASTO 5 --- PREMUTO --====
 	    
-         //if ((_Mode == X_Y) || (_Mode==X_Y_A)){
-         if (_Mode == X_Y){
+        //if ((_Mode == X_Y) || (_Mode==X_Y_A)){
+        if (_Mode == X_Y){
            if((Current == TRACK1)&&(_Det == POSI) && (OffsetX>45)) OffsetX=OffsetX-2;
            if((Current == TRACK2)&&(_Det == POSI) && (OffsetY>30)) OffsetY=OffsetY-2;
-         }  
+        }  
  
         if ((Current == T_VERNIE) || ((Current == V_VERNIE)&& (FlagMeter==0))) TimedDeltaView=150;
 		
         if(Current < METER_0){
 
+			if ((Current==TRACK4)&&(_Det == SOURCE)&&(Title[TRACK4][SOURCE].Value == 0)){ //About to go to FFT mode -> Change to full buffer
+				if (FlagFrameMode==1){
+					FlagFrameMode=0;
+					if (_Mode!=SCAN) _X_posi.Value=OldPosi; //Fronte negativo esce dal frame mode ripristina posizione
+					Update_View_Area();
+				}
+			}
+		
           for (i=0;i<4;i++){
-	      if ((Current==i)&&(_Det == SOURCE)){							//ch selected and submenu on source
-		  if (Title[i][SOURCE].Value == 1){								//about to be shut down
-		    if (Title[TRIGG][SOURCE].Value ==i){						      //if trig selected
-                  Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];  				
- 		      for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[j-1];
-			PreviousTrigSelect[0]=0;
-		      Title[TRIGG][0].Flag=UPDAT;							
-	            Title[TRIGG][1].Flag=UPDAT;							
-                  Title[TRIGG][2].Flag=UPDAT;							
- 	            Update_Trig();						
-		    }												//if not selected, about to be shut down, purge # from buffer
-       	    if (PreviousTrigSelect[0]==i)PreviousTrigSelect[0]=0;			//clear to default (ch1) first entry if last ch memorized shut down
-		    for (j=1;j<4;j++){
-			if (PreviousTrigSelect[j]==i) for (k=j;k>0;k--) PreviousTrigSelect[k]=PreviousTrigSelect[k-1];
-		    }
-              }    
-	      }
+			if ((Current==i)&&(_Det == SOURCE)){							//ch selected and submenu on source
+				if (Title[i][SOURCE].Value == 1){								//about to be shut down
+					if (Title[TRIGG][SOURCE].Value ==i){						      //if trig selected
+						Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];  				
+						for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[j-1];
+						PreviousTrigSelect[0]=0;
+						Title[TRIGG][0].Flag=UPDAT;							
+						Title[TRIGG][1].Flag=UPDAT;							
+						Title[TRIGG][2].Flag=UPDAT;							
+						Update_Trig();						
+					}												//if not selected, about to be shut down, purge # from buffer
+					if (PreviousTrigSelect[0]==i)PreviousTrigSelect[0]=0;			//clear to default (ch1) first entry if last ch memorized shut down
+					for (j=1;j<4;j++){
+						if (PreviousTrigSelect[j]==i) for (k=j;k>0;k--) PreviousTrigSelect[k]=PreviousTrigSelect[k-1];
+					}
+					
+				}    
+			}
           }
 
           if((Current == TRIGG)&&(Detail[Current]==2)){         // trigger level adjustment
@@ -801,7 +810,7 @@ if(Key_Buffer== KEY4){
       //----------------------------------------------------------------------------------------------------------------    
       if(Key_Buffer == K_INDEX_INC){                                            // ===--- TASTO 5 +++ PREMUTO --====
         
-     if (_Mode == X_Y){
+		if (_Mode == X_Y){
            if((Current == TRACK1)&&(_Det == POSI) && (OffsetX<215)) OffsetX=OffsetX+2;
            if((Current == TRACK2)&&(_Det == POSI) && (OffsetY<170)) OffsetY=OffsetY+2;
          }  
@@ -809,102 +818,106 @@ if(Key_Buffer== KEY4){
         if ((Current == T_VERNIE) || ((Current == V_VERNIE) && (FlagMeter==0))) TimedDeltaView=150;
         if ((TrgAuto>0)&&(Current == TRIGG) && _Det==2) _Det=0;
         if(Current < METER_0){
+		
+			if ((Current==TRACK4)&&(_Det == SOURCE)&&(Title[TRACK4][SOURCE].Value >= 9)){ //About to go to FFT mode -> Change to full buffer
+				if (FlagFrameMode==1){
+					FlagFrameMode=0;
+					if (_Mode!=SCAN) _X_posi.Value=OldPosi; //Fronte negativo esce dal frame mode ripristina posizione
+					Update_View_Area();
+				}
+			}
+		
+			for (i=0;i<4;i++){							//tracks 1 through 4
+				if ((Current==i)&&(_Det == SOURCE)){
+					if (Title[TRIGG][SOURCE].Value ==i){						      //if trig selected
+						switch (Current){
+							case TRACK1:
+							case TRACK2:
+								if (Title[i][SOURCE].Value == 2){
+								   Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];
+								   for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[(j-1)];			
+								   PreviousTrigSelect[0]=0;  
+								}		
+								break;
+							case TRACK3:
+								if (Title[i][SOURCE].Value == 1){
+									Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];  
+									for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[(j-1)];
+									PreviousTrigSelect[0]=0;  
+								}		
+								break;
+							case TRACK4:
+								if (Title[i][SOURCE].Value == 13){
+									Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];
+									for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[(j-1)];
+									PreviousTrigSelect[0]=0;  
+								}
+						}
+						Title[TRIGG][0].Flag=UPDAT;							
+						Title[TRIGG][1].Flag=UPDAT;							
+						Title[TRIGG][2].Flag=UPDAT;
+						Update_Trig();						
+					}												//if not selected, about to be shut down, purge # from buffer
+					if (PreviousTrigSelect[0]==i) PreviousTrigSelect[0]=0;			      //clear to default (ch1) first entry if last ch memorized shut down
+					for (j=1;j<4;j++){										
+						if (PreviousTrigSelect[j]==i) for (k=j;k>0;k--) PreviousTrigSelect[k]=PreviousTrigSelect[k-1];
+					}  
+				}
+			}	
 
-         for (i=0;i<4;i++){							//tracks 1 through 4
-           if ((Current==i)&&(_Det == SOURCE)){
-             if (Title[TRIGG][SOURCE].Value ==i){						      //if trig selected
-		   switch (Current){
-                 case TRACK1:
-                 case TRACK2:
- 	             if (Title[i][SOURCE].Value == 2){
-			   Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];
-			   for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[(j-1)];			
-			   PreviousTrigSelect[0]=0;  
-                   }		
-			 break;
-                 case TRACK3:
- 	             if (Title[i][SOURCE].Value == 1){
-			   Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];  
-			   for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[(j-1)];
-			   PreviousTrigSelect[0]=0;  
-                   }		
-			 break;
-                 case TRACK4:
- 	             if (Title[i][SOURCE].Value == 9){
-                    Title[TRIGG][SOURCE].Value = PreviousTrigSelect[3];
-                    for (j=3;j>0;j--) PreviousTrigSelect[j]=PreviousTrigSelect[(j-1)];
- 			  PreviousTrigSelect[0]=0;  
-			 }		
-               }
-		   Title[TRIGG][0].Flag=UPDAT;							
-		   Title[TRIGG][1].Flag=UPDAT;							
-               Title[TRIGG][2].Flag=UPDAT;
-		   Update_Trig();						
-		 }												//if not selected, about to be shut down, purge # from buffer
-		 if (PreviousTrigSelect[0]==i)PreviousTrigSelect[0]=0;			      //clear to default (ch1) first entry if last ch memorized shut down
-         	 for (j=1;j<4;j++){										
-		   if (PreviousTrigSelect[j]==i) for (k=j;k>0;k--) PreviousTrigSelect[k]=PreviousTrigSelect[k-1];
-		 }  
-           }
- 	   }	
-
-          if((Current == TRIGG)&&(Detail[Current]==2)){         // trigger level adjustment
-            if(V_Trigg[_Trigg[SOURCE].Value].Value < MAX_Y-4) 
-              V_Trigg[_Trigg[SOURCE].Value].Value++;
-          } else if ((Current == BK_LIGHT)||(Current == VOLUME)){// adjust backlight or volume
-            if(_Curr[1].Value < _Curr[1].Limit)   _Curr[1].Value++;
+			if((Current == TRIGG)&&(Detail[Current]==2)){         // trigger level adjustment
+				if(V_Trigg[_Trigg[SOURCE].Value].Value < MAX_Y-4) 
+				V_Trigg[_Trigg[SOURCE].Value].Value++;
+			} else if ((Current == BK_LIGHT)||(Current == VOLUME)){// adjust backlight or volume
+				if(_Curr[1].Value < _Curr[1].Limit)   _Curr[1].Value++;
     	    } else if ((Current == T_BASE)&&(_Det == XPOSI) ){                         // *******>>>>>> ALT X_POSI adjustment
-            if (_Curr[_Det].Value <30){ _Curr[_Det].Value ++; goto OkSlow; }//
-            else if (_Curr[_Det].Value <(_Curr[_Det].Limit-30)) _Curr[_Det].Value += 30; //
-            else if (_Curr[_Det].Value < (_Curr[_Det].Limit)) _Curr[_Det].Value ++;
-          OkSlow:
-            _X_View.Flag |= UPDAT;                      
-          }  else if ((Current == T_VERNIE) && ((_Det==T1) || (_Det==T2))){
-            
-                    if (FlagMeter==1){
-                      if (_Curr[_Det].Value <(_Curr[_Det].Limit-100)) _Curr[_Det].Value ++;
-                    }
-                    else
-                    {
-                      if (_Curr[_Det].Value <_Curr[_Det].Limit-MIN_X-1) _Curr[_Det].Value ++; 
-                    }
-           }
-          else {                                              // the current item for otheR
-		if ((Current==TRACK1)&&(_Det==SOURCE)) LastSelected=1;  //ChA is about to be turned on
-		if ((Current==TRACK2)&&(_Det==SOURCE)) LastSelected=2;  //ChB is about to be turned on
-            if(_Curr[_Det].Value < _Curr[_Det].Limit)  _Curr[_Det].Value++;
-            else if(_Curr[_Det].MARK & CIRC)   _Curr[_Det].Value  = 0;
-          }
-          if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE selection
-            if ((_Mode==SCAN)&&(FrameMode==0)) OldPosi=_X_posi.Value;
-            if ((_Mode==AUTO)&&(FrameMode==0)) _X_posi.Value=OldPosi;
-            Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
-            Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
-          }
-          if((Current == OUTPUT)&&(_Kind != PWM)&&(_Kind != NOOUT)){
-            if(Title[OUTPUT][FRQN].Value > 14) 
-              Title[OUTPUT][FRQN].Value = 14;          // upper limit of the analog signal frequency is 50KHz
-          }
-          if((Current == FILE)&&(_Curr[0].Value == 1)){  // only the Load Dat, Buf file
-            if(_Curr[2].Value == BMP) _Curr[2].Value = DAT;
-            if(_Curr[2].Value == CSV) _Curr[2].Value = DAT;
-          }
-          _Curr[0].Flag |= UPDAT;
-          _Curr[1].Flag |= UPDAT;
-          _Curr[2].Flag |= UPDAT;
-          _Curr[3].Flag |= UPDAT;
-        } else {
-          Meter[Current-METER_0].Flag |= UPDAT;
-          if(Meter[Current-METER_0].Item < TL)//MIN)  
-            Meter[Current-METER_0].Item += 1;          //  change the measurement items
-          else                     
-            Meter[Current-METER_0].Item  = VBT;
-          if(Meter[Current-METER_0].Item == VBT) 
-            Meter[Current-METER_0].Track = 4;
-          if(Meter[Current-METER_0].Item == VPP) 
-            Meter[Current-METER_0].Track = 0;
+				if (_Curr[_Det].Value <30){ _Curr[_Det].Value ++; goto OkSlow; }//
+				else if (_Curr[_Det].Value <(_Curr[_Det].Limit-30)) _Curr[_Det].Value += 30; //
+				else if (_Curr[_Det].Value < (_Curr[_Det].Limit)) _Curr[_Det].Value ++;
+    OkSlow:
+				_X_View.Flag |= UPDAT;                      
+			} else if ((Current == T_VERNIE) && ((_Det==T1) || (_Det==T2))){
+				if (FlagMeter==1){
+                    if (_Curr[_Det].Value <(_Curr[_Det].Limit-100)) _Curr[_Det].Value ++;
+                } else {
+                    if (_Curr[_Det].Value <_Curr[_Det].Limit-MIN_X-1) _Curr[_Det].Value ++; 
+                }
+			} else {                                              // the current item for otheR
+				if ((Current==TRACK1)&&(_Det==SOURCE)) LastSelected=1;  //ChA is about to be turned on
+				if ((Current==TRACK2)&&(_Det==SOURCE)) LastSelected=2;  //ChB is about to be turned on
+				if(_Curr[_Det].Value < _Curr[_Det].Limit)  _Curr[_Det].Value++;
+				else if(_Curr[_Det].MARK & CIRC)   _Curr[_Det].Value  = 0;
+			}
+			if((Current == T_BASE)&&(_Det == MODE)){     // T_BASE MODE selection
+				if ((_Mode==SCAN)&&(FrameMode==0)) OldPosi=_X_posi.Value;
+				if ((_Mode==AUTO)&&(FrameMode==0)) _X_posi.Value=OldPosi;
+				Title[RUNNING][STATE].Value = RUN;         // STATE = RUNNING 
+				Title[RUNNING][STATE].Flag |= UPDAT;       // refresh RUNNING STATE
+			}
+			if((Current == OUTPUT)&&(_Kind != PWM)&&(_Kind != NOOUT)){
+				if(Title[OUTPUT][FRQN].Value > 14) 
+					Title[OUTPUT][FRQN].Value = 14;          // upper limit of the analog signal frequency is 50KHz
+			}
+			if((Current == FILE)&&(_Curr[0].Value == 1)){  // only the Load Dat, Buf file
+				if(_Curr[2].Value == BMP) _Curr[2].Value = DAT;
+				if(_Curr[2].Value == CSV) _Curr[2].Value = DAT;
+			}
+			_Curr[0].Flag |= UPDAT;
+			_Curr[1].Flag |= UPDAT;
+			_Curr[2].Flag |= UPDAT;
+			_Curr[3].Flag |= UPDAT;
+		} else {
+			Meter[Current-METER_0].Flag |= UPDAT;
+			if(Meter[Current-METER_0].Item < TL)//MIN)  
+				Meter[Current-METER_0].Item += 1;          //  change the measurement items
+			else                     
+				Meter[Current-METER_0].Item  = VBT;
+			if(Meter[Current-METER_0].Item == VBT) 
+				Meter[Current-METER_0].Track = 4;
+			if(Meter[Current-METER_0].Item == VPP) 
+				Meter[Current-METER_0].Track = 0;
         }
-      }
+    }
       //---------------------------------------------------------------------------------------------------------------- 
       if(Key_Buffer == K_ITEM_DEC){                                             // ===--- TASTO 6 --- PREMUTO --====
         if(Current < METER_0){

@@ -1,4 +1,4 @@
-DSO203 GCC v1.27 APP - Community Edition
+DSO203 GCC v1.28 APP - Community Edition
 -------------------
 
 Started out as just some fixes over Marco Sinatti's 1.8 version of the DSO203 APP plus GCC compilation support.
@@ -92,6 +92,12 @@ All thanks to:
 -------------------------------------------
 
 Revisions:
+
+v1.28
+- RAM usage optimization
+- Channel 4 source change turnaround fix (move trigger source to last selected ch)
+- auto switch to full buffer mode when enabling FFT/Spectrograms
+ 
 
 v1.27
 - FFT (channel A or Channel B) and Spectrograms  (channel A or Channel B) now accessible in the Channel 4 menu

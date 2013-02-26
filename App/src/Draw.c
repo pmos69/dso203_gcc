@@ -13,7 +13,9 @@ uc16 RULE_BASE[8] ={0x020,0x040,0x080,0x040,0x020,0x010,0x008,0x010};
 u8 OffsetX;
 u8 OffsetY;
 u16 SpecRow = 0;
-u8 colors[200];
+//u8 colors[400];
+const u16 colors[200] = {32768,32768,32768,32768,34816,34816,34816,36864,36864,36864,38912,38912,38912,40960,40960,40960,43008,43008,43008,43008,45056,45056,45056,47104,47104,47104,49152,49152,49152,51200,51200,51200,53248,53248,53248,55296,55296,55296,55296,57344,57344,57344,59392,59392,59392,61440,61440,61440,63488,63488,63488,63520,63552,63584,63616,63680,63712,63744,63776,63840,63872,63904,63968,64000,64032,64064,64128,64160,64192,64224,64288,64320,64352,64416,64448,64480,64512,64576,64608,64640,64704,64736,64768,64800,64864,64896,64928,64960,65024,65056,65088,65152,65184,65216,65248,65312,65344,65376,65408,65472,65504,65504,65505,65505,65506,65507,65507,65508,65508,65509,65510,65510,65511,65512,65512,65513,65514,65514,65515,65515,65516,65517,65517,65518,65519,65519,65520,65521,65521,65522,65523,65523,65524,65524,65525,65526,65526,65527,65528,65528,65529,65530,65530,65531,65531,65532,65533,65533,65534,65535,65535,65503,63423,63391,61279,59199,59167,57087,54975,54943,52863,50751,50719,48639,48607,46495,44415,44383,42303,40191,40159,38079,35967,35935,33855,33823,31711,29631,29599,27519,25407,25375,23295,21183,21151,19071,19039,16927,14847,14815,12703,10623,10591,8511,6399,6367,4287,4255,2143,63};
+
 u16 RowMem, RowMemPeak;
 
 uc8  Mark_TAB[5][7] ={{0x00,0x00,0x42,0xFE,0x02,0x00,0x00},    // Mark 1
@@ -221,7 +223,7 @@ uc16  Row_VertDots[201] =     // with the vertical grid lines and horizontal edg
  GRAY ,BLACK,BLACK,BLACK,BLACK,GRAY ,BLACK,BLACK,BLACK,BLACK, // 90~00
  GRAY };
    
-u16 Color[16] = { CYAN,   // #0  TRACK1 
+uc16 Color[16] = { CYAN,   // #0  TRACK1 
                   YEL,    // #1  TRACK2
                   PURPL,  // #2  TRACK3 
                   GRN,    // #3  TRACK4 
@@ -874,37 +876,37 @@ u16 to565( u32 clr )
     return ret;
   }
 
-u32 interpolate(u32 clra, u32 clrb, u8 ratio)
-  {
-    u8 ra = clra>>16;
-    u8 ga = clra>>8;
-    u8 ba = clra;
+// u32 interpolate(u32 clra, u32 clrb, u8 ratio)
+  // {
+    // u8 ra = clra>>16;
+    // u8 ga = clra>>8;
+    // u8 ba = clra;
 
-    u8 rb = clrb>>16;
-    u8 gb = clrb>>8;
-    u8 bb = clrb;
+    // u8 rb = clrb>>16;
+    // u8 gb = clrb>>8;
+    // u8 bb = clrb;
 
-    u16 r = ra + (((rb-ra)*ratio)>>8);
-    u16 g = ga + (((gb-ga)*ratio)>>8);
-    u16 b = ba + (((bb-ba)*ratio)>>8);
-    r &= 0xff;
-    g &= 0xff;
-    b &= 0xff;
-    return (r<<16) | (g<<8) | b;
-  }
+    // u16 r = ra + (((rb-ra)*ratio)>>8);
+    // u16 g = ga + (((gb-ga)*ratio)>>8);
+    // u16 b = ba + (((bb-ba)*ratio)>>8);
+    // r &= 0xff;
+    // g &= 0xff;
+    // b &= 0xff;
+    // return (r<<16) | (g<<8) | b;
+  // }
 
-  void InitColors()
-  {
-    static const u32 baseclr[] = {0x000080, 0x0000ff, 0x00ffff, 0xffffff, 0xff0000};
-	u8 i;
+  // void InitColors()
+  // {
+    // static const u32 baseclr[] = {0x000080, 0x0000ff, 0x00ffff, 0xffffff, 0xff0000};
+	// u8 i;
 	
-    for (i=0; i<200; i++)
-    {
-      u8 base = i/50;
-      u16 rem = (i%50)*255/50;
-      colors[i] = to565( interpolate(baseclr[base], baseclr[base+1], rem) )/256;
-    }
-  }
+    // for (i=0; i<200; i++)
+    // {
+      // u8 base = i/50;
+      // u16 rem = (i%50)*255/50;
+      // colors[i] = to565( interpolate(baseclr[base], baseclr[base+1], rem) )/256;
+    // }
+  // }
 
 /*******************************************************************************
  Draw_Row_Spec : to ease the DMA conflict, in two buffers alternately
@@ -914,13 +916,13 @@ void Draw_Row_Spec(u16 Row, u16 *LCD_Buffer)
   u8  i;
   int val= 0;
    
-  InitColors();
+  // InitColors();
   
 //------------------------- Draw the Curve data --------------------------------
     for (i=Y_BASE+1; i<200; i++) {
     	val = fr[i-Y_BASE];
     	if (val >= 200) val = 199;
-    	LCD_Buffer[i] = colors[val]*256;
+    	LCD_Buffer[i] = colors[val];
     }
      
 }
