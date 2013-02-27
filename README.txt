@@ -93,12 +93,16 @@ All thanks to:
 
 Revisions:
 
-v1.28
-- RAM usage optimization
-- Channel 4 source change turnaround fix (move trigger source to last selected ch)
-- auto switch to full buffer mode when enabling FFT/Spectrograms
- 
+v1.29
+- Big Display Meters (METER) - Accessible from the Channel 4 menu.
+	- Corresponding meter/measurement indicated by marker.
+	- Change the indicated meter as usual - The Big meter will reflect the change (Any channel, any measurement).
 
+v1.28
+- RAM usage optimization.
+- Channel 4 source change turnaround fix (move trigger source to last selected ch).
+- auto switch to full buffer mode when enabling FFT/Spectrograms.
+ 
 v1.27
 - FFT (channel A or Channel B) and Spectrograms  (channel A or Channel B) now accessible in the Channel 4 menu
 - Merged all contributions from Wildcat:

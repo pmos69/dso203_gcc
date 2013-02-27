@@ -5,7 +5,7 @@ rem DS203 Win32 GCC support by valky.eu
 rem USER DEFINED VALUES
 rem ===================================================
 set CBASE=C:\arm_toolchain\arm-2011.03\bin\
-set TARGET=F:\
+set TARGET=E:\
 set TFILE=APP_G251
 set APP=1
 rem ===================================================
@@ -39,7 +39,7 @@ set SRC_INC=..\App\inc
 set SRC_LDS=..\App\lds
 set SRC_ASM=..\App\asm
 
-set CFLAGS=-Wall -Os -Werror -fno-common -mcpu=cortex-m3 -mthumb -msoft-float -fomit-frame-pointer -MD -I !STM_INC! -I !SRC_INC! -I !SRC_SRC!
+set CFLAGS=-Wunreachable-code -Wall -Os -Werror -fno-common -mcpu=cortex-m3 -mthumb -msoft-float -fomit-frame-pointer -MD -I !STM_INC! -I !SRC_INC! -I !SRC_SRC!
 set AFLAGS=-mcpu=cortex-m3 -mthumb
 set LDFLAGS=-nostartfiles -mcpu=cortex-m3 -mthumb -march=armv7 -mfix-cortex-m3-ldrd -msoft-float 
 

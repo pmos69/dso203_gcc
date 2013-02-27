@@ -103,7 +103,7 @@ extern char Vertical[15][10];
 
 void BackGround_Reset(void);
 void App_init(void);
-void View_init(void);
+//void View_init(void);
 void Update_Range(void);
 void Update_Base(void);
 void Update_Output(void); 

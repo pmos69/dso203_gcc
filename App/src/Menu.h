@@ -60,11 +60,13 @@
 #define REC_3      8
 #define REC_4      9
 
-#define FFT_A      10
-#define FFT_B      11
+#define BIG_M		10
 
-#define SPEC_A      12
-#define SPEC_B      13
+#define FFT_A      11
+#define FFT_B      12
+
+#define SPEC_A      13
+#define SPEC_B      14
 
 //------------- RUNNING sub-menu item number defined -------------
 #define STATE      0
@@ -195,6 +197,8 @@ void Display_Title(void);
 void Display_Meter(void);
 void Load_Attr(void);
 void Update_Battery(void);
+
+extern u8 BigMeter;
 
 #endif
 
